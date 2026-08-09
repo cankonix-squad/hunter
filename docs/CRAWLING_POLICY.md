@@ -76,6 +76,12 @@ request at a time, and a three-second minimum request interval. HTTP 403 and 429
 stop collection immediately; only transport errors and HTTP 5xx responses are
 retried.
 
+The first controlled source batch covers the robots-allowed tenants `malukuprov`,
+`komdigi`, `jakarta`, `jabarprov`, and `jatimprov`. Expansion remains batch-based;
+an allowed robots path is necessary but does not by itself authorize higher rates
+or broader routes. Listing matches are verified against whole words in the package
+title because the server-side search may also match agency or hidden columns.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -19,7 +20,10 @@ import (
 
 const publicSPSEMaxResponse = 1 << 20
 
-var authenticityTokenPattern = regexp.MustCompile("d\\.authenticityToken\\s*=\\s*'([^']+)'")
+var (
+	authenticityTokenPattern = regexp.MustCompile("d\\.authenticityToken\\s*=\\s*'([^']+)'")
+	htmlTagPattern           = regexp.MustCompile(`<[^>]+>`)
+)
 
 type PublicSPSEAdapter struct {
 	client      *http.Client
@@ -123,6 +127,10 @@ func (a *PublicSPSEAdapter) Discover(ctx context.Context, source Source) ([]Cand
 			metrics["pages"]++
 			metrics["raw_rows"] += len(items)
 			for _, item := range items {
+				if !candidateTitleMatchesKeyword(item, keyword) {
+					metrics["keyword_misses"]++
+					continue
+				}
 				if _, exists := unique[item.PackageIdentity]; exists {
 					metrics["duplicates"]++
 					continue
@@ -266,17 +274,20 @@ func parsePublicSPSE(payload []byte, baseURL, tenant string) ([]Candidate, error
 		if len(row) < 11 {
 			return nil, fmt.Errorf("SPSE row %d has %d columns, want at least 11", index, len(row))
 		}
-		code, title, agency, stage := cell(row, 0), cell(row, 1), cell(row, 2), cell(row, 3)
+		code, title, agency, stage := cell(row, 0), cleanListingText(cell(row, 1)), cell(row, 2), cell(row, 3)
 		procurementType := strings.TrimSpace(strings.Split(cell(row, 8), " - TA ")[0])
 		if code == "" || title == "" || agency == "" || procurementType == "" {
 			return nil, fmt.Errorf("SPSE row %d is missing critical metadata", index)
 		}
-		budget, err := parseIDRMinor(cell(row, 10))
+		budget, err := parseOptionalIDRMinor(cell(row, 10))
 		if err != nil {
 			return nil, fmt.Errorf("SPSE row %d budget: %w", index, err)
 		}
 		metadata := map[string]any{"title": title, "agency": agency, "procurement_type": procurementType,
-			"status": mapSPSEStage(stage), "currency": "IDR", "pagu_minor": budget}
+			"status": mapSPSEStage(stage), "currency": "IDR"}
+		if budget != nil {
+			metadata["pagu_minor"] = *budget
+		}
 		items = append(items, Candidate{PackageIdentity: code,
 			CanonicalURL: fmt.Sprintf("%s/%s/lelang/%s/pengumumanlelang", strings.TrimRight(baseURL, "/"), tenant, code), Metadata: metadata})
 	}
@@ -323,4 +334,32 @@ func parseIDRMinor(raw string) (int64, error) {
 		return 0, errors.New("invalid IDR decimal")
 	}
 	return strconv.ParseInt(whole+fraction, 10, 64)
+}
+
+func parseOptionalIDRMinor(raw string) (*int64, error) {
+	value := strings.TrimSpace(raw)
+	if value == "" || strings.Contains(strings.ToLower(value), "belum dibuat") {
+		return nil, nil
+	}
+	minor, err := parseIDRMinor(value)
+	if err != nil {
+		return nil, err
+	}
+	return &minor, nil
+}
+
+func cleanListingText(raw string) string {
+	withoutTags := htmlTagPattern.ReplaceAllString(raw, " ")
+	return strings.Join(strings.Fields(html.UnescapeString(withoutTags)), " ")
+}
+
+func candidateTitleMatchesKeyword(candidate Candidate, keyword string) bool {
+	title, _ := candidate.Metadata["title"].(string)
+	return strings.Contains(" "+searchWords(title)+" ", " "+searchWords(keyword)+" ")
+}
+
+func searchWords(value string) string {
+	return strings.Join(strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
+	}), " ")
 }

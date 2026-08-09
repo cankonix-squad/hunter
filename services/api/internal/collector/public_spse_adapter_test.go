@@ -37,6 +37,20 @@ func TestParseIDRMinorUsesIntegers(t *testing.T) {
 	}
 }
 
+func TestParsePublicSPSEToleratesUnavailableContractValueAndCleansTitle(t *testing.T) {
+	payload := []byte(`{"data":[["123","Pengembangan Sistem <span class='badge'>Tender Ulang</span>","Komdigi","Pengumuman Pascakualifikasi","","","Tender","","Jasa Lainnya - TA 2026","","Nilai Kontrak belum dibuat"]]}`)
+	items, err := parsePublicSPSE(payload, "https://spse.inaproc.id", "komdigi")
+	if err != nil || len(items) != 1 {
+		t.Fatalf("items=%#v err=%v", items, err)
+	}
+	if got := items[0].Metadata["title"]; got != "Pengembangan Sistem Tender Ulang" {
+		t.Fatalf("title=%q", got)
+	}
+	if _, exists := items[0].Metadata["pagu_minor"]; exists {
+		t.Fatal("unavailable contract value must remain unknown")
+	}
+}
+
 func TestDataTablesFormContainsServerSideSearchContract(t *testing.T) {
 	form := dataTablesForm("token", "sistem informasi", 2, 20, 20)
 	checks := map[string]string{"search[value]": "sistem informasi", "search[regex]": "false",
@@ -57,5 +71,16 @@ func TestPolicyKeywordsAreBoundedAndBackwardCompatible(t *testing.T) {
 	}
 	if legacy := policyKeywords(map[string]any{"search": "software"}); len(legacy) != 1 || legacy[0] != "software" {
 		t.Fatalf("unexpected legacy keywords: %#v", legacy)
+	}
+}
+
+func TestCandidateTitleKeywordMatchUsesWordBoundaries(t *testing.T) {
+	item := Candidate{Metadata: map[string]any{"title": "Pembangunan Sarana Peribadatan"}}
+	if candidateTitleMatchesKeyword(item, "data") {
+		t.Fatal("data must not match the middle of peribadatan")
+	}
+	item.Metadata["title"] = "Operasional Sistem Big Data Nasional"
+	if !candidateTitleMatchesKeyword(item, "data") || !candidateTitleMatchesKeyword(item, "sistem") {
+		t.Fatal("whole title words must match")
 	}
 }

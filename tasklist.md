@@ -16,12 +16,12 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 9
-- Data acceptance: 2 opportunity canonical dan 2 version history
+- Migrasi database aktif: versi 11
+- Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
-- Public crawl acceptance: SPSE Maluku v2, 7 keyword/7 halaman diproses tanpa error;
-  tidak ada paket IT yang cocok pada run terbaru
+- Public crawl acceptance: 5 source aktif; batch Komdigi, Jakarta, Jawa Barat, dan
+  Jawa Timur menghasilkan 171 paket publik nyata, 70 terklasifikasi relevant
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
 - Worktree bersih setelah commit `28f2972`
@@ -204,7 +204,8 @@ belum ada data atau biaya yang dikirim ke pihak ketiga.
 - [x] Server-side keyword search, pagination terbatas, dan deduplikasi lintas keyword
 - [ ] Source-specific lag/error metrics
 - [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
-- [ ] Perluas bertahap menuju 20 priority sources setelah satu adapter stabil
+- [~] Lima source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur);
+  perluas bertahap menuju 20 priority sources setelah stability observation
 
 Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan halaman
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
@@ -216,6 +217,14 @@ pada active-registration feed. Increment v2 memakai migration v8; live run
 `malukuprov-public-v2-acceptance` sukses pada satu attempt dengan metrics 7 keyword,
 7 halaman, 0 raw row, dan 0 kandidat. Hasil nol mencerminkan tidak adanya kecocokan
 keyword IT saat run, bukan kegagalan transport atau parser.
+
+Batch source pertama memakai migration v10-v11. Robots.txt secara eksplisit mengizinkan
+seluruh tenant terpilih. Acceptance `source-batch-v3-*` sukses satu attempt per source:
+Komdigi 38 kandidat, Jakarta 130, Jawa Barat 2, dan Jawa Timur 0. Parser mempertahankan
+nilai kontrak yang belum tersedia sebagai unknown, membersihkan badge HTML dari judul,
+dan memfilter keyword berdasarkan batas kata. Total database menjadi 171 paket publik
+nyata; 70 terklasifikasi relevant. Paket IT nyata pada batch ini mayoritas sudah selesai
+dan hanya tampil bila lifecycle `All` dipilih.
 
 ### Notifications dan operations
 

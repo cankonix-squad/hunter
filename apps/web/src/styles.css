@@ -6,7 +6,7 @@ body { margin: 0; min-width: 320px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .login-page { min-height: 100vh; padding: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(380px, .7fr); }
 .login-intro { color: #eee; background: #0b0b0b; padding: 48px clamp(32px, 7vw, 100px); display: flex; flex-direction: column; justify-content: space-between; }
-.brand-large span { width: 42px; height: 42px; }
+.brand-large .brand-logo { width: min(360px, 72vw); height: 112px; }
 .login-intro h1 { color: white; font-size: clamp(48px, 7vw, 100px); line-height: .9; letter-spacing: -.065em; margin: 24px 0; }
 .login-intro .eyebrow { color: #777; }
 .login-note { color: #777; max-width: 420px; line-height: 1.6; font-size: 13px; }
@@ -24,7 +24,7 @@ body { margin: 0; min-width: 320px; }
 .shell { min-height: 100vh; display: grid; grid-template-columns: 232px 1fr; }
 aside { color: #eee; background: #0b0b0b; padding: 28px 20px; display: flex; flex-direction: column; }
 .brand { display: flex; gap: 12px; align-items: center; letter-spacing: .12em; font-size: 12px; }
-.brand span { display: grid; place-items: center; width: 34px; height: 34px; background: #eee; color: #111; font-weight: 900; letter-spacing: -.08em; }
+.brand-logo { display: block; width: 180px; height: 58px; object-fit: cover; object-position: center; }
 nav { display: grid; gap: 6px; margin-top: 64px; }
 nav a { color: #888; text-decoration: none; padding: 11px 12px; border-left: 2px solid transparent; font-size: 14px; }
 nav a.active { color: white; border-left-color: white; background: #171717; }

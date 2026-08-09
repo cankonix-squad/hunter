@@ -1,5 +1,6 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from './auth'
+import logoWhite from './assets/cankonix-logo-white.png'
 
 export interface Opportunity {
   id: string
@@ -93,7 +94,7 @@ export function Dashboard() {
   return (
     <div className="shell">
       <aside>
-        <div className="brand"><span>CX</span><strong>CANKONIX</strong></div>
+        <div className="brand"><img className="brand-logo" src={logoWhite} alt="CANKONIX" /></div>
         <nav aria-label="Navigasi utama"><a href="#overview">Overview</a><a className="active" href="#opportunities">Opportunities</a><a href="#sources">Sources</a><a href="#operations">Operations</a></nav>
         <div className="profile"><strong>{auth.session?.user.name}</strong><span>{auth.session?.user.roles.join(' · ')}</span><button className="text-button" onClick={() => void auth.logout()}>Sign out</button></div>
         <p className="build">Opportunity Intelligence<br />Canonical feed · v0.3.0</p>

@@ -33,6 +33,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - [x] Toolchain lokal Git, Go, Node.js, dan Docker Desktop
 - [x] Docker Compose untuk PostgreSQL, API, collector, web, dan edge
 - [x] React + TypeScript production build
+- [x] Logo CANKONIX resmi pada halaman login dan sidebar aplikasi
 - [x] Go API dengan structured logging, request ID, recovery, dan graceful shutdown
 - [x] Endpoint health dan readiness
 - [x] PostgreSQL tidak dipublikasikan langsung ke host

@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react'
 import { APIError } from './api'
 import { useAuth } from './auth'
+import logoWhite from './assets/cankonix-logo-white.png'
 
 export function LoginPage() {
   const auth = useAuth()
@@ -25,7 +26,7 @@ export function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-intro">
-        <div className="brand brand-large"><span>CX</span><strong>CANKONIX</strong></div>
+        <div className="brand brand-large"><img className="brand-logo" src={logoWhite} alt="CANKONIX" /></div>
         <div><p className="eyebrow">Opportunity intelligence</p><h1>See the signal.<br />Own the decision.</h1></div>
         <p className="login-note">Internal, auditable decision support for public procurement opportunities.</p>
       </section>

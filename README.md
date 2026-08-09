@@ -91,6 +91,7 @@ database volume is created.
 - Independent collector worker with lease recovery, bounded retry, dead-letter,
   health degradation, and circuit breaker state
 - Versioned fixture adapter with stable fingerprints and idempotent snapshots
+- Policy-gated public SPSE Maluku listing adapter with conservative request limits
 - Canonical opportunity normalization with lifecycle-safe active feed and version history
 - Versioned deterministic IT taxonomy with auditable include/exclude evidence
 - Versioned five-dimension scoring with integer weights and reviewable breakdown

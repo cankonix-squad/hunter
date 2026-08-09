@@ -19,19 +19,24 @@ Evidence reviewed:
 - Automated research fetches to `lpse.lkpp.go.id` returned HTTP 402, and a
   direct DNS lookup from the local runtime could not resolve the host.
 
+## Correction and selected public target
+
+The initial review incorrectly treated one unavailable host/API path as a blocker
+for all public-page collection. The agreed scope permits crawling public pages
+without login, subject to source policy.
+
+The first target is the Maluku tenant on spse.inaproc.id/malukuprov. Its
+robots.txt explicitly allows /malukuprov, its listing is public, and the page
+declares the DataTables route used by the adapter. Direct detail access returned
+HTTP 403, so the adapter does not fetch or bypass detail pages.
+
 ## Decision
 
 Do not attempt CAPTCHA handling, alternate identities, proxy rotation, hidden
 endpoint discovery, or any other bypass. Do not register or use supplier
 credentials for collection.
 
-Collection may proceed when either:
-
-1. CANKONIX receives authorized INAPROC API access and its permitted scope,
-   rate limits, retention rules, and contact owner are recorded; or
-2. an individual LPSE provides a reachable public listing whose current
-   robots/terms permit conservative automated metadata access.
-
-Until then, the fixture adapter remains the only enabled SPSE adapter. Technical
-HTTP/parser work for a real source must be based on a redacted response obtained
-through an allowed access path, not on an invented or reverse-engineered schema.
+Collection may proceed only against the reviewed Maluku listing routes. The
+adapter uses one request at a time, a three-second minimum interval, a 20-second
+timeout, a 1 MiB response limit, and stops on HTTP 403 or 429. It does not access
+login, supplier transactions, CAPTCHA, or blocked detail content.

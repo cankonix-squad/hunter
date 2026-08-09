@@ -16,10 +16,11 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 6
+- Migrasi database aktif: versi 7
 - Data acceptance: 2 opportunity canonical dan 2 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
+- Public crawl acceptance: SPSE Maluku, 1 candidate → snapshot → canonical opportunity
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
 - Worktree bersih setelah commit `343ce4d`
@@ -186,20 +187,24 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 
 ### Public SPSE adapter
 
-- [!] Policy review target LKPP/INAPROC selesai; aktivasi terblokir karena API resmi membutuhkan akses yang diajukan dan host LPSE kandidat tidak dapat dijangkau. Lihat `docs/PUBLIC_SOURCE_REVIEW.md`
-- [ ] Rate limiter dan robots/terms documentation
-- [ ] HTTP client timeout, backoff, dan response-size limit
-- [ ] Parser fixture dari response yang sudah direduksi/redacted
-- [ ] Adapter regression tests
-- [ ] Incremental discovery dan unchanged-detail avoidance
+- [x] Policy review public listing SPSE INAPROC Maluku; robots.txt mengizinkan `/malukuprov`
+- [x] Rate limiter dan robots/terms documentation
+- [~] HTTP timeout dan response-size limit tersedia; retry/backoff memakai runtime collector
+- [x] Parser fixture dari response yang sudah direduksi/redacted
+- [x] Adapter regression tests
+- [x] Incremental discovery via fingerprint; detail HTTP 403 tidak diambil
 - [ ] Source-specific lag/error metrics
-- [ ] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
+- [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
 - [ ] Perluas bertahap menuju 20 priority sources setelah satu adapter stabil
 
-Keputusan: jangan reverse-engineer endpoint tersembunyi atau mengakali HTTP 402,
-DNS failure, autentikasi, maupun kontrol akses. Lanjut setelah memperoleh akses API
-INAPROC yang sah atau memilih LPSE publik lain yang reachable dan mengizinkan
-collection metadata konservatif.
+Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan halaman
+publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
+disimpan untuk verifikasi manual.
+
+Bukti: migration v7; live run `malukuprov-public-v1-acceptance` sukses pada satu
+attempt dan menyimpan satu paket berstatus `completed`, sehingga tidak muncul pada
+active-registration feed. Server-side keyword search masih perlu diperbaiki sebelum
+source diperluas atau dijadwalkan dengan cakupan lebih besar.
 
 ### Notifications dan operations
 

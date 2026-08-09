@@ -31,7 +31,7 @@ func main() {
 	if owner == "" {
 		owner = "collector-local-1"
 	}
-	runner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}), owner)
+	runner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}, collector.NewPublicSPSEAdapter(nil)), owner)
 	slog.Info("collector started", "owner", owner)
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()

@@ -23,7 +23,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Public crawl acceptance: SPSE Maluku, 1 candidate → snapshot → canonical opportunity
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `343ce4d`
+- Worktree bersih setelah commit `0cb78f3`
 
 ## Selesai
 
@@ -201,7 +201,7 @@ Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan hala
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
 disimpan untuk verifikasi manual.
 
-Bukti: migration v7; live run `malukuprov-public-v1-acceptance` sukses pada satu
+Bukti: commit `0cb78f3`; migration v7; live run `malukuprov-public-v1-acceptance` sukses pada satu
 attempt dan menyimpan satu paket berstatus `completed`, sehingga tidak muncul pada
 active-registration feed. Server-side keyword search masih perlu diperbaiki sebelum
 source diperluas atau dijadwalkan dengan cakupan lebih besar.
@@ -254,6 +254,7 @@ source diperluas atau dijadwalkan dengan cakupan lebih besar.
 | `1384f3b` | Taxonomy dan deterministic classification yang auditable |
 | `9c3fce7` | Explainable scoring lima dimensi dan review confidence |
 | `343ce4d` | Classification/scoring API, filter, review queue, dan UI evidence |
+| `0cb78f3` | Public SPSE Maluku adapter dan acceptance crawl tanpa login |
 
 ## Aturan pembaruan task list
 

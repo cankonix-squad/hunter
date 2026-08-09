@@ -23,7 +23,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Public crawl acceptance: SPSE Maluku, 1 candidate → snapshot → canonical opportunity
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `0cb78f3`
+- Worktree bersih setelah commit `57f2720`
 
 ## Selesai
 
@@ -256,6 +256,7 @@ source diperluas atau dijadwalkan dengan cakupan lebih besar.
 | `9c3fce7` | Explainable scoring lima dimensi dan review confidence |
 | `343ce4d` | Classification/scoring API, filter, review queue, dan UI evidence |
 | `0cb78f3` | Public SPSE Maluku adapter dan acceptance crawl tanpa login |
+| `57f2720` | Logo resmi CANKONIX pada login dan sidebar web |
 
 ## Aturan pembaruan task list
 

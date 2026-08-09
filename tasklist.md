@@ -24,7 +24,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
   tidak ada paket IT yang cocok pada run terbaru
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree memuat increment Public SPSE v2 yang sedang diverifikasi
+- Worktree bersih setelah commit `a7f5b24`
 
 ## Selesai
 
@@ -204,7 +204,7 @@ Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan hala
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
 disimpan untuk verifikasi manual.
 
-Bukti awal: commit `0cb78f3`; migration v7; live run `malukuprov-public-v1-acceptance` sukses
+Bukti: commit `0cb78f3`, `a7f5b24`; migration v7; live run `malukuprov-public-v1-acceptance` sukses
 pada satu attempt dan menyimpan satu paket berstatus `completed`, sehingga tidak muncul
 pada active-registration feed. Increment v2 memakai migration v8; live run
 `malukuprov-public-v2-acceptance` sukses pada satu attempt dengan metrics 7 keyword,
@@ -261,6 +261,7 @@ keyword IT saat run, bukan kegagalan transport atau parser.
 | `343ce4d` | Classification/scoring API, filter, review queue, dan UI evidence |
 | `0cb78f3` | Public SPSE Maluku adapter dan acceptance crawl tanpa login |
 | `57f2720` | Logo resmi CANKONIX pada login dan sidebar web |
+| `a7f5b24` | Incremental keyword discovery, retry, pagination, dan crawl metrics SPSE v2 |
 
 ## Aturan pembaruan task list
 

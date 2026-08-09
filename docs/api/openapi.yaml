@@ -76,6 +76,41 @@ paths:
       responses:
         '200': { description: Source registry }
         '401': { description: Authentication required }
+  /api/v1/opportunities:
+    get:
+      operationId: listOpportunities
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: query, name: q, schema: { type: string } }
+        - { in: query, name: status, schema: { type: string, default: active } }
+        - { in: query, name: source_id, schema: { type: string, format: uuid } }
+        - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
+        - { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Paginated canonical opportunity feed; active status excludes closed lifecycle stages
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OpportunityPage' }
+        '400': { description: Invalid filter or pagination }
+        '401': { description: Authentication required }
+  /api/v1/opportunities/{id}:
+    get:
+      operationId: getOpportunity
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Canonical opportunity detail with official source and history count
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Opportunity' }
+        '404': { description: Opportunity not found }
+        '401': { description: Authentication required }
   /api/v1/admin/sources:
     post:
       operationId: createSource
@@ -162,3 +197,32 @@ components:
         adapter_name: { type: string }
         adapter_version: { type: string }
         policy: { type: object, additionalProperties: true }
+    Opportunity:
+      type: object
+      required: [id, package_identity, title, agency, procurement_type, lifecycle_status, currency, canonical_url, first_seen_at, last_seen_at, source_id, source_name, version_count]
+      properties:
+        id: { type: string, format: uuid }
+        package_identity: { type: string }
+        title: { type: string }
+        agency: { type: string }
+        procurement_type: { type: string }
+        lifecycle_status: { type: string, enum: [announced, registration_open, registration_closed, evaluation, awarded, contracted, completed, cancelled] }
+        budget_minor: { type: integer, format: int64, minimum: 0 }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        registration_deadline: { type: string, format: date-time }
+        canonical_url: { type: string, format: uri }
+        source_timestamp: { type: string, format: date-time }
+        first_seen_at: { type: string, format: date-time }
+        last_seen_at: { type: string, format: date-time }
+        source_id: { type: string, format: uuid }
+        source_name: { type: string }
+        version_count: { type: integer, minimum: 1 }
+    OpportunityPage:
+      type: object
+      required: [items, page, page_size, total, total_pages]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Opportunity' } }
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }

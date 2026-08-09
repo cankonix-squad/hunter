@@ -90,12 +90,15 @@ database volume is created.
 - Independent collector worker with lease recovery, bounded retry, dead-letter,
   health degradation, and circuit breaker state
 - Versioned fixture adapter with stable fingerprints and idempotent snapshots
+- Canonical opportunity normalization with lifecycle-safe active feed and version history
+- Authenticated opportunity list/detail API with search, status filter, and pagination
+- Responsive opportunity dashboard with official-source detail panel
 - Nginx reverse proxy with baseline security headers and request-size limit
 - Docker Compose health checks and service dependency ordering
 - OpenAPI contract for the implemented endpoints
 
-Next vertical slice: canonical package normalization and lifecycle mapping from
-the fixture-backed snapshots, followed by a policy-reviewed public SPSE adapter.
+Next vertical slice: deterministic classification and explainable scoring,
+followed by a policy-reviewed public SPSE adapter.
 
 ## Useful commands
 

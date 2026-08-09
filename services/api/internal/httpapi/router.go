@@ -6,25 +6,31 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
+	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/sources"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Server struct {
-	db        *pgxpool.Pool
-	identity  *identity.Service
-	sources   *sources.Service
-	collector *collector.Runner
-	startedAt time.Time
+	db            *pgxpool.Pool
+	identity      *identity.Service
+	sources       *sources.Service
+	collector     *collector.Runner
+	opportunities *opportunities.Service
+	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
-	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner, startedAt: time.Now().UTC()}
+	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
+		opportunities: opportunities.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -33,10 +39,68 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.HandleFunc("POST /api/v1/auth/refresh", s.refresh)
 	mux.HandleFunc("POST /api/v1/auth/logout", s.logout)
 	mux.Handle("GET /api/v1/sources", s.authenticate(http.HandlerFunc(s.listSources)))
+	mux.Handle("GET /api/v1/opportunities", s.authenticate(http.HandlerFunc(s.listOpportunities)))
+	mux.Handle("GET /api/v1/opportunities/{id}", s.authenticate(http.HandlerFunc(s.getOpportunity)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) listOpportunities(w http.ResponseWriter, r *http.Request) {
+	page, err := positiveInt(r.URL.Query().Get("page"), 1)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_page", "page must be a positive integer")
+		return
+	}
+	pageSize, err := positiveInt(r.URL.Query().Get("page_size"), 20)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid_page_size", "page_size must be a positive integer")
+		return
+	}
+	result, err := s.opportunities.List(r.Context(), opportunities.Query{
+		Search: r.URL.Query().Get("q"), Status: r.URL.Query().Get("status"),
+		SourceID: r.URL.Query().Get("source_id"), Page: page, PageSize: pageSize,
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid lifecycle status") {
+			writeError(w, http.StatusBadRequest, "invalid_status", "status is not supported")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "internal_error", "Opportunities are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Server) getOpportunity(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	var parsedID pgtype.UUID
+	if err := parsedID.Scan(id); err != nil || !parsedID.Valid {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	item, err := s.opportunities.Get(r.Context(), id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Opportunity is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
+}
+
+func positiveInt(raw string, fallback int) (int, error) {
+	if raw == "" {
+		return fallback, nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value < 1 {
+		return 0, errors.New("not a positive integer")
+	}
+	return value, nil
 }
 
 func (s *Server) health(w http.ResponseWriter, _ *http.Request) {

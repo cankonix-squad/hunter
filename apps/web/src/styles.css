@@ -50,4 +50,39 @@ h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em
 .empty h2 { max-width: 580px; font-size: clamp(32px, 5vw, 64px); letter-spacing: -.055em; line-height: .98; margin: 32px 0 20px; position: relative; }
 .empty > p:not(.eyebrow) { max-width: 560px; color: #5d5d5d; line-height: 1.7; position: relative; }
 button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13px 18px; font-weight: 650; cursor: pointer; }
-@media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } }
+.feed { margin-top: 28px; border: 1px solid #ccc; background: white; }
+.feed-toolbar { padding: 18px; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #ddd; }
+.feed-toolbar form { display: flex; flex: 1; max-width: 680px; }
+.feed-toolbar input, .feed-toolbar select { border: 1px solid #bbb; background: #fff; padding: 11px 12px; font: inherit; }
+.feed-toolbar input { flex: 1; min-width: 0; }
+.feed-toolbar button { margin: 0; }
+.feed-toolbar label { display: grid; gap: 5px; color: #777; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.opportunity-list { display: grid; }
+.opportunity-row { width: 100%; margin: 0; padding: 20px 18px; background: white; color: #111; border-bottom: 1px solid #e1e1df; display: grid; grid-template-columns: 150px minmax(240px, 1fr) 230px 150px; gap: 18px; align-items: center; text-align: left; }
+.opportunity-row:hover { background: #f6f6f3; }
+.opportunity-code { font: 11px ui-monospace, monospace; color: #777; }
+.opportunity-main, .opportunity-budget { display: grid; gap: 7px; }
+.opportunity-main strong { font-size: 15px; }
+.opportunity-row small { color: #888; font-size: 11px; line-height: 1.4; }
+.opportunity-budget { font: 600 13px ui-monospace, monospace; }
+.lifecycle { width: fit-content; padding: 7px 9px; background: #e6eee8; color: #27613b; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.lifecycle.completed, .lifecycle.cancelled, .lifecycle.awarded, .lifecycle.evaluation, .lifecycle.registration_closed { background: #ececea; color: #666; }
+.feed-state { min-height: 220px; display: grid; gap: 8px; place-content: center; text-align: center; color: #777; }
+.feed-state strong { color: #222; }
+.feed-error { margin: 16px; padding: 12px; background: #f2dddd; color: #7e2424; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+.feed-error button { margin: 0; padding: 7px 12px; }
+.pagination { padding: 14px 18px; display: flex; justify-content: flex-end; align-items: center; gap: 14px; font-size: 11px; color: #777; }
+.pagination button { margin: 0; padding: 8px 11px; }
+.pagination button:disabled { opacity: .3; cursor: default; }
+.detail-backdrop { position: fixed; inset: 0; background: #0008; z-index: 10; display: flex; justify-content: flex-end; }
+.detail-panel { width: min(560px, 100%); min-height: 100%; padding: 48px; background: #f4f4f2; overflow-y: auto; position: relative; }
+.detail-panel h2 { font-size: 38px; letter-spacing: -.045em; line-height: 1.05; margin: 18px 0 20px; }
+.detail-close { position: absolute; right: 24px; top: 18px; margin: 0; padding: 6px 12px; background: none; color: #111; font-size: 28px; }
+.detail-panel dl { margin: 36px 0; border-top: 1px solid #ccc; }
+.detail-panel dl div { padding: 16px 0; display: grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid #ccc; }
+.detail-panel dt { color: #777; font-size: 11px; }
+.detail-panel dd { margin: 0; font-size: 13px; line-height: 1.5; }
+.official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
+.detail-note { color: #888; font-size: 11px; line-height: 1.6; }
+@media (max-width: 1000px) { .opportunity-row { grid-template-columns: 120px 1fr 180px; } .opportunity-row .lifecycle { display: none; } }
+@media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }

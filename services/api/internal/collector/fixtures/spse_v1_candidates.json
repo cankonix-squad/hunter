@@ -9,7 +9,8 @@
       "procurement_type": "Jasa Lainnya",
       "status": "registration_open",
       "pagu_minor": 75000000000,
-      "currency": "IDR"
+      "currency": "IDR",
+      "registration_deadline": "2026-08-20T16:00:00+07:00"
     }
   },
   {
@@ -22,7 +23,8 @@
       "procurement_type": "Jasa Lainnya",
       "status": "registration_open",
       "pagu_minor": 125000000000,
-      "currency": "IDR"
+      "currency": "IDR",
+      "registration_deadline": "2026-08-16T15:00:00+07:00"
     }
   }
 ]

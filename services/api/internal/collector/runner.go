@@ -9,6 +9,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -127,6 +128,10 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 	defer tx.Rollback(ctx)
 	inserted := 0
 	for _, candidate := range candidates {
+		normalized, err := opportunities.Normalize(candidate.Metadata)
+		if err != nil {
+			return fmt.Errorf("normalize package %s: %w", candidate.PackageIdentity, err)
+		}
 		fingerprint, err := candidate.Fingerprint()
 		if err != nil {
 			return err
@@ -135,12 +140,43 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		if err != nil {
 			return fmt.Errorf("encode safe metadata: %w", err)
 		}
-		tag, err := tx.Exec(ctx, `INSERT INTO source_snapshots(source_id, source_run_id, package_identity,
+		var snapshotID string
+		err = tx.QueryRow(ctx, `INSERT INTO source_snapshots(source_id, source_run_id, package_identity,
 			fingerprint, canonical_url, source_timestamp, safe_metadata)
-			VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`, source.ID, run.ID,
-			candidate.PackageIdentity, fingerprint, candidate.CanonicalURL, candidate.SourceTimestamp, metadata)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			ON CONFLICT (source_id, package_identity, fingerprint) DO UPDATE SET package_identity = excluded.package_identity
+			RETURNING id::text`, source.ID, run.ID, candidate.PackageIdentity, fingerprint,
+			candidate.CanonicalURL, candidate.SourceTimestamp, metadata).Scan(&snapshotID)
 		if err != nil {
 			return fmt.Errorf("insert snapshot: %w", err)
+		}
+		var opportunityID string
+		err = tx.QueryRow(ctx, `INSERT INTO opportunities(source_id, package_identity, title, agency,
+			procurement_type, lifecycle_status, budget_minor, currency, registration_deadline,
+			canonical_url, source_timestamp, current_fingerprint)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+			ON CONFLICT (source_id, package_identity) DO UPDATE SET
+				title = excluded.title, agency = excluded.agency, procurement_type = excluded.procurement_type,
+				lifecycle_status = excluded.lifecycle_status, budget_minor = excluded.budget_minor,
+				currency = excluded.currency, registration_deadline = excluded.registration_deadline,
+				canonical_url = excluded.canonical_url, source_timestamp = excluded.source_timestamp,
+				last_seen_at = now(), current_fingerprint = excluded.current_fingerprint, updated_at = now()
+			RETURNING id::text`, source.ID, candidate.PackageIdentity, normalized.Title, normalized.Agency,
+			normalized.ProcurementType, normalized.LifecycleStatus, normalized.BudgetMinor, normalized.Currency,
+			normalized.RegistrationDeadline, candidate.CanonicalURL, candidate.SourceTimestamp, fingerprint).Scan(&opportunityID)
+		if err != nil {
+			return fmt.Errorf("upsert opportunity: %w", err)
+		}
+		normalizedJSON, err := json.Marshal(normalized)
+		if err != nil {
+			return fmt.Errorf("encode normalized opportunity: %w", err)
+		}
+		tag, err := tx.Exec(ctx, `INSERT INTO opportunity_versions(opportunity_id, snapshot_id, fingerprint,
+			lifecycle_status, normalized_data, observed_at)
+			SELECT $1, $2, $3, $4, $5, observed_at FROM source_snapshots WHERE id = $2
+			ON CONFLICT DO NOTHING`, opportunityID, snapshotID, fingerprint, normalized.LifecycleStatus, normalizedJSON)
+		if err != nil {
+			return fmt.Errorf("insert opportunity version: %w", err)
 		}
 		inserted += int(tag.RowsAffected())
 	}

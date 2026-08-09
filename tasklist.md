@@ -24,7 +24,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
   Jawa Timur menghasilkan 171 paket publik nyata, 70 terklasifikasi relevant
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `28f2972`
+- Worktree bersih setelah commit `45a8568`
 
 ## Selesai
 
@@ -218,7 +218,7 @@ pada active-registration feed. Increment v2 memakai migration v8; live run
 7 halaman, 0 raw row, dan 0 kandidat. Hasil nol mencerminkan tidak adanya kecocokan
 keyword IT saat run, bukan kegagalan transport atau parser.
 
-Batch source pertama memakai migration v10-v11. Robots.txt secara eksplisit mengizinkan
+Batch source pertama (commit `45a8568`) memakai migration v10-v11. Robots.txt secara eksplisit mengizinkan
 seluruh tenant terpilih. Acceptance `source-batch-v3-*` sukses satu attempt per source:
 Komdigi 38 kandidat, Jakarta 130, Jawa Barat 2, dan Jawa Timur 0. Parser mempertahankan
 nilai kontrak yang belum tersedia sebagai unknown, membersihkan badge HTML dari judul,
@@ -278,6 +278,7 @@ dan hanya tampil bila lifecycle `All` dipilih.
 | `57f2720` | Logo resmi CANKONIX pada login dan sidebar web |
 | `a7f5b24` | Incremental keyword discovery, retry, pagination, dan crawl metrics SPSE v2 |
 | `28f2972` | Fondasi AI classification yang provider-neutral, tervalidasi, cached, dan budgeted |
+| `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list
 

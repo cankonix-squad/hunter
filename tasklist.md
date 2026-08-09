@@ -19,7 +19,9 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Migrasi database aktif: versi 5
 - Data acceptance: 2 opportunity canonical dan 2 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
-- Worktree bersih setelah commit `44c8139`
+- Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
+- Smoke test lokal: web, health, dan readiness HTTP 200
+- Worktree bersih setelah commit `8bd676c`
 
 ## Selesai
 
@@ -36,7 +38,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - [x] DNS upstream Nginx dinamis setelah API/web container direcreate
 - [x] Migrasi forward-only dan tabel `schema_migrations`
 
-Bukti: commit `f98c0b5`, `44c8139`; Docker smoke test web/health HTTP 200.
+Bukti: commit `f98c0b5`, `44c8139`; Docker smoke test web, health, dan readiness HTTP 200 pada 9 Agustus 2026.
 
 ### Identity dan keamanan sesi
 

@@ -186,7 +186,7 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 
 ### Public SPSE adapter
 
-- [ ] Policy review untuk satu target SPSE publik
+- [!] Policy review target LKPP/INAPROC selesai; aktivasi terblokir karena API resmi membutuhkan akses yang diajukan dan host LPSE kandidat tidak dapat dijangkau. Lihat `docs/PUBLIC_SOURCE_REVIEW.md`
 - [ ] Rate limiter dan robots/terms documentation
 - [ ] HTTP client timeout, backoff, dan response-size limit
 - [ ] Parser fixture dari response yang sudah direduksi/redacted
@@ -195,6 +195,11 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 - [ ] Source-specific lag/error metrics
 - [ ] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
 - [ ] Perluas bertahap menuju 20 priority sources setelah satu adapter stabil
+
+Keputusan: jangan reverse-engineer endpoint tersembunyi atau mengakali HTTP 402,
+DNS failure, autentikasi, maupun kontrol akses. Lanjut setelah memperoleh akses API
+INAPROC yang sah atau memilih LPSE publik lain yang reachable dan mengizinkan
+collection metadata konservatif.
 
 ### Notifications dan operations
 

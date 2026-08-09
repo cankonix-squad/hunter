@@ -44,6 +44,7 @@ COI is a decision-support system. It collects only publicly available informatio
 
 ## Documentation map
 
+- [Living task list](tasklist.md)
 - [Product requirements](docs/PRD.md)
 - [System architecture](docs/ARCHITECTURE.md)
 - [Crawling policy](docs/CRAWLING_POLICY.md)

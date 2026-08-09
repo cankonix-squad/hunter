@@ -16,8 +16,9 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 4
+- Migrasi database aktif: versi 5
 - Data acceptance: 2 opportunity canonical dan 2 version history
+- Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Worktree bersih setelah commit `44c8139`
 
 ## Selesai
@@ -112,13 +113,18 @@ schema, domain logic, API/UI, auditability, dan test ikut selesai.
 
 ### 1. Deterministic classification foundation
 
-- [ ] Definisikan taxonomy layanan/produk IT CANKONIX yang versioned
-- [ ] Tambahkan migration taxonomy, opportunity classification, dan evidence
-- [ ] Buat rules engine murni yang berjalan sebelum AI
-- [ ] Buat include/exclude keyword rules dengan alasan yang dapat dibaca manusia
-- [ ] Pastikan rule tidak melakukan auto-reject kecuali deterministic rule disetujui
-- [ ] Simpan rule version, matched evidence, confidence, dan evaluated timestamp
-- [ ] Tambahkan fixture dan unit test untuk positive, negative, dan ambiguous case
+- [x] Definisikan taxonomy layanan/produk IT CANKONIX yang versioned
+- [x] Tambahkan migration taxonomy, opportunity classification, dan evidence
+- [x] Buat rules engine murni yang berjalan sebelum AI
+- [x] Buat include/exclude keyword rules dengan alasan yang dapat dibaca manusia
+- [x] Pastikan rule tidak melakukan auto-reject kecuali deterministic rule disetujui
+- [x] Simpan rule version, matched evidence, confidence, dan evaluated timestamp
+- [x] Tambahkan fixture dan unit test untuk positive, negative, dan ambiguous case
+
+Bukti: migration v5; `go test -race ./...` dan `go vet ./...` lulus; collector
+acceptance mengklasifikasikan “Pengadaan Layanan Integrasi Data” sebagai
+`relevant/data-ai` dengan satu evidence dan mempertahankan paket jaringan yang
+ambigu sebagai `needs_review`.
 
 ### 2. Explainable scoring
 

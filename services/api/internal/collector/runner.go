@@ -9,6 +9,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/cankonix/cankonix-oi/services/api/internal/classification"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -178,6 +179,12 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		if err != nil {
 			return fmt.Errorf("insert opportunity version: %w", err)
 		}
+		classificationResult := classification.DefaultEngine().Evaluate(classification.Input{
+			Title: normalized.Title, ProcurementType: normalized.ProcurementType,
+		})
+		if err := persistClassification(ctx, tx, opportunityID, fingerprint, classificationResult); err != nil {
+			return err
+		}
 		inserted += int(tag.RowsAffected())
 	}
 	metrics, _ := json.Marshal(map[string]int{"candidates": len(candidates), "new_snapshots": inserted})
@@ -195,6 +202,36 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		return fmt.Errorf("commit snapshots: %w", err)
 	}
 	slog.Info("source run succeeded", "run_id", run.ID, "candidates", len(candidates), "new_snapshots", inserted)
+	return nil
+}
+
+func persistClassification(ctx context.Context, tx pgx.Tx, opportunityID, fingerprint string, result classification.Result) error {
+	var classificationID int64
+	err := tx.QueryRow(ctx, `INSERT INTO opportunity_classifications(opportunity_id, opportunity_fingerprint,
+		taxonomy_version, rule_version, disposition, category_code, confidence_bp, reason_code, explanation, auto_rejected)
+		VALUES ($1,$2,$3,$4,$5,NULLIF($6,''),$7,$8,$9,$10)
+		ON CONFLICT (opportunity_id, opportunity_fingerprint, taxonomy_version, rule_version) DO UPDATE SET
+			disposition = excluded.disposition, category_code = excluded.category_code,
+			confidence_bp = excluded.confidence_bp, reason_code = excluded.reason_code,
+			explanation = excluded.explanation, auto_rejected = excluded.auto_rejected, evaluated_at = now()
+		RETURNING id`, opportunityID, fingerprint, result.TaxonomyVersion, result.RuleVersion,
+		result.Disposition, result.Category, result.ConfidenceBP, result.ReasonCode, result.Explanation,
+		result.AutoRejected).Scan(&classificationID)
+	if err != nil {
+		return fmt.Errorf("persist opportunity classification: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM classification_evidence WHERE classification_id = $1`, classificationID); err != nil {
+		return fmt.Errorf("replace classification evidence: %w", err)
+	}
+	for _, evidence := range result.Evidence {
+		_, err := tx.Exec(ctx, `INSERT INTO classification_evidence(classification_id, rule_code, kind,
+			category_code, keyword, source_field, excerpt) VALUES ($1,$2,$3,NULLIF($4,''),$5,$6,$7)`,
+			classificationID, evidence.RuleCode, evidence.Kind, evidence.Category, evidence.Keyword,
+			evidence.SourceField, evidence.Excerpt)
+		if err != nil {
+			return fmt.Errorf("persist classification evidence: %w", err)
+		}
+	}
 	return nil
 }
 

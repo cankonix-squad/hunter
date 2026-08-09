@@ -36,11 +36,12 @@ Every AI result must include:
   "schema_version": "1.0",
   "task": "classify_it",
   "result": {},
-  "confidence": 0.0,
+  "confidence_bp": 8500,
   "evidence": [
     {"field": "title", "snippet": "..."}
   ],
-  "model": "provider/model",
+  "provider": "provider-name",
+  "model": "model-name",
   "prompt_version": "classify-it/v1",
   "input_fingerprint": "sha256:...",
   "created_at": "RFC3339 timestamp"
@@ -48,6 +49,11 @@ Every AI result must include:
 ```
 
 Reject responses that fail schema validation. Retry once with a repair instruction, then route to deterministic fallback or human review.
+
+Confidence uses integer basis points from 0 through 10,000. Provider-supplied
+metadata is not trusted: the service records provider, model, prompt version,
+fingerprint, and creation time from its own execution context. Evidence snippets
+must be present in the supplied title or procurement-type field.
 
 ## 5. Opportunity score
 
@@ -103,4 +109,3 @@ Report precision, recall, confusion matrix, extraction field accuracy, latency, 
 ## 9. Provider adapter
 
 Expose one internal interface for structured generation. Provider-specific SDKs remain behind adapters. Business tables store provider-neutral task results and retain model metadata for audit and regression.
-

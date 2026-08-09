@@ -95,6 +95,8 @@ database volume is created.
 - Canonical opportunity normalization with lifecycle-safe active feed and version history
 - Versioned deterministic IT taxonomy with auditable include/exclude evidence
 - Versioned five-dimension scoring with integer weights and reviewable breakdown
+- Provider-neutral AI classification contracts with strict schema/evidence validation
+- Versioned AI prompt, fingerprint cache, usage persistence, and cost-budget foundation
 - Authenticated opportunity list/detail API with search, status filter, and pagination
 - Relevance, minimum-score, and needs-review API filters with a review queue
 - Responsive opportunity dashboard with official-source detail panel
@@ -103,8 +105,8 @@ database volume is created.
 - Docker Compose health checks and service dependency ordering
 - OpenAPI contract for the implemented endpoints
 
-Next vertical slice: a policy-reviewed public SPSE adapter, followed by the
-provider-agnostic AI classification adapter.
+Next vertical slice: connect the AI classification foundation to a disabled-by-default
+worker and a configured provider, then build the versioned golden-set evaluation runner.
 
 ## Useful commands
 

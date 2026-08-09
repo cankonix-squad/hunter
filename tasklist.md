@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 8
+- Migrasi database aktif: versi 9
 - Data acceptance: 2 opportunity canonical dan 2 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -162,14 +162,20 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 
 ### 4. AI adapter setelah deterministic rules stabil
 
-- [ ] Provider-agnostic AI interface
-- [ ] Structured JSON schema validation
-- [ ] Prompt registry dan prompt version
-- [ ] Cache berdasarkan input fingerprint
-- [ ] Per-run dan daily cost budget
-- [ ] Provider/model/confidence/evidence persistence
+- [x] Provider-agnostic AI interface
+- [x] Structured JSON schema validation
+- [x] Prompt registry dan prompt version
+- [x] Cache berdasarkan input fingerprint
+- [x] Per-run dan daily cost budget
+- [x] Provider/model/confidence/evidence persistence
 - [ ] Golden dataset dan evaluation runner
-- [ ] Safe fallback saat provider tidak tersedia atau output invalid
+- [x] Safe fallback saat provider tidak tersedia atau output invalid
+
+Bukti: migration v9; package `internal/ai` menyediakan provider, prompt, store, dan budget
+contracts; output invalid diperbaiki paling banyak satu kali; evidence wajib berasal dari
+field input; provider/budget failure menghasilkan fallback `needs_review`. `go test -race
+./...` dan `go vet ./...` lulus. Provider eksternal dan AI worker belum diaktifkan, sehingga
+belum ada data atau biaya yang dikirim ke pihak ketiga.
 
 ## Backlog MVP setelah classification/scoring
 

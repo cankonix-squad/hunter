@@ -22,7 +22,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `8bd676c`
+- Worktree bersih setelah commit `9c3fce7`
 
 ## Selesai
 
@@ -138,7 +138,7 @@ ambigu sebagai `needs_review`.
 - [x] Tandai low-confidence opportunity sebagai `needs_review`
 - [x] Tambahkan regression tests agar perubahan weight terdeteksi
 
-Bukti: migration v6; `go test -race ./...` dan `go vet ./...` lulus. Collector
+Bukti: commit `9c3fce7`; migration v6; `go test -race ./...` dan `go vet ./...` lulus. Collector
 acceptance menyimpan lima dimensi per opportunity: Integrasi Data mendapat score
 8000 dan confidence 9000 (`score_ready`), sedangkan paket jaringan mendapat score
 5625 dan confidence 6600 (`needs_review`).
@@ -237,6 +237,7 @@ acceptance menyimpan lima dimensi per opportunity: Integrasi Data mendapat score
 | `1e152e4` | Perubahan password administrator development |
 | `44c8139` | Canonical opportunity normalization, API, feed UI, dan history |
 | `1384f3b` | Taxonomy dan deterministic classification yang auditable |
+| `9c3fce7` | Explainable scoring lima dimensi dan review confidence |
 
 ## Aturan pembaruan task list
 

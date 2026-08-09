@@ -56,8 +56,8 @@ func (s *Service) BootstrapAdmin(ctx context.Context, email, name, password stri
 	if email == "" && password == "" {
 		return nil
 	}
-	if email == "" || len(password) < 12 {
-		return fmt.Errorf("bootstrap administrator needs an email and password of at least 12 characters")
+	if email == "" || len(password) < 8 {
+		return fmt.Errorf("bootstrap administrator needs an email and password of at least 8 characters")
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {

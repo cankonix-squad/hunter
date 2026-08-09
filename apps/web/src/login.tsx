@@ -35,7 +35,7 @@ export function LoginPage() {
           <h2>Sign in</h2>
           <p className="form-copy">Use your CANKONIX workspace credentials.</p>
           <label>Email<input autoFocus required type="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@cankonix.com" /></label>
-          <label>Password<input required minLength={12} type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} /></label>
+          <label>Password<input required minLength={8} type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} /></label>
           {error && <div className="form-error" role="alert">{error}</div>}
           <button disabled={submitting} type="submit">{submitting ? 'Signing in…' : 'Sign in'}</button>
           <small>Protected by rotating sessions and role-based access control.</small>

@@ -95,13 +95,15 @@ database volume is created.
 - Versioned deterministic IT taxonomy with auditable include/exclude evidence
 - Versioned five-dimension scoring with integer weights and reviewable breakdown
 - Authenticated opportunity list/detail API with search, status filter, and pagination
+- Relevance, minimum-score, and needs-review API filters with a review queue
 - Responsive opportunity dashboard with official-source detail panel
+- Classification evidence and five-dimension score breakdown in the opportunity UI
 - Nginx reverse proxy with baseline security headers and request-size limit
 - Docker Compose health checks and service dependency ordering
 - OpenAPI contract for the implemented endpoints
 
-Next vertical slice: classification/scoring API and UI, followed by a policy-reviewed
-public SPSE adapter.
+Next vertical slice: a policy-reviewed public SPSE adapter, followed by the
+provider-agnostic AI classification adapter.
 
 ## Useful commands
 

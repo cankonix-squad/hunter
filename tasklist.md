@@ -145,12 +145,17 @@ acceptance menyimpan lima dimensi per opportunity: Integrasi Data mendapat score
 
 ### 3. Classification/scoring API dan UI
 
-- [ ] Tambahkan classification dan score ke feed/detail API
-- [ ] Tambahkan filter relevance, minimum score, dan needs-review
-- [ ] Tampilkan score breakdown dan evidence di detail drawer/page
-- [ ] Tampilkan deterministic exclusion secara terpisah dari AI recommendation
-- [ ] Tambahkan review queue untuk hasil ambiguous/low confidence
-- [ ] Perbarui OpenAPI dan component tests
+- [x] Tambahkan classification dan score ke feed/detail API
+- [x] Tambahkan filter relevance, minimum score, dan needs-review
+- [x] Tampilkan score breakdown dan evidence di detail drawer/page
+- [x] Tampilkan deterministic exclusion secara terpisah dari AI recommendation
+- [x] Tambahkan review queue untuk hasil ambiguous/low confidence
+- [x] Perbarui OpenAPI dan component tests
+
+Bukti: API acceptance memfilter paket relevant dengan minimum score 7000,
+review queue mengembalikan paket low-confidence, dan detail Integrasi Data memuat
+1 classification evidence serta 5 score dimensions. Frontend tests 7/7,
+production build, `go test -race ./...`, dan `go vet ./...` lulus.
 
 ### 4. AI adapter setelah deterministic rules stabil
 

@@ -13,6 +13,13 @@ const opportunity: Opportunity = {
   registration_deadline: '2026-08-20T09:00:00Z', canonical_url: 'https://lpse.example.test/package/1',
   first_seen_at: '2026-08-09T02:00:00Z', last_seen_at: '2026-08-09T02:00:00Z',
   source_id: 'source-1', source_name: 'LPSE Contoh', version_count: 1,
+  classification: { disposition: 'relevant', category_code: 'data-ai', confidence_bp: 9000,
+    reason_code: 'include_data', explanation: 'Paket sesuai kapabilitas data.', auto_rejected: false,
+    evidence: [{ rule_code: 'include_data', kind: 'include', category_code: 'data-ai', keyword: 'integrasi data', source_field: 'title', excerpt: 'Pengadaan Integrasi Data' }] },
+  score: { version: 'explainable-v1', total_score_bp: 8000, confidence_bp: 9000, needs_review: false,
+    reason_code: 'score_ready', explanation: 'Score deterministik lengkap.', dimensions: [
+      { code: 'capability_fit', weight_bp: 4000, raw_score_bp: 9000, contribution: 3600, reason_code: 'deterministic_fit', explanation: 'Kapabilitas sesuai.', evidence: 'include_data' },
+    ] },
 }
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); window.sessionStorage.clear() })
@@ -35,6 +42,21 @@ describe('Dashboard', () => {
     expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/opportunities?')
     await userEvent.click(screen.getByText('Pengadaan Integrasi Data'))
     expect(await screen.findByRole('dialog')).toHaveTextContent('LPSE Contoh')
+    expect(screen.getByRole('dialog')).toHaveTextContent('80 / 100')
+    expect(screen.getByRole('dialog')).toHaveTextContent('include_data')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Belum dijalankan')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
+  })
+
+  it('switches to the needs-review queue endpoint', async () => {
+    saveSession(window.sessionStorage, {
+      accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
+      user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
+    })
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    render(<AuthProvider><Dashboard /></AuthProvider>)
+    await screen.findByText('No opportunities found.')
+    await userEvent.click(screen.getByLabelText('Review queue only'))
+    await vi.waitFor(() => expect(fetchMock.mock.calls.some(call => String(call[0]).includes('/api/v1/opportunities/review?'))).toBe(true))
   })
 })

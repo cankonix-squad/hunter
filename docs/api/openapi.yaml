@@ -84,6 +84,9 @@ paths:
         - { in: query, name: q, schema: { type: string } }
         - { in: query, name: status, schema: { type: string, default: active } }
         - { in: query, name: source_id, schema: { type: string, format: uuid } }
+        - { in: query, name: relevance, schema: { type: string, enum: [all, relevant, excluded, needs_review], default: all } }
+        - { in: query, name: min_score, description: Minimum total score in basis points, schema: { type: integer, minimum: 0, maximum: 10000 } }
+        - { in: query, name: needs_review, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
         - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
         - { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
       responses:
@@ -93,6 +96,25 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OpportunityPage' }
         '400': { description: Invalid filter or pagination }
+        '401': { description: Authentication required }
+  /api/v1/opportunities/review:
+    get:
+      operationId: listOpportunityReviewQueue
+      security: [{ bearerAuth: [] }]
+      description: Paginated opportunities whose latest deterministic score requires human review.
+      parameters:
+        - { in: query, name: q, schema: { type: string } }
+        - { in: query, name: status, schema: { type: string, default: active } }
+        - { in: query, name: relevance, schema: { type: string, enum: [all, relevant, excluded, needs_review], default: all } }
+        - { in: query, name: min_score, schema: { type: integer, minimum: 0, maximum: 10000 } }
+        - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
+        - { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Human review queue
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OpportunityPage' }
         '401': { description: Authentication required }
   /api/v1/opportunities/{id}:
     get:
@@ -217,6 +239,55 @@ components:
         source_id: { type: string, format: uuid }
         source_name: { type: string }
         version_count: { type: integer, minimum: 1 }
+        classification: { $ref: '#/components/schemas/Classification' }
+        score: { $ref: '#/components/schemas/Score' }
+    Classification:
+      type: object
+      required: [disposition, confidence_bp, reason_code, explanation, auto_rejected, evidence]
+      properties:
+        disposition: { type: string, enum: [relevant, excluded, needs_review] }
+        category_code: { type: string }
+        confidence_bp: { type: integer, minimum: 0, maximum: 10000 }
+        reason_code: { type: string }
+        explanation: { type: string }
+        auto_rejected: { type: boolean, description: True only for an approved deterministic exclusion rule }
+        evidence:
+          type: array
+          items: { $ref: '#/components/schemas/ClassificationEvidence' }
+    ClassificationEvidence:
+      type: object
+      required: [rule_code, kind, keyword, source_field, excerpt]
+      properties:
+        rule_code: { type: string }
+        kind: { type: string, enum: [include, exclude] }
+        category_code: { type: string }
+        keyword: { type: string }
+        source_field: { type: string, enum: [title, procurement_type] }
+        excerpt: { type: string }
+    Score:
+      type: object
+      required: [version, total_score_bp, confidence_bp, needs_review, reason_code, explanation, dimensions]
+      properties:
+        version: { type: string }
+        total_score_bp: { type: integer, minimum: 0, maximum: 10000 }
+        confidence_bp: { type: integer, minimum: 0, maximum: 10000 }
+        needs_review: { type: boolean }
+        reason_code: { type: string }
+        explanation: { type: string }
+        dimensions:
+          type: array
+          items: { $ref: '#/components/schemas/ScoreDimension' }
+    ScoreDimension:
+      type: object
+      required: [code, weight_bp, raw_score_bp, contribution, reason_code, explanation, evidence]
+      properties:
+        code: { type: string, enum: [capability_fit, value, location, deadline, risk] }
+        weight_bp: { type: integer, minimum: 0, maximum: 10000 }
+        raw_score_bp: { type: integer, minimum: 0, maximum: 10000 }
+        contribution: { type: integer, minimum: 0, maximum: 10000 }
+        reason_code: { type: string }
+        explanation: { type: string }
+        evidence: { type: string }
     OpportunityPage:
       type: object
       required: [items, page, page_size, total, total_pages]

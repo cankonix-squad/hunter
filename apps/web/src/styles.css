@@ -51,20 +51,26 @@ h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em
 .empty > p:not(.eyebrow) { max-width: 560px; color: #5d5d5d; line-height: 1.7; position: relative; }
 button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13px 18px; font-weight: 650; cursor: pointer; }
 .feed { margin-top: 28px; border: 1px solid #ccc; background: white; }
-.feed-toolbar { padding: 18px; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #ddd; }
+.feed-toolbar { padding: 18px; display: flex; align-items: end; flex-wrap: wrap; justify-content: space-between; gap: 14px; border-bottom: 1px solid #ddd; }
 .feed-toolbar form { display: flex; flex: 1; max-width: 680px; }
 .feed-toolbar input, .feed-toolbar select { border: 1px solid #bbb; background: #fff; padding: 11px 12px; font: inherit; }
 .feed-toolbar input { flex: 1; min-width: 0; }
 .feed-toolbar button { margin: 0; }
 .feed-toolbar label { display: grid; gap: 5px; color: #777; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.feed-toolbar .score-input { width: 88px; }
+.feed-toolbar .review-toggle { display: flex; flex-direction: row; align-items: center; gap: 7px; min-height: 38px; color: #333; }
+.feed-toolbar .review-toggle input { width: auto; }
 .opportunity-list { display: grid; }
-.opportunity-row { width: 100%; margin: 0; padding: 20px 18px; background: white; color: #111; border-bottom: 1px solid #e1e1df; display: grid; grid-template-columns: 150px minmax(240px, 1fr) 230px 150px; gap: 18px; align-items: center; text-align: left; }
+.opportunity-row { width: 100%; margin: 0; padding: 20px 18px; background: white; color: #111; border-bottom: 1px solid #e1e1df; display: grid; grid-template-columns: 130px minmax(220px, 1fr) 205px 90px 135px; gap: 16px; align-items: center; text-align: left; }
 .opportunity-row:hover { background: #f6f6f3; }
 .opportunity-code { font: 11px ui-monospace, monospace; color: #777; }
 .opportunity-main, .opportunity-budget { display: grid; gap: 7px; }
 .opportunity-main strong { font-size: 15px; }
 .opportunity-row small { color: #888; font-size: 11px; line-height: 1.4; }
 .opportunity-budget { font: 600 13px ui-monospace, monospace; }
+.score-badge { display: grid; gap: 4px; color: #235e3a; font: 700 12px ui-monospace, monospace; }
+.score-badge small { color: #777; text-transform: uppercase; font: 700 8px ui-sans-serif, sans-serif; letter-spacing: .06em; }
+.score-badge.review { color: #8a5720; }
 .lifecycle { width: fit-content; padding: 7px 9px; background: #e6eee8; color: #27613b; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .lifecycle.completed, .lifecycle.cancelled, .lifecycle.awarded, .lifecycle.evaluation, .lifecycle.registration_closed { background: #ececea; color: #666; }
 .feed-state { min-height: 220px; display: grid; gap: 8px; place-content: center; text-align: center; color: #777; }
@@ -84,5 +90,23 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .detail-panel dd { margin: 0; font-size: 13px; line-height: 1.5; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
-@media (max-width: 1000px) { .opportunity-row { grid-template-columns: 120px 1fr 180px; } .opportunity-row .lifecycle { display: none; } }
+.analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }
+.analysis-heading { display: flex; justify-content: space-between; align-items: start; gap: 18px; }
+.analysis-heading h3 { margin: 8px 0 0; text-transform: capitalize; }
+.analysis-heading > strong { font: 700 20px ui-monospace, monospace; }
+.analysis-card > p { color: #666; font-size: 12px; line-height: 1.6; }
+.analysis-card ul { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.analysis-card li { display: grid; gap: 3px; padding: 9px; background: #f4f4f2; font-size: 10px; }
+.analysis-card li span { color: #777; }
+.exclusion-warning { padding: 10px; background: #f2dddd; color: #7e2424; font-size: 11px; }
+.score-breakdown { margin-top: 18px; display: grid; gap: 13px; }
+.score-breakdown > div { display: grid; grid-template-columns: 110px 1fr 30px; align-items: center; gap: 10px; }
+.score-breakdown span { text-transform: capitalize; font-size: 10px; }
+.score-breakdown progress { width: 100%; accent-color: #111; }
+.score-breakdown strong { font: 700 11px ui-monospace, monospace; }
+.score-breakdown small { grid-column: 2 / 4; color: #888; font-size: 9px; }
+.ai-separation { margin: 20px 0; padding: 14px; border: 1px dashed #aaa; display: grid; gap: 5px; }
+.ai-separation strong { font-size: 11px; }
+.ai-separation span { color: #777; font-size: 10px; line-height: 1.5; }
+@media (max-width: 1100px) { .opportunity-row { grid-template-columns: 110px 1fr 160px 80px; } .opportunity-row .lifecycle { display: none; } }
 @media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }

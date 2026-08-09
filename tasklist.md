@@ -24,7 +24,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
   tidak ada paket IT yang cocok pada run terbaru
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `a7f5b24`
+- Worktree bersih setelah commit `28f2972`
 
 ## Selesai
 
@@ -171,7 +171,7 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 - [ ] Golden dataset dan evaluation runner
 - [x] Safe fallback saat provider tidak tersedia atau output invalid
 
-Bukti: migration v9; package `internal/ai` menyediakan provider, prompt, store, dan budget
+Bukti: commit `28f2972`; migration v9; package `internal/ai` menyediakan provider, prompt, store, dan budget
 contracts; output invalid diperbaiki paling banyak satu kali; evidence wajib berasal dari
 field input; provider/budget failure menghasilkan fallback `needs_review`. `go test -race
 ./...` dan `go vet ./...` lulus. Provider eksternal dan AI worker belum diaktifkan, sehingga
@@ -268,6 +268,7 @@ keyword IT saat run, bukan kegagalan transport atau parser.
 | `0cb78f3` | Public SPSE Maluku adapter dan acceptance crawl tanpa login |
 | `57f2720` | Logo resmi CANKONIX pada login dan sidebar web |
 | `a7f5b24` | Incremental keyword discovery, retry, pagination, dan crawl metrics SPSE v2 |
+| `28f2972` | Fondasi AI classification yang provider-neutral, tervalidasi, cached, dan budgeted |
 
 ## Aturan pembaruan task list
 

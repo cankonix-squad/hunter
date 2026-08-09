@@ -79,7 +79,8 @@ database volume is created.
 
 ## Current implementation
 
-- React + TypeScript application shell and operational empty state
+- React + TypeScript login and protected dashboard
+- Browser session persistence, proactive access-token refresh, and logout
 - Go HTTP service with structured logs, request IDs, safe recovery, graceful
   shutdown, and dependency-aware readiness
 - PostgreSQL foundation for sources, durable source runs, and audit events
@@ -106,7 +107,8 @@ curl http://localhost:3000/readyz
 curl http://localhost:3000/api/v1/system
 ```
 
-Log in with the bootstrap administrator configured in `.env`:
+Open `http://localhost:3000` to use the browser login, or log in through the
+API with the bootstrap administrator configured in `.env`:
 
 ```bash
 curl -X POST http://localhost:3000/api/v1/auth/login \

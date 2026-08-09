@@ -1,6 +1,26 @@
 :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #111; background: #f4f4f2; font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
+.boot { min-height: 100vh; display: flex; gap: 12px; align-items: center; justify-content: center; color: #555; font-size: 13px; }
+.spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top-color: #111; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.login-page { min-height: 100vh; padding: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(380px, .7fr); }
+.login-intro { color: #eee; background: #0b0b0b; padding: 48px clamp(32px, 7vw, 100px); display: flex; flex-direction: column; justify-content: space-between; }
+.brand-large span { width: 42px; height: 42px; }
+.login-intro h1 { color: white; font-size: clamp(48px, 7vw, 100px); line-height: .9; letter-spacing: -.065em; margin: 24px 0; }
+.login-intro .eyebrow { color: #777; }
+.login-note { color: #777; max-width: 420px; line-height: 1.6; font-size: 13px; }
+.login-panel { display: grid; place-items: center; padding: 36px; background: #f4f4f2; }
+.login-panel form { width: min(100%, 390px); }
+.login-panel h2 { font-size: 46px; letter-spacing: -.045em; margin: 16px 0 8px; }
+.form-copy { color: #777; margin: 0 0 42px; }
+.login-panel label { display: grid; gap: 9px; margin-top: 22px; font-size: 12px; font-weight: 700; }
+.login-panel input { width: 100%; border: 1px solid #bbb; background: white; padding: 13px 12px; font: inherit; outline: none; }
+.login-panel input:focus { border-color: #111; box-shadow: 0 0 0 1px #111; }
+.login-panel button { width: 100%; margin-top: 26px; }
+.login-panel button:disabled { opacity: .55; cursor: wait; }
+.login-panel small { display: block; color: #999; text-align: center; margin-top: 18px; line-height: 1.5; }
+.form-error { margin-top: 18px; border-left: 3px solid #a73737; background: #f2dddd; color: #7e2424; padding: 11px 12px; font-size: 12px; }
 .shell { min-height: 100vh; display: grid; grid-template-columns: 232px 1fr; }
 aside { color: #eee; background: #0b0b0b; padding: 28px 20px; display: flex; flex-direction: column; }
 .brand { display: flex; gap: 12px; align-items: center; letter-spacing: .12em; font-size: 12px; }
@@ -9,6 +29,11 @@ nav { display: grid; gap: 6px; margin-top: 64px; }
 nav a { color: #888; text-decoration: none; padding: 11px 12px; border-left: 2px solid transparent; font-size: 14px; }
 nav a.active { color: white; border-left-color: white; background: #171717; }
 .build { margin-top: auto; color: #666; line-height: 1.6; font-size: 11px; }
+.profile { margin-top: auto; border-top: 1px solid #292929; padding: 20px 10px 16px; display: grid; gap: 5px; }
+.profile strong { font-size: 12px; color: #eee; }
+.profile span { color: #666; font-size: 10px; text-transform: capitalize; }
+.profile .text-button { background: none; color: #999; padding: 5px 0; margin: 8px 0 0; text-align: left; font-size: 11px; }
+.profile + .build { margin-top: 0; padding: 0 10px; }
 main { padding: 42px 48px; }
 header { display: flex; align-items: end; justify-content: space-between; border-bottom: 1px solid #ccc; padding-bottom: 24px; }
 h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em; font-weight: 620; }
@@ -25,5 +50,4 @@ h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em
 .empty h2 { max-width: 580px; font-size: clamp(32px, 5vw, 64px); letter-spacing: -.055em; line-height: .98; margin: 32px 0 20px; position: relative; }
 .empty > p:not(.eyebrow) { max-width: 560px; color: #5d5d5d; line-height: 1.7; position: relative; }
 button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13px 18px; font-weight: 650; cursor: pointer; }
-@media (max-width: 800px) { .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } }
-
+@media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } }

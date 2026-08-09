@@ -121,7 +121,7 @@ schema, domain logic, API/UI, auditability, dan test ikut selesai.
 - [x] Simpan rule version, matched evidence, confidence, dan evaluated timestamp
 - [x] Tambahkan fixture dan unit test untuk positive, negative, dan ambiguous case
 
-Bukti: migration v5; `go test -race ./...` dan `go vet ./...` lulus; collector
+Bukti: commit `1384f3b`; migration v5; `go test -race ./...` dan `go vet ./...` lulus; collector
 acceptance mengklasifikasikan “Pengadaan Layanan Integrasi Data” sebagai
 `relevant/data-ai` dengan satu evidence dan mempertahankan paket jaringan yang
 ambigu sebagai `needs_review`.
@@ -228,6 +228,7 @@ ambigu sebagai `needs_review`.
 | `50c73a2` | Authenticated React login dan session lifecycle |
 | `1e152e4` | Perubahan password administrator development |
 | `44c8139` | Canonical opportunity normalization, API, feed UI, dan history |
+| `1384f3b` | Taxonomy dan deterministic classification yang auditable |
 
 ## Aturan pembaruan task list
 

@@ -1,0 +1,28 @@
+[
+  {
+    "package_identity": "TEST-SPSE-2026-0001",
+    "canonical_url": "https://lpse.example.go.id/eproc4/lelang/TEST-SPSE-2026-0001/pengumumanlelang",
+    "source_timestamp": "2026-08-09T02:00:00Z",
+    "metadata": {
+      "title": "Pengadaan Layanan Integrasi Data",
+      "agency": "Instansi Contoh",
+      "procurement_type": "Jasa Lainnya",
+      "status": "registration_open",
+      "pagu_minor": 75000000000,
+      "currency": "IDR"
+    }
+  },
+  {
+    "package_identity": "TEST-SPSE-2026-0002",
+    "canonical_url": "https://lpse.example.go.id/eproc4/lelang/TEST-SPSE-2026-0002/pengumumanlelang",
+    "source_timestamp": "2026-08-09T02:05:00Z",
+    "metadata": {
+      "title": "Pemeliharaan Infrastruktur Jaringan",
+      "agency": "Instansi Contoh",
+      "procurement_type": "Jasa Lainnya",
+      "status": "registration_open",
+      "pagu_minor": 125000000000,
+      "currency": "IDR"
+    }
+  }
+]

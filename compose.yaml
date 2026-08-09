@@ -1,0 +1,83 @@
+name: cankonix-oi
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cankonix_oi}
+      POSTGRES_USER: ${POSTGRES_USER:-cankonix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-for-local-development}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./services/api
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      API_ADDR: ${API_ADDR:-:8080}
+      DATABASE_URL: ${DATABASE_URL:-postgres://cankonix:change-me-for-local-development@postgres:5432/cankonix_oi?sslmode=disable}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-now}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-168h}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@cankonix.local}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-local-admin-change-me}
+      BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-CANKONIX Administrator}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/service", "healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  collector:
+    build:
+      context: ./services/api
+      args:
+        TARGET: collector
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      API_ADDR: ${API_ADDR:-:8080}
+      DATABASE_URL: ${DATABASE_URL:-postgres://cankonix:change-me-for-local-development@postgres:5432/cankonix_oi?sslmode=disable}
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-now}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-168h}
+      COLLECTOR_ID: ${COLLECTOR_ID:-collector-local-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./apps/web
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  edge:
+    image: nginx:1.27-alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

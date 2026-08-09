@@ -16,14 +16,15 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 7
+- Migrasi database aktif: versi 8
 - Data acceptance: 2 opportunity canonical dan 2 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
-- Public crawl acceptance: SPSE Maluku, 1 candidate → snapshot → canonical opportunity
+- Public crawl acceptance: SPSE Maluku v2, 7 keyword/7 halaman diproses tanpa error;
+  tidak ada paket IT yang cocok pada run terbaru
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `57f2720`
+- Worktree memuat increment Public SPSE v2 yang sedang diverifikasi
 
 ## Selesai
 
@@ -190,10 +191,11 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 
 - [x] Policy review public listing SPSE INAPROC Maluku; robots.txt mengizinkan `/malukuprov`
 - [x] Rate limiter dan robots/terms documentation
-- [~] HTTP timeout dan response-size limit tersedia; retry/backoff memakai runtime collector
+- [x] HTTP timeout, response-size limit, dan bounded retry/backoff untuk kegagalan transien
 - [x] Parser fixture dari response yang sudah direduksi/redacted
 - [x] Adapter regression tests
 - [x] Incremental discovery via fingerprint; detail HTTP 403 tidak diambil
+- [x] Server-side keyword search, pagination terbatas, dan deduplikasi lintas keyword
 - [ ] Source-specific lag/error metrics
 - [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
 - [ ] Perluas bertahap menuju 20 priority sources setelah satu adapter stabil
@@ -202,10 +204,12 @@ Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan hala
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
 disimpan untuk verifikasi manual.
 
-Bukti: commit `0cb78f3`; migration v7; live run `malukuprov-public-v1-acceptance` sukses pada satu
-attempt dan menyimpan satu paket berstatus `completed`, sehingga tidak muncul pada
-active-registration feed. Server-side keyword search masih perlu diperbaiki sebelum
-source diperluas atau dijadwalkan dengan cakupan lebih besar.
+Bukti awal: commit `0cb78f3`; migration v7; live run `malukuprov-public-v1-acceptance` sukses
+pada satu attempt dan menyimpan satu paket berstatus `completed`, sehingga tidak muncul
+pada active-registration feed. Increment v2 memakai migration v8; live run
+`malukuprov-public-v2-acceptance` sukses pada satu attempt dengan metrics 7 keyword,
+7 halaman, 0 raw row, dan 0 kandidat. Hasil nol mencerminkan tidak adanya kecocokan
+keyword IT saat run, bukan kegagalan transport atau parser.
 
 ### Notifications dan operations
 

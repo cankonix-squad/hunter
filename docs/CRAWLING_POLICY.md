@@ -69,6 +69,13 @@ The system must never automatically attempt to defeat the challenge.
 
 An adapter must expose discovery, detail parsing, lifecycle mapping, fingerprinting, and health probes. It must also provide redacted fixtures, schema validation, parser metrics, and an explicit supported-version range.
 
+The SPSE public-list adapter additionally bounds each run to eight keywords, ten
+pages per keyword, and fifty rows per page. Its deployed Maluku policy is more
+conservative: seven keywords, three pages per keyword, twenty rows per page, one
+request at a time, and a three-second minimum request interval. HTTP 403 and 429
+stop collection immediately; only transport errors and HTTP 5xx responses are
+retried.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.
@@ -79,4 +86,3 @@ An adapter must expose discovery, detail parsing, lifecycle mapping, fingerprint
 ## 9. Data minimization
 
 Persist normalized public procurement metadata, evidence snippets, hashes, and the canonical link. Avoid participant PII and avoid storing entire responses when a field-level snapshot is sufficient.
-

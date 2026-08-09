@@ -40,6 +40,10 @@ type Adapter interface {
 	Discover(context.Context, Source) ([]Candidate, error)
 }
 
+type MetricsProvider interface {
+	DiscoveryMetrics() map[string]int
+}
+
 type Registry struct{ adapters map[string]Adapter }
 
 func NewRegistry(adapters ...Adapter) *Registry {

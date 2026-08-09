@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -24,6 +25,8 @@ type PublicSPSEAdapter struct {
 	client      *http.Client
 	mu          sync.Mutex
 	lastRequest time.Time
+	minInterval time.Duration
+	metrics     map[string]int
 }
 
 func NewPublicSPSEAdapter(client *http.Client) *PublicSPSEAdapter {
@@ -31,11 +34,21 @@ func NewPublicSPSEAdapter(client *http.Client) *PublicSPSEAdapter {
 		jar, _ := cookiejar.New(nil)
 		client = &http.Client{Timeout: 20 * time.Second, Jar: jar}
 	}
-	return &PublicSPSEAdapter{client: client}
+	return &PublicSPSEAdapter{client: client, minInterval: 3 * time.Second}
 }
 
 func (*PublicSPSEAdapter) Name() string    { return "spse-public-list" }
-func (*PublicSPSEAdapter) Version() string { return "v1" }
+func (*PublicSPSEAdapter) Version() string { return "v2" }
+
+func (a *PublicSPSEAdapter) DiscoveryMetrics() map[string]int {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	result := make(map[string]int, len(a.metrics))
+	for key, value := range a.metrics {
+		result[key] = value
+	}
+	return result
+}
 
 func (a *PublicSPSEAdapter) Discover(ctx context.Context, source Source) ([]Candidate, error) {
 	var raw map[string]any
@@ -61,7 +74,24 @@ func (a *PublicSPSEAdapter) Discover(ctx context.Context, source Source) ([]Cand
 	if pageSize < 1 || pageSize > 50 {
 		return nil, errors.New("public SPSE page_size must be between 1 and 50")
 	}
-	search, _ := raw["search"].(string)
+	maxPages := 3
+	if number, ok := raw["max_pages_per_keyword"].(float64); ok {
+		maxPages = int(number)
+	}
+	if maxPages < 1 || maxPages > 10 {
+		return nil, errors.New("public SPSE max_pages_per_keyword must be between 1 and 10")
+	}
+	intervalMS := 3000
+	if number, ok := raw["min_interval_ms"].(float64); ok {
+		intervalMS = int(number)
+	}
+	if intervalMS < 2000 {
+		return nil, errors.New("public SPSE min_interval_ms must be at least 2000")
+	}
+	a.mu.Lock()
+	a.minInterval = time.Duration(intervalMS) * time.Millisecond
+	a.mu.Unlock()
+	keywords := policyKeywords(raw)
 	base, err := url.Parse(source.BaseURL)
 	if err != nil || base.Scheme != "https" {
 		return nil, errors.New("public SPSE base URL must use HTTPS")
@@ -76,34 +106,128 @@ func (a *PublicSPSEAdapter) Discover(ctx context.Context, source Source) ([]Cand
 	if len(match) != 2 {
 		return nil, errors.New("public listing authenticity token is unavailable")
 	}
-	form := url.Values{"authenticityToken": {string(match[1])}, "draw": {"1"}, "start": {"0"},
-		"length": {strconv.Itoa(pageSize)}, "search[value]": {search}}
 	endpoint := fmt.Sprintf("%s/%s/dt/lelang?tahun=%d", strings.TrimRight(source.BaseURL, "/"), tenant, year)
-	body, err = a.request(ctx, http.MethodPost, endpoint, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, fmt.Errorf("load public package metadata: %w", err)
+	unique := make(map[string]Candidate)
+	metrics := map[string]int{"keywords": len(keywords)}
+	for keywordIndex, keyword := range keywords {
+		for page := 0; page < maxPages; page++ {
+			form := dataTablesForm(string(match[1]), keyword, keywordIndex*maxPages+page+1, page*pageSize, pageSize)
+			body, err = a.request(ctx, http.MethodPost, endpoint, []byte(form.Encode()))
+			if err != nil {
+				return nil, fmt.Errorf("load public package metadata for keyword %q page %d: %w", keyword, page+1, err)
+			}
+			items, err := parsePublicSPSE(body, source.BaseURL, tenant)
+			if err != nil {
+				return nil, err
+			}
+			metrics["pages"]++
+			metrics["raw_rows"] += len(items)
+			for _, item := range items {
+				if _, exists := unique[item.PackageIdentity]; exists {
+					metrics["duplicates"]++
+					continue
+				}
+				unique[item.PackageIdentity] = item
+				status, _ := item.Metadata["status"].(string)
+				metrics["lifecycle_"+status]++
+			}
+			if len(items) < pageSize {
+				break
+			}
+		}
 	}
-	return parsePublicSPSE(body, source.BaseURL, tenant)
+	items := make([]Candidate, 0, len(unique))
+	for _, item := range unique {
+		items = append(items, item)
+	}
+	metrics["unique_candidates"] = len(items)
+	a.mu.Lock()
+	a.metrics = metrics
+	a.mu.Unlock()
+	return items, nil
 }
 
-func (a *PublicSPSEAdapter) request(ctx context.Context, method, target string, body io.Reader) ([]byte, error) {
+func policyKeywords(raw map[string]any) []string {
+	result := make([]string, 0)
+	if values, ok := raw["keywords"].([]any); ok {
+		for _, value := range values {
+			if keyword, ok := value.(string); ok && strings.TrimSpace(keyword) != "" {
+				result = append(result, strings.TrimSpace(keyword))
+			}
+		}
+	}
+	if len(result) == 0 {
+		if keyword, ok := raw["search"].(string); ok && strings.TrimSpace(keyword) != "" {
+			result = append(result, strings.TrimSpace(keyword))
+		}
+	}
+	if len(result) == 0 {
+		result = []string{"sistem informasi", "aplikasi", "integrasi data", "jaringan"}
+	}
+	if len(result) > 8 {
+		result = result[:8]
+	}
+	return result
+}
+
+func dataTablesForm(token, keyword string, draw, start, length int) url.Values {
+	form := url.Values{"authenticityToken": {token}, "draw": {strconv.Itoa(draw)}, "start": {strconv.Itoa(start)},
+		"length": {strconv.Itoa(length)}, "search[value]": {keyword}, "search[regex]": {"false"},
+		"order[0][column]": {"5"}, "order[0][dir]": {"desc"}}
+	for index := 0; index < 6; index++ {
+		prefix := fmt.Sprintf("columns[%d]", index)
+		form.Set(prefix+"[data]", strconv.Itoa(index))
+		form.Set(prefix+"[name]", "")
+		form.Set(prefix+"[searchable]", strconv.FormatBool(index != 3))
+		form.Set(prefix+"[orderable]", strconv.FormatBool(index != 3))
+		form.Set(prefix+"[search][value]", "")
+		form.Set(prefix+"[search][regex]", "false")
+	}
+	return form
+}
+
+func (a *PublicSPSEAdapter) request(ctx context.Context, method, target string, body []byte) ([]byte, error) {
+	var lastErr error
+	for attempt := 0; attempt < 3; attempt++ {
+		payload, retry, err := a.requestOnce(ctx, method, target, body)
+		if err == nil {
+			return payload, nil
+		}
+		lastErr = err
+		if !retry {
+			return nil, err
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(time.Duration(1<<attempt) * time.Second):
+		}
+	}
+	return nil, lastErr
+}
+
+func (a *PublicSPSEAdapter) requestOnce(ctx context.Context, method, target string, body []byte) ([]byte, bool, error) {
 	a.mu.Lock()
-	wait := 3*time.Second - time.Since(a.lastRequest)
+	wait := a.minInterval - time.Since(a.lastRequest)
 	if wait > 0 {
 		timer := time.NewTimer(wait)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
 			a.mu.Unlock()
-			return nil, ctx.Err()
+			return nil, false, ctx.Err()
 		case <-timer.C:
 		}
 	}
 	a.lastRequest = time.Now()
 	a.mu.Unlock()
-	req, err := http.NewRequestWithContext(ctx, method, target, body)
+	var reader io.Reader
+	if body != nil {
+		reader = bytes.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, target, reader)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	req.Header.Set("User-Agent", "CANKONIX-OI/0.1 public-procurement-metadata")
 	req.Header.Set("Accept", "application/json,text/html;q=0.9")
@@ -113,23 +237,23 @@ func (a *PublicSPSEAdapter) request(ctx context.Context, method, target string, 
 	}
 	response, err := a.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode == 403 || response.StatusCode == 429 {
-		return nil, fmt.Errorf("source access stopped with HTTP %d", response.StatusCode)
+		return nil, false, fmt.Errorf("source access stopped with HTTP %d", response.StatusCode)
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, fmt.Errorf("source returned HTTP %d", response.StatusCode)
+		return nil, response.StatusCode >= 500, fmt.Errorf("source returned HTTP %d", response.StatusCode)
 	}
 	payload, err := io.ReadAll(io.LimitReader(response.Body, publicSPSEMaxResponse+1))
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
 	if len(payload) > publicSPSEMaxResponse {
-		return nil, errors.New("source response exceeds 1 MiB")
+		return nil, false, errors.New("source response exceeds 1 MiB")
 	}
-	return payload, nil
+	return payload, false, nil
 }
 
 func parsePublicSPSE(payload []byte, baseURL, tenant string) ([]Candidate, error) {

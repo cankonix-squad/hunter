@@ -36,3 +36,26 @@ func TestParseIDRMinorUsesIntegers(t *testing.T) {
 		t.Fatalf("got %d, err=%v", got, err)
 	}
 }
+
+func TestDataTablesFormContainsServerSideSearchContract(t *testing.T) {
+	form := dataTablesForm("token", "sistem informasi", 2, 20, 20)
+	checks := map[string]string{"search[value]": "sistem informasi", "search[regex]": "false",
+		"columns[0][data]": "0", "columns[5][data]": "5", "order[0][column]": "5",
+		"start": "20", "length": "20"}
+	for key, want := range checks {
+		if got := form.Get(key); got != want {
+			t.Fatalf("%s=%q, want %q", key, got, want)
+		}
+	}
+}
+
+func TestPolicyKeywordsAreBoundedAndBackwardCompatible(t *testing.T) {
+	raw := map[string]any{"keywords": []any{"aplikasi", "integrasi data", "", "jaringan"}}
+	got := policyKeywords(raw)
+	if len(got) != 3 || got[0] != "aplikasi" {
+		t.Fatalf("unexpected keywords: %#v", got)
+	}
+	if legacy := policyKeywords(map[string]any{"search": "software"}); len(legacy) != 1 || legacy[0] != "software" {
+		t.Fatalf("unexpected legacy keywords: %#v", legacy)
+	}
+}

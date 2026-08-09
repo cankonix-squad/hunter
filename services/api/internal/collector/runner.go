@@ -200,7 +200,13 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		}
 		inserted += int(tag.RowsAffected())
 	}
-	metrics, _ := json.Marshal(map[string]int{"candidates": len(candidates), "new_snapshots": inserted})
+	runMetrics := map[string]int{"candidates": len(candidates), "new_snapshots": inserted}
+	if provider, ok := adapter.(MetricsProvider); ok {
+		for key, value := range provider.DiscoveryMetrics() {
+			runMetrics[key] = value
+		}
+	}
+	metrics, _ := json.Marshal(runMetrics)
 	_, err = tx.Exec(ctx, `UPDATE source_runs SET status = 'succeeded', finished_at = now(), lease_owner = NULL,
 		lease_expires_at = NULL, metrics = $2, error_code = NULL, safe_error = NULL WHERE id = $1`, run.ID, metrics)
 	if err != nil {

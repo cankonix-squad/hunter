@@ -22,7 +22,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `9c3fce7`
+- Worktree bersih setelah commit `343ce4d`
 
 ## Selesai
 
@@ -152,7 +152,7 @@ acceptance menyimpan lima dimensi per opportunity: Integrasi Data mendapat score
 - [x] Tambahkan review queue untuk hasil ambiguous/low confidence
 - [x] Perbarui OpenAPI dan component tests
 
-Bukti: API acceptance memfilter paket relevant dengan minimum score 7000,
+Bukti: commit `343ce4d`; API acceptance memfilter paket relevant dengan minimum score 7000,
 review queue mengembalikan paket low-confidence, dan detail Integrasi Data memuat
 1 classification evidence serta 5 score dimensions. Frontend tests 7/7,
 production build, `go test -race ./...`, dan `go vet ./...` lulus.
@@ -243,6 +243,7 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 | `44c8139` | Canonical opportunity normalization, API, feed UI, dan history |
 | `1384f3b` | Taxonomy dan deterministic classification yang auditable |
 | `9c3fce7` | Explainable scoring lima dimensi dan review confidence |
+| `343ce4d` | Classification/scoring API, filter, review queue, dan UI evidence |
 
 ## Aturan pembaruan task list
 

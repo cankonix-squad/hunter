@@ -16,9 +16,10 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 5
+- Migrasi database aktif: versi 6
 - Data acceptance: 2 opportunity canonical dan 2 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
+- Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
 - Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
 - Smoke test lokal: web, health, dan readiness HTTP 200
 - Worktree bersih setelah commit `8bd676c`
@@ -130,12 +131,17 @@ ambigu sebagai `needs_review`.
 
 ### 2. Explainable scoring
 
-- [ ] Definisikan score dimensions: capability fit, value, location, deadline, dan risk
-- [ ] Gunakan versioned integer/decimal weights; jangan gunakan floating point untuk uang
-- [ ] Simpan score total, dimension breakdown, evidence, dan scoring version
-- [ ] Tambahkan reason codes dan explanation yang reviewable
-- [ ] Tandai low-confidence opportunity sebagai `needs_review`
-- [ ] Tambahkan regression tests agar perubahan weight terdeteksi
+- [x] Definisikan score dimensions: capability fit, value, location, deadline, dan risk
+- [x] Gunakan versioned integer/decimal weights; jangan gunakan floating point untuk uang
+- [x] Simpan score total, dimension breakdown, evidence, dan scoring version
+- [x] Tambahkan reason codes dan explanation yang reviewable
+- [x] Tandai low-confidence opportunity sebagai `needs_review`
+- [x] Tambahkan regression tests agar perubahan weight terdeteksi
+
+Bukti: migration v6; `go test -race ./...` dan `go vet ./...` lulus. Collector
+acceptance menyimpan lima dimensi per opportunity: Integrasi Data mendapat score
+8000 dan confidence 9000 (`score_ready`), sedangkan paket jaringan mendapat score
+5625 dan confidence 6600 (`needs_review`).
 
 ### 3. Classification/scoring API dan UI
 

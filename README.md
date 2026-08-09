@@ -93,14 +93,15 @@ database volume is created.
 - Versioned fixture adapter with stable fingerprints and idempotent snapshots
 - Canonical opportunity normalization with lifecycle-safe active feed and version history
 - Versioned deterministic IT taxonomy with auditable include/exclude evidence
+- Versioned five-dimension scoring with integer weights and reviewable breakdown
 - Authenticated opportunity list/detail API with search, status filter, and pagination
 - Responsive opportunity dashboard with official-source detail panel
 - Nginx reverse proxy with baseline security headers and request-size limit
 - Docker Compose health checks and service dependency ordering
 - OpenAPI contract for the implemented endpoints
 
-Next vertical slice: explainable scoring and classification UI/API, followed by a
-policy-reviewed public SPSE adapter.
+Next vertical slice: classification/scoring API and UI, followed by a policy-reviewed
+public SPSE adapter.
 
 ## Useful commands
 

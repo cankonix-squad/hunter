@@ -11,6 +11,7 @@ import (
 
 	"github.com/cankonix/cankonix-oi/services/api/internal/classification"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
+	"github.com/cankonix/cankonix-oi/services/api/internal/scoring"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -182,7 +183,19 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		classificationResult := classification.DefaultEngine().Evaluate(classification.Input{
 			Title: normalized.Title, ProcurementType: normalized.ProcurementType,
 		})
-		if err := persistClassification(ctx, tx, opportunityID, fingerprint, classificationResult); err != nil {
+		classificationID, err := persistClassification(ctx, tx, opportunityID, fingerprint, classificationResult)
+		if err != nil {
+			return err
+		}
+		evaluatedAt := time.Now().UTC()
+		if candidate.SourceTimestamp != nil {
+			evaluatedAt = candidate.SourceTimestamp.UTC()
+		}
+		score := scoring.Evaluate(scoring.Input{Classification: classificationResult,
+			BudgetMinor: normalized.BudgetMinor, Currency: normalized.Currency,
+			LifecycleStatus: normalized.LifecycleStatus, RegistrationDeadline: normalized.RegistrationDeadline,
+			EvaluatedAt: evaluatedAt})
+		if err := persistScore(ctx, tx, opportunityID, fingerprint, classificationID, score); err != nil {
 			return err
 		}
 		inserted += int(tag.RowsAffected())
@@ -205,7 +218,7 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 	return nil
 }
 
-func persistClassification(ctx context.Context, tx pgx.Tx, opportunityID, fingerprint string, result classification.Result) error {
+func persistClassification(ctx context.Context, tx pgx.Tx, opportunityID, fingerprint string, result classification.Result) (int64, error) {
 	var classificationID int64
 	err := tx.QueryRow(ctx, `INSERT INTO opportunity_classifications(opportunity_id, opportunity_fingerprint,
 		taxonomy_version, rule_version, disposition, category_code, confidence_bp, reason_code, explanation, auto_rejected)
@@ -218,10 +231,10 @@ func persistClassification(ctx context.Context, tx pgx.Tx, opportunityID, finger
 		result.Disposition, result.Category, result.ConfidenceBP, result.ReasonCode, result.Explanation,
 		result.AutoRejected).Scan(&classificationID)
 	if err != nil {
-		return fmt.Errorf("persist opportunity classification: %w", err)
+		return 0, fmt.Errorf("persist opportunity classification: %w", err)
 	}
 	if _, err := tx.Exec(ctx, `DELETE FROM classification_evidence WHERE classification_id = $1`, classificationID); err != nil {
-		return fmt.Errorf("replace classification evidence: %w", err)
+		return 0, fmt.Errorf("replace classification evidence: %w", err)
 	}
 	for _, evidence := range result.Evidence {
 		_, err := tx.Exec(ctx, `INSERT INTO classification_evidence(classification_id, rule_code, kind,
@@ -229,7 +242,38 @@ func persistClassification(ctx context.Context, tx pgx.Tx, opportunityID, finger
 			classificationID, evidence.RuleCode, evidence.Kind, evidence.Category, evidence.Keyword,
 			evidence.SourceField, evidence.Excerpt)
 		if err != nil {
-			return fmt.Errorf("persist classification evidence: %w", err)
+			return 0, fmt.Errorf("persist classification evidence: %w", err)
+		}
+	}
+	return classificationID, nil
+}
+
+func persistScore(ctx context.Context, tx pgx.Tx, opportunityID, fingerprint string, classificationID int64, result scoring.Result) error {
+	var scoreID int64
+	err := tx.QueryRow(ctx, `INSERT INTO opportunity_scores(opportunity_id, opportunity_fingerprint,
+		classification_id, scoring_version, total_score_bp, confidence_bp, needs_review,
+		reason_code, explanation, evaluated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		ON CONFLICT (opportunity_id, opportunity_fingerprint, scoring_version) DO UPDATE SET
+			classification_id = excluded.classification_id, total_score_bp = excluded.total_score_bp,
+			confidence_bp = excluded.confidence_bp, needs_review = excluded.needs_review,
+			reason_code = excluded.reason_code, explanation = excluded.explanation,
+			evaluated_at = excluded.evaluated_at
+		RETURNING id`, opportunityID, fingerprint, classificationID, result.Version, result.TotalScoreBP,
+		result.ConfidenceBP, result.NeedsReview, result.ReasonCode, result.Explanation, result.EvaluatedAt).Scan(&scoreID)
+	if err != nil {
+		return fmt.Errorf("persist opportunity score: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM score_dimensions WHERE score_id = $1`, scoreID); err != nil {
+		return fmt.Errorf("replace score dimensions: %w", err)
+	}
+	for _, dimension := range result.Dimensions {
+		_, err := tx.Exec(ctx, `INSERT INTO score_dimensions(score_id, dimension_code, weight_bp,
+			raw_score_bp, contribution, reason_code, explanation, evidence)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, scoreID, dimension.Code, dimension.WeightBP,
+			dimension.RawScoreBP, dimension.Contribution, dimension.ReasonCode,
+			dimension.Explanation, dimension.Evidence)
+		if err != nil {
+			return fmt.Errorf("persist score dimension: %w", err)
 		}
 	}
 	return nil

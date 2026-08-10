@@ -2,6 +2,7 @@ package opportunities
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -30,6 +31,17 @@ type Item struct {
 	VersionCount         int             `json:"version_count"`
 	Classification       *Classification `json:"classification,omitempty"`
 	Score                *Score          `json:"score,omitempty"`
+	History              []Version       `json:"history,omitempty"`
+}
+
+type Version struct {
+	ID              int64      `json:"id"`
+	SnapshotID      string     `json:"snapshot_id"`
+	Fingerprint     string     `json:"fingerprint"`
+	LifecycleStatus string     `json:"lifecycle_status"`
+	Data            Normalized `json:"data"`
+	ChangedFields   []string   `json:"changed_fields"`
+	ObservedAt      time.Time  `json:"observed_at"`
 }
 
 type Classification struct {
@@ -232,7 +244,73 @@ func (s *Service) Get(ctx context.Context, id string) (Item, error) {
 			item.Score.Dimensions = append(item.Score.Dimensions, d)
 		}
 	}
+	historyRows, err := s.db.Query(ctx, `SELECT id,snapshot_id::text,fingerprint,lifecycle_status,normalized_data,observed_at
+		FROM opportunity_versions WHERE opportunity_id=$1 ORDER BY observed_at,id`, id)
+	if err != nil {
+		return Item{}, fmt.Errorf("load opportunity history: %w", err)
+	}
+	defer historyRows.Close()
+	chronological := make([]Version, 0, item.VersionCount)
+	var previous *Normalized
+	for historyRows.Next() {
+		var version Version
+		var raw []byte
+		if err := historyRows.Scan(&version.ID, &version.SnapshotID, &version.Fingerprint, &version.LifecycleStatus, &raw, &version.ObservedAt); err != nil {
+			return Item{}, fmt.Errorf("scan opportunity history: %w", err)
+		}
+		if err := json.Unmarshal(raw, &version.Data); err != nil {
+			return Item{}, fmt.Errorf("decode opportunity history: %w", err)
+		}
+		version.ChangedFields = changedFields(previous, version.Data)
+		current := version.Data
+		previous = &current
+		chronological = append(chronological, version)
+	}
+	if err := historyRows.Err(); err != nil {
+		return Item{}, fmt.Errorf("iterate opportunity history: %w", err)
+	}
+	item.History = make([]Version, len(chronological))
+	for index := range chronological {
+		item.History[len(chronological)-1-index] = chronological[index]
+	}
 	return item, nil
+}
+
+func changedFields(previous *Normalized, current Normalized) []string {
+	if previous == nil {
+		return []string{}
+	}
+	fields := make([]string, 0)
+	if previous.Title != current.Title {
+		fields = append(fields, "title")
+	}
+	if previous.Agency != current.Agency {
+		fields = append(fields, "agency")
+	}
+	if previous.ProcurementType != current.ProcurementType {
+		fields = append(fields, "procurement_type")
+	}
+	if previous.LifecycleStatus != current.LifecycleStatus {
+		fields = append(fields, "lifecycle_status")
+	}
+	if !equalInt64(previous.BudgetMinor, current.BudgetMinor) {
+		fields = append(fields, "budget_minor")
+	}
+	if previous.Currency != current.Currency {
+		fields = append(fields, "currency")
+	}
+	if !equalTime(previous.RegistrationDeadline, current.RegistrationDeadline) {
+		fields = append(fields, "registration_deadline")
+	}
+	return fields
+}
+
+func equalInt64(left, right *int64) bool {
+	return left == nil && right == nil || left != nil && right != nil && *left == *right
+}
+
+func equalTime(left, right *time.Time) bool {
+	return left == nil && right == nil || left != nil && right != nil && left.Equal(*right)
 }
 
 type scanner interface{ Scan(...any) error }

@@ -20,6 +20,7 @@ const opportunity: Opportunity = {
     reason_code: 'score_ready', explanation: 'Score deterministik lengkap.', dimensions: [
       { code: 'capability_fit', weight_bp: 4000, raw_score_bp: 9000, contribution: 3600, reason_code: 'deterministic_fit', explanation: 'Kapabilitas sesuai.', evidence: 'include_data' },
     ] },
+  history: [{ id: 1, snapshot_id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', fingerprint: 'fingerprint', lifecycle_status: 'registration_open', data: { title: 'Pengadaan Integrasi Data', agency: 'Instansi Contoh', procurement_type: 'Jasa Lainnya', lifecycle_status: 'registration_open', budget_minor: 75000000000, currency: 'IDR' }, changed_fields: [], observed_at: '2026-08-09T02:00:00Z' }],
 }
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); window.sessionStorage.clear() })
@@ -49,6 +50,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('80 / 100')
     expect(screen.getByRole('dialog')).toHaveTextContent('include_data')
     expect(screen.getByRole('dialog')).toHaveTextContent('Belum dijalankan')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Initial observation')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()

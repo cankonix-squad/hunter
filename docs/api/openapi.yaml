@@ -137,7 +137,7 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Canonical opportunity detail with official source and history count
+          description: Canonical opportunity detail with official source and full change timeline
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Opportunity' }
@@ -341,6 +341,32 @@ components:
         version_count: { type: integer, minimum: 1 }
         classification: { $ref: '#/components/schemas/Classification' }
         score: { $ref: '#/components/schemas/Score' }
+        history:
+          type: array
+          items: { $ref: '#/components/schemas/OpportunityVersion' }
+    OpportunityVersion:
+      type: object
+      required: [id, snapshot_id, fingerprint, lifecycle_status, data, changed_fields, observed_at]
+      properties:
+        id: { type: integer, format: int64 }
+        snapshot_id: { type: string, format: uuid }
+        fingerprint: { type: string }
+        lifecycle_status: { type: string }
+        data:
+          type: object
+          required: [title, agency, procurement_type, lifecycle_status, currency]
+          properties:
+            title: { type: string }
+            agency: { type: string }
+            procurement_type: { type: string }
+            lifecycle_status: { type: string }
+            budget_minor: { type: integer, format: int64 }
+            currency: { type: string }
+            registration_deadline: { type: string, format: date-time }
+        changed_fields:
+          type: array
+          items: { type: string, enum: [title, agency, procurement_type, lifecycle_status, budget_minor, currency, registration_deadline] }
+        observed_at: { type: string, format: date-time }
     Classification:
       type: object
       required: [disposition, confidence_bp, reason_code, explanation, auto_rejected, evidence]

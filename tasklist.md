@@ -188,7 +188,7 @@ belum dianggap selesai sebelum review domain owner.
 ### Opportunity workspace dan decision workflow
 
 - [x] Saved views dan combined filters
-- [ ] Full change timeline dari version history
+- [x] Full change timeline dari version history
 - [ ] Ownership dan assignment
 - [ ] Internal comments
 - [ ] Shortlist
@@ -205,6 +205,13 @@ di query database dan mengaudit create/delete; dashboard dapat menyimpan, menera
 menghapus view. Acceptance API create/list/delete lulus dengan HTTP 204 saat delete dan dua
 audit event tersimpan. `go test -race ./...`, `go vet ./...`, 8 frontend tests, production
 build, OpenAPI YAML, container build, migration v13, serta smoke test HTTP lulus.
+
+Change timeline memuat seluruh normalized version pada detail API dalam urutan terbaru,
+menyertakan observed time, lifecycle, snapshot/fingerprint trace, dan daftar field yang
+berubah terhadap versi sebelumnya. Drawer membedakan initial observation, repeated
+observation, dan material field changes. Acceptance detail API memastikan history count
+sama dengan version count; perhitungan perubahan lifecycle, budget, dan deadline tercakup
+unit test. Go race/vet, 8 frontend tests, build, OpenAPI, dan container acceptance lulus.
 
 ### Public SPSE adapter
 

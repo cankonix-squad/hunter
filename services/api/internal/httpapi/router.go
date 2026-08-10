@@ -13,6 +13,7 @@ import (
 	"github.com/cankonix/cankonix-oi/services/api/internal/assignments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/comments"
+	"github.com/cankonix/cankonix-oi/services/api/internal/decisions"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/savedviews"
@@ -33,12 +34,13 @@ type Server struct {
 	assignments   *assignments.Service
 	comments      *comments.Service
 	shortlist     *shortlist.Service
+	decisions     *decisions.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -60,10 +62,42 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("POST /api/v1/opportunities/{id}/comments", s.authenticate(http.HandlerFunc(s.createComment)))
 	mux.Handle("GET /api/v1/opportunities/{id}/shortlist", s.authenticate(http.HandlerFunc(s.getShortlist)))
 	mux.Handle("PATCH /api/v1/opportunities/{id}/shortlist", s.authenticate(http.HandlerFunc(s.updateShortlist)))
+	mux.Handle("GET /api/v1/opportunities/{id}/decision", s.authenticate(http.HandlerFunc(s.getDecision)))
+	mux.Handle("PATCH /api/v1/opportunities/{id}/decision", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager", "executive")(http.HandlerFunc(s.updateDecision))))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) getDecision(w http.ResponseWriter, r *http.Request) {
+	item, err := s.decisions.Get(r.Context(), r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Decision is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"decision": item})
+}
+func (s *Server) updateDecision(w http.ResponseWriter, r *http.Request) {
+	var input decisions.UpdateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.decisions.Update(r.Context(), r.PathValue("id"), p.UserID, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_decision", "Decision must be pursue or pass with a reason of 3 to 2000 characters")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"decision": item})
 }
 
 func (s *Server) listComments(w http.ResponseWriter, r *http.Request) {

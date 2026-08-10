@@ -262,6 +262,36 @@ paths:
       responses:
         '200': { description: Shared shortlist state updated }
         '404': { description: Opportunity not found }
+  /api/v1/opportunities/{id}/decision:
+    get:
+      operationId: getOpportunityDecision
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Current human pursue/pass decision or null }
+        '404': { description: Opportunity not found }
+    patch:
+      operationId: updateOpportunityDecision
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [decision, reason]
+              properties:
+                decision: { type: string, enum: [pursue, pass] }
+                reason: { type: string, minLength: 3, maxLength: 2000 }
+      responses:
+        '200': { description: Human decision recorded }
+        '403': { description: Workflow role required }
+        '404': { description: Opportunity not found }
+        '422': { description: Invalid decision or missing reason }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

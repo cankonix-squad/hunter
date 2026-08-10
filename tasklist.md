@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 16
+- Migrasi database aktif: versi 17
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -192,7 +192,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Ownership dan assignment
 - [x] Internal comments
 - [x] Shortlist
-- [ ] Pursue/pass decision dengan reason wajib
+- [x] Pursue/pass decision dengan reason wajib
 - [ ] Next action dan deadline
 - [ ] Readiness checklist
 - [ ] Human override untuk recommendation/score
@@ -233,6 +233,13 @@ menyimpan filter tersebut. Detail drawer menyediakan toggle yang auditabel. Acce
 add → filtered feed → remove berhasil; feed shortlist memuat tepat opportunity acceptance
 dan audit `opportunity.shortlisted`/`opportunity.unshortlisted` tersimpan. Go race/vet,
 8 frontend tests, build, OpenAPI, migration, dan container acceptance lulus.
+
+Human pursue/pass decision memakai migration v17 dan sepenuhnya terpisah dari hasil rules,
+score, maupun AI. Workflow role dapat menetapkan `pursue` atau `pass` hanya dengan alasan
+3–2000 karakter; current state menyimpan decider dan timestamp. Setiap perubahan diaudit
+dengan previous/new decision dan reason. Acceptance membuktikan alasan kosong ditolak HTTP
+422, transisi undecided → pursue → pass menghasilkan metadata audit yang tepat, lalu state
+acceptance dibersihkan. Go race/vet, 8 frontend tests, build, OpenAPI, dan container lulus.
 
 ### Public SPSE adapter
 

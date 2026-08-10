@@ -103,6 +103,17 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .assignment-card small { color: #7e2424; }
 .shortlist-button { width: 100%; margin: 0 0 20px; background: white; color: #111; border: 1px solid #aaa; }
 .shortlist-button.selected { background: #111; color: white; }
+.decision-card { margin: 20px 0; padding: 18px; border: 1px solid #bbb; background: white; }
+.decision-card.pursue { border-left: 5px solid #287342; }
+.decision-card.pass { border-left: 5px solid #8b3434; }
+.decision-card h3 { margin: 8px 0; text-transform: capitalize; }
+.decision-card > p:not(.eyebrow) { display: grid; gap: 6px; font-size: 12px; line-height: 1.5; }
+.decision-card p small { color: #888; }
+.decision-card form { display: grid; gap: 8px; margin-top: 14px; }
+.decision-card select, .decision-card textarea { padding: 10px; border: 1px solid #aaa; font: inherit; }
+.decision-card textarea { min-height: 74px; resize: vertical; }
+.decision-card form button { justify-self: start; margin: 0; }
+.decision-card form small { color: #7e2424; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

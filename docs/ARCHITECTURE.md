@@ -60,6 +60,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 | `change_events` | field, before, after, detected time, source run |
 | `notifications` | event, rule, channel, recipient, status, dedupe key |
 | `audit_logs` | actor, action, object, metadata, time |
+| `saved_opportunity_views` | user owner, name, validated combined filters, timestamps |
 
 ## 6. API surface
 
@@ -68,6 +69,8 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `PATCH /api/v1/opportunities/{id}`
 - `POST /api/v1/opportunities/{id}/feedback`
 - `GET /api/v1/sources`
+- `GET|POST /api/v1/saved-views`
+- `DELETE /api/v1/saved-views/{id}`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`
@@ -99,4 +102,3 @@ Use PostgreSQL full-text search and `pg_trgm` for MVP. Introduce a separate sear
 ## 10. Initial architecture decisions
 
 Decisions and unresolved choices are tracked in [DECISIONS.md](DECISIONS.md). Implementation must not silently decide a listed review item.
-

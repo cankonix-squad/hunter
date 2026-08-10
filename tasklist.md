@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 12
+- Migrasi database aktif: versi 13
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -187,7 +187,7 @@ belum dianggap selesai sebelum review domain owner.
 
 ### Opportunity workspace dan decision workflow
 
-- [ ] Saved views dan combined filters
+- [x] Saved views dan combined filters
 - [ ] Full change timeline dari version history
 - [ ] Ownership dan assignment
 - [ ] Internal comments
@@ -198,6 +198,13 @@ belum dianggap selesai sebelum review domain owner.
 - [ ] Human override untuk recommendation/score
 - [ ] Audit log seluruh decision dan override
 - [ ] Initial pipeline analytics
+
+Saved views memakai migration v13 dan menyimpan kombinasi search, lifecycle, relevance,
+minimum score, source, dan review-only per user. API create/list/delete membatasi ownership
+di query database dan mengaudit create/delete; dashboard dapat menyimpan, menerapkan, dan
+menghapus view. Acceptance API create/list/delete lulus dengan HTTP 204 saat delete dan dua
+audit event tersimpan. `go test -race ./...`, `go vet ./...`, 8 frontend tests, production
+build, OpenAPI YAML, container build, migration v13, serta smoke test HTTP lulus.
 
 ### Public SPSE adapter
 

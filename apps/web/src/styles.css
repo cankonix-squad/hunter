@@ -51,6 +51,15 @@ h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em
 .empty > p:not(.eyebrow) { max-width: 560px; color: #5d5d5d; line-height: 1.7; position: relative; }
 button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13px 18px; font-weight: 650; cursor: pointer; }
 .feed { margin-top: 28px; border: 1px solid #ccc; background: white; }
+.saved-views { padding: 14px 18px; display: flex; align-items: end; flex-wrap: wrap; gap: 12px; background: #e9e9e5; border-bottom: 1px solid #ccc; }
+.saved-views label { display: grid; gap: 5px; color: #777; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.saved-views select, .saved-views input { border: 1px solid #aaa; background: white; padding: 9px 10px; font: inherit; }
+.saved-views form { display: flex; }
+.saved-views form button { margin: 0; padding: 10px 13px; }
+.saved-view-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.saved-view-chips span { display: flex; align-items: center; gap: 5px; padding: 6px 8px; background: white; border: 1px solid #ccc; font-size: 10px; }
+.saved-view-chips button { margin: 0; padding: 0 3px; background: transparent; color: #777; font-size: 14px; }
+.saved-views > small { width: 100%; color: #7e2424; }
 .feed-toolbar { padding: 18px; display: flex; align-items: end; flex-wrap: wrap; justify-content: space-between; gap: 14px; border-bottom: 1px solid #ddd; }
 .feed-toolbar form { display: flex; flex: 1; max-width: 680px; }
 .feed-toolbar input, .feed-toolbar select { border: 1px solid #bbb; background: #fff; padding: 11px 12px; font: inherit; }

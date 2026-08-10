@@ -47,6 +47,11 @@ interface SourceHealth {
   latest_run_metrics: Record<string, number>; lag_seconds?: number; pending_runs: number
 }
 
+interface SavedView {
+  id: string; name: string; created_at: string; updated_at: string
+  filters: { q: string; status: string; source_id?: string; relevance: string; min_score_bp?: number; review_only: boolean }
+}
+
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
 
@@ -56,6 +61,7 @@ export function Dashboard() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('active')
+  const [sourceID, setSourceID] = useState('')
   const [relevance, setRelevance] = useState('all')
   const [minimumScore, setMinimumScore] = useState('')
   const [reviewOnly, setReviewOnly] = useState(false)
@@ -65,18 +71,22 @@ export function Dashboard() {
   const [error, setError] = useState('')
   const [sources, setSources] = useState<SourceHealth[]>([])
   const [sourceError, setSourceError] = useState('')
+  const [savedViews, setSavedViews] = useState<SavedView[]>([])
+  const [viewName, setViewName] = useState('')
+  const [viewError, setViewError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
     setError('')
     const params = new URLSearchParams({ q: search, status, relevance, page: String(page), page_size: '20' })
+    if (sourceID) params.set('source_id', sourceID)
     if (minimumScore) params.set('min_score', String(Math.round(Number(minimumScore) * 100)))
     const path = reviewOnly ? '/api/v1/opportunities/review' : '/api/v1/opportunities'
     auth.request<OpportunityPage>(`${path}?${params}`)
       .then(setResult)
       .catch(() => setError('Feed peluang belum dapat dimuat. Coba beberapa saat lagi.'))
       .finally(() => setLoading(false))
-  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, status])
+  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, sourceID, status])
 
   useEffect(load, [load])
 
@@ -88,6 +98,41 @@ export function Dashboard() {
   }, [auth.request])
 
   useEffect(loadSources, [loadSources])
+
+  const loadSavedViews = useCallback(() => {
+    auth.request<{ items: SavedView[] }>('/api/v1/saved-views')
+      .then(body => setSavedViews(body.items))
+      .catch(() => setViewError('Saved views belum dapat dimuat.'))
+  }, [auth.request])
+
+  useEffect(loadSavedViews, [loadSavedViews])
+
+  function applySavedView(id: string) {
+    const view = savedViews.find(item => item.id === id)
+    if (!view) return
+    setSearchInput(view.filters.q); setSearch(view.filters.q); setStatus(view.filters.status)
+    setSourceID(view.filters.source_id ?? '')
+    setRelevance(view.filters.relevance); setMinimumScore(view.filters.min_score_bp == null ? '' : String(view.filters.min_score_bp / 100))
+    setReviewOnly(view.filters.review_only); setPage(1); setViewError('')
+  }
+
+  async function saveCurrentView(event: FormEvent) {
+    event.preventDefault()
+    const name = viewName.trim()
+    if (!name) { setViewError('Nama saved view wajib diisi.'); return }
+    try {
+      const item = await auth.request<SavedView>('/api/v1/saved-views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, filters: { q: search, status, source_id: sourceID || undefined, relevance, min_score_bp: minimumScore ? Math.round(Number(minimumScore) * 100) : undefined, review_only: reviewOnly } }) })
+      setSavedViews(items => [...items.filter(view => view.id !== item.id), item].sort((a, b) => a.name.localeCompare(b.name)))
+      setViewName(''); setViewError('')
+    } catch { setViewError('Saved view gagal disimpan. Gunakan nama yang unik.') }
+  }
+
+  async function deleteSavedView(id: string) {
+    try {
+      await auth.request<void>(`/api/v1/saved-views/${id}`, { method: 'DELETE' })
+      setSavedViews(items => items.filter(item => item.id !== id)); setViewError('')
+    } catch { setViewError('Saved view gagal dihapus.') }
+  }
 
   const deadlineSoon = useMemo(() => result.items.filter(item => {
     if (!item.registration_deadline) return false
@@ -126,9 +171,16 @@ export function Dashboard() {
         </section>
 
         <section className="feed" id="opportunities">
+          <div className="saved-views">
+            <label>Saved view<select aria-label="Apply saved view" defaultValue="" onChange={event => { applySavedView(event.target.value); event.target.value = '' }}><option value="" disabled>Choose view…</option>{savedViews.map(view => <option key={view.id} value={view.id}>{view.name}</option>)}</select></label>
+            <form onSubmit={saveCurrentView}><input aria-label="Saved view name" maxLength={80} value={viewName} onChange={event => setViewName(event.target.value)} placeholder="Name current filters…" /><button type="submit">Save view</button></form>
+            {savedViews.length > 0 && <div className="saved-view-chips">{savedViews.map(view => <span key={view.id}>{view.name}<button aria-label={`Delete saved view ${view.name}`} onClick={() => void deleteSavedView(view.id)}>×</button></span>)}</div>}
+            {viewError && <small role="alert">{viewError}</small>}
+          </div>
           <div className="feed-toolbar">
             <form onSubmit={submitSearch} role="search"><input aria-label="Cari peluang" value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Cari paket, instansi, atau kode…" /><button type="submit">Search</button></form>
-            <label>Status<select aria-label="Filter status" value={status} onChange={event => { setStatus(event.target.value); setPage(1) }}><option value="active">Active registration</option><option value="all">All lifecycle</option><option value="announced">Announced</option><option value="registration_open">Registration open</option><option value="registration_closed">Registration closed</option><option value="evaluation">Evaluation</option><option value="awarded">Awarded</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+            <label>Status<select aria-label="Filter status" value={status} onChange={event => { setStatus(event.target.value); setPage(1) }}><option value="active">Active registration</option><option value="all">All lifecycle</option><option value="announced">Announced</option><option value="registration_open">Registration open</option><option value="registration_closed">Registration closed</option><option value="evaluation">Evaluation</option><option value="awarded">Awarded</option><option value="contracted">Contracted</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+            <label>Source<select aria-label="Filter source" value={sourceID} onChange={event => { setSourceID(event.target.value); setPage(1) }}><option value="">All sources</option>{sources.map(source => <option key={source.id} value={source.id}>{source.name}</option>)}</select></label>
             <label>Relevance<select aria-label="Filter relevance" value={relevance} onChange={event => { setRelevance(event.target.value); setPage(1) }}><option value="all">All</option><option value="relevant">Relevant</option><option value="needs_review">Ambiguous</option><option value="excluded">Excluded</option></select></label>
             <label>Min score<input className="score-input" aria-label="Minimum score" type="number" min="0" max="100" value={minimumScore} onChange={event => { setMinimumScore(event.target.value); setPage(1) }} placeholder="0–100" /></label>
             <label className="review-toggle"><input aria-label="Review queue only" type="checkbox" checked={reviewOnly} onChange={event => { setReviewOnly(event.target.checked); setPage(1) }} />Review queue</label>

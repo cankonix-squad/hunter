@@ -13,6 +13,7 @@ import (
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
+	"github.com/cankonix/cankonix-oi/services/api/internal/savedviews"
 	"github.com/cankonix/cankonix-oi/services/api/internal/sources"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -25,12 +26,13 @@ type Server struct {
 	sources       *sources.Service
 	collector     *collector.Runner
 	opportunities *opportunities.Service
+	savedViews    *savedviews.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -42,10 +44,51 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("GET /api/v1/opportunities", s.authenticate(http.HandlerFunc(s.listOpportunities)))
 	mux.Handle("GET /api/v1/opportunities/review", s.authenticate(http.HandlerFunc(s.listReviewOpportunities)))
 	mux.Handle("GET /api/v1/opportunities/{id}", s.authenticate(http.HandlerFunc(s.getOpportunity)))
+	mux.Handle("GET /api/v1/saved-views", s.authenticate(http.HandlerFunc(s.listSavedViews)))
+	mux.Handle("POST /api/v1/saved-views", s.authenticate(http.HandlerFunc(s.createSavedView)))
+	mux.Handle("DELETE /api/v1/saved-views/{id}", s.authenticate(http.HandlerFunc(s.deleteSavedView)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) listSavedViews(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	items, err := s.savedViews.List(r.Context(), p.UserID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Saved views are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Server) createSavedView(w http.ResponseWriter, r *http.Request) {
+	var input savedviews.CreateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.savedViews.Create(r.Context(), p.UserID, input)
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_saved_view", "Saved view filters are invalid or its name is already in use")
+		return
+	}
+	writeJSON(w, http.StatusCreated, item)
+}
+
+func (s *Server) deleteSavedView(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	err := s.savedViews.Delete(r.Context(), p.UserID, r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "saved_view_not_found", "Saved view was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Saved view could not be deleted")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) listOpportunities(w http.ResponseWriter, r *http.Request) {

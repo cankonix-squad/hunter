@@ -213,7 +213,7 @@ observation, dan material field changes. Acceptance detail API memastikan histor
 sama dengan version count; perhitungan perubahan lifecycle, budget, dan deadline tercakup
 unit test. Go race/vet, 8 frontend tests, build, OpenAPI, dan container acceptance lulus.
 
-Ownership memakai migration v14 dengan satu assignee aktif per opportunity, active-team
+Ownership (commit `4b65a28`) memakai migration v14 dengan satu assignee aktif per opportunity, active-team
 selector, serta RBAC administrator/operator/business-development/bid-manager untuk assign
 dan unassign. Setiap perubahan menyimpan actor dan audit event; detail drawer menampilkan
 owner saat ini. Acceptance API assign lalu unassign berhasil, assignment kembali null,
@@ -316,6 +316,7 @@ build, container build, dan smoke test HTTP lulus.
 | `bca56f7` | Candidate golden dataset dan classification evaluation regression gate |
 | `1d9d929` | Personal saved views dengan combined filters dan audit create/delete |
 | `598501f` | Full opportunity change timeline dengan material field diff |
+| `4b65a28` | Opportunity ownership assignment dengan team selector, RBAC, dan audit |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

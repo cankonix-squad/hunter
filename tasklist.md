@@ -177,7 +177,7 @@ field input; provider/budget failure menghasilkan fallback `needs_review`. `go t
 ./...` dan `go vet ./...` lulus. Provider eksternal dan AI worker belum diaktifkan, sehingga
 belum ada data atau biaya yang dikirim ke pihak ketiga.
 
-Candidate golden dataset v1 berisi 15 kasus versioned untuk tiga disposition dan empat
+Candidate golden dataset v1 (commit `bca56f7`) berisi 15 kasus versioned untuk tiga disposition dan empat
 kategori relevan. Runner memvalidasi schema/taxonomy, menghasilkan confusion matrix,
 precision/recall per label, accuracy, macro precision, serta exit gate untuk CI. Baseline
 saat ini 15/15 dan macro precision 10000 bp; status tetap `candidate`, sehingga MVP gate
@@ -292,6 +292,7 @@ build, container build, dan smoke test HTTP lulus.
 | `a7f5b24` | Incremental keyword discovery, retry, pagination, dan crawl metrics SPSE v2 |
 | `28f2972` | Fondasi AI classification yang provider-neutral, tervalidasi, cached, dan budgeted |
 | `62946b7` | Scheduler source publik dan source health/lag/queue console |
+| `bca56f7` | Candidate golden dataset dan classification evaluation regression gate |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

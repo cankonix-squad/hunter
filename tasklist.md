@@ -248,7 +248,7 @@ event dengan action/deadline atau clear event. Acceptance update → clear mempe
 deadline yang tepat dan menyimpan kedua audit event. Go race/vet, 8 frontend tests, build,
 OpenAPI, migration, dan container acceptance lulus.
 
-Readiness checklist memakai migration v19 dan checklist version `readiness-v1` dengan lima
+Readiness checklist (commit `f2b9fbd`) memakai migration v19 dan checklist version `readiness-v1` dengan lima
 item stabil: scope, eligibility, delivery capacity, commercial review, dan document plan.
 Setiap item memiliki completion state, note, updater, timestamp, serta audit metadata;
 API mengembalikan progress aggregate dan UI menampilkan progress/toggle/note. Acceptance
@@ -357,6 +357,7 @@ build, container build, dan smoke test HTTP lulus.
 | `baefc21` | Shared opportunity shortlist dengan feed filter dan audit toggle |
 | `bc7e121` | Auditable human pursue/pass decision dengan mandatory reason |
 | `03bca39` | Opportunity next action dengan UTC deadline dan overdue state |
+| `f2b9fbd` | Versioned readiness checklist dengan progress, notes, RBAC, dan audit |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

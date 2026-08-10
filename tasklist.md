@@ -226,7 +226,7 @@ dan memfilter keyword berdasarkan batas kata. Total database menjadi 171 paket p
 nyata; 70 terklasifikasi relevant. Paket IT nyata pada batch ini mayoritas sudah selesai
 dan hanya tampil bila lifecycle `All` dipilih.
 
-Increment operasi 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
+Increment operasi (commit `62946b7`) pada 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
 jam untuk lima source publik aktif, serta source health console dengan health score,
 status dan metrik run terakhir, crawl lag, queue depth, dan safe error. Acceptance
 scheduler menghasilkan tepat satu run sukses per source pada satu attempt tanpa snapshot
@@ -285,6 +285,7 @@ build, container build, dan smoke test HTTP lulus.
 | `57f2720` | Logo resmi CANKONIX pada login dan sidebar web |
 | `a7f5b24` | Incremental keyword discovery, retry, pagination, dan crawl metrics SPSE v2 |
 | `28f2972` | Fondasi AI classification yang provider-neutral, tervalidasi, cached, dan budgeted |
+| `62946b7` | Scheduler source publik dan source health/lag/queue console |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

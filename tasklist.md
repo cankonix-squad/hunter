@@ -197,7 +197,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Readiness checklist
 - [x] Human override untuk recommendation/score
 - [x] Audit log seluruh decision dan override
-- [ ] Initial pipeline analytics
+- [x] Initial pipeline analytics
 
 Saved views (commit `1d9d929`) memakai migration v13 dan menyimpan kombinasi search, lifecycle, relevance,
 minimum score, source, dan review-only per user. API create/list/delete membatasi ownership
@@ -268,6 +268,13 @@ next action, readiness, serta override dalam timeline newest-first, dengan actor
 dan metadata aman; hasil dibatasi 200 event per detail. Acceptance memuat 12 event dari 11
 jenis action workflow dengan actor yang benar. Go race/vet, 8 frontend tests, build,
 OpenAPI, dan container acceptance lulus.
+
+Initial pipeline analytics (commit `2281fd7`) merangkum total dan active opportunity, shortlist, assignment,
+pursue/pass/undecided, overdue next action, serta action jatuh tempo tujuh hari melalui
+endpoint aggregate terautentikasi. Dashboard menampilkan portfolio overview yang responsif
+dan menandai overdue risk. Acceptance API menghasilkan 173 total dan 3 active, sama dengan
+agregat langsung Postgres; Go race/vet, 8 frontend tests, production build, OpenAPI YAML,
+container build, dan health check lulus.
 
 ### Public SPSE adapter
 
@@ -373,6 +380,7 @@ build, container build, dan smoke test HTTP lulus.
 | `f2b9fbd` | Versioned readiness checklist dengan progress, notes, RBAC, dan audit |
 | `0a961df` | Human recommendation/score override terpisah dengan mandatory reason |
 | `c139fec` | Unified opportunity audit activity timeline untuk seluruh workflow |
+| `2281fd7` | Initial pipeline analytics untuk portfolio dan next-action risk |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

@@ -108,5 +108,23 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .ai-separation { margin: 20px 0; padding: 14px; border: 1px dashed #aaa; display: grid; gap: 5px; }
 .ai-separation strong { font-size: 11px; }
 .ai-separation span { color: #777; font-size: 10px; line-height: 1.5; }
+.operations { margin-top: 28px; padding: 22px; border: 1px solid #ccc; background: #e9e9e5; }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.section-heading h2 { margin: 7px 0 0; font-size: 28px; letter-spacing: -.035em; }
+.section-heading button { margin: 0; padding: 9px 13px; }
+.source-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.source-grid article { padding: 17px; background: white; border: 1px solid #d2d2cf; }
+.source-title { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.source-title strong { font-size: 13px; }
+.health { padding: 4px 6px; background: #e6eee8; color: #27613b; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.health-degraded, .health-paused { background: #f3e7d7; color: #86561e; }
+.health-disabled { background: #ececea; color: #666; }
+.source-grid dl { margin: 16px 0 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.source-grid dl div { display: grid; gap: 3px; }
+.source-grid dt { color: #888; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.source-grid dd { margin: 0; font: 700 12px ui-monospace, monospace; }
+.source-grid small, .source-metrics { color: #888; font-size: 9px; }
+.source-metrics { margin: 8px 0 0; }
+.source-error { padding: 8px; background: #f2dddd; color: #7e2424; font-size: 9px; overflow-wrap: anywhere; }
 @media (max-width: 1100px) { .opportunity-row { grid-template-columns: 110px 1fr 160px 80px; } .opportunity-row .lifecycle { display: none; } }
 @media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }

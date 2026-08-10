@@ -27,3 +27,18 @@ func TestValidateRejectsUnsafeURLAndPolicy(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateRejectsInvalidSchedulePolicy(t *testing.T) {
+	cases := []json.RawMessage{
+		json.RawMessage(`{"schedule_enabled":"yes"}`),
+		json.RawMessage(`{"schedule_interval_minutes":4}`),
+		json.RawMessage(`{"schedule_interval_minutes":60.5}`),
+		json.RawMessage(`{"schedule_interval_minutes":"60"}`),
+	}
+	for _, policy := range cases {
+		in := CreateInput{Name: "test", BaseURL: "https://example.test", AdapterName: "spse", AdapterVersion: "v1", Policy: policy}
+		if err := validate(&in); err == nil {
+			t.Fatalf("validate() unexpectedly accepted policy %s", policy)
+		}
+	}
+}

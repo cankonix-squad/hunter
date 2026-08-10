@@ -41,6 +41,12 @@ export interface Opportunity {
 
 interface OpportunityPage { items: Opportunity[]; page: number; page_size: number; total: number; total_pages: number }
 
+interface SourceHealth {
+  id: string; name: string; status: string; health_score: number; policy_version: string
+  last_success_at?: string; latest_run_status?: string; latest_run_error?: string
+  latest_run_metrics: Record<string, number>; lag_seconds?: number; pending_runs: number
+}
+
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
 
@@ -57,6 +63,8 @@ export function Dashboard() {
   const [selected, setSelected] = useState<Opportunity | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [sources, setSources] = useState<SourceHealth[]>([])
+  const [sourceError, setSourceError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -71,6 +79,15 @@ export function Dashboard() {
   }, [auth.request, minimumScore, page, relevance, reviewOnly, search, status])
 
   useEffect(load, [load])
+
+  const loadSources = useCallback(() => {
+    setSourceError('')
+    auth.request<{ items: SourceHealth[] }>('/api/v1/sources')
+      .then(body => setSources(body.items))
+      .catch(() => setSourceError('Source health belum dapat dimuat.'))
+  }, [auth.request])
+
+  useEffect(loadSources, [loadSources])
 
   const deadlineSoon = useMemo(() => result.items.filter(item => {
     if (!item.registration_deadline) return false
@@ -125,6 +142,17 @@ export function Dashboard() {
               <span className={`lifecycle ${item.lifecycle_status}`}>{item.lifecycle_status.replaceAll('_', ' ')}</span>
             </button>)}</div>}
           <div className="pagination"><button disabled={page <= 1} onClick={() => setPage(value => value - 1)}>Previous</button><span>Page {result.page} of {Math.max(result.total_pages, 1)}</span><button disabled={page >= result.total_pages} onClick={() => setPage(value => value + 1)}>Next</button></div>
+        </section>
+        <section className="operations" id="operations">
+          <div className="section-heading"><div><p className="eyebrow">Operations</p><h2>Source health</h2></div><button onClick={loadSources}>Refresh</button></div>
+          {sourceError ? <div className="feed-error" role="alert">{sourceError}</div> :
+            <div className="source-grid">{sources.map(source => <article key={source.id}>
+              <div className="source-title"><strong>{source.name}</strong><span className={`health health-${source.status}`}>{source.status}</span></div>
+              <dl><div><dt>Health</dt><dd>{source.health_score}/100</dd></div><div><dt>Latest run</dt><dd>{source.latest_run_status || 'never'}</dd></div><div><dt>Pending</dt><dd>{source.pending_runs}</dd></div><div><dt>Lag</dt><dd>{source.lag_seconds == null ? 'never' : `${Math.floor(source.lag_seconds / 60)} min`}</dd></div></dl>
+              <small>{source.last_success_at ? `Last success ${date.format(new Date(source.last_success_at))}` : 'No successful run yet'}</small>
+              {source.latest_run_error && <p className="source-error">{source.latest_run_error}</p>}
+              <p className="source-metrics">{source.latest_run_metrics?.unique_candidates ?? source.latest_run_metrics?.candidates ?? 0} candidates · {source.latest_run_metrics?.new_snapshots ?? 0} new</p>
+            </article>)}</div>}
         </section>
       </main>
       {selected && <div className="detail-backdrop" role="presentation" onMouseDown={() => setSelected(null)}><section className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={event => event.stopPropagation()}>

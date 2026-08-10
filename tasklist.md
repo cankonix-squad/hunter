@@ -12,11 +12,11 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 
 ## Kondisi terakhir
 
-- Terakhir diperbarui: 9 Agustus 2026
+- Terakhir diperbarui: 10 Agustus 2026
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 11
+- Migrasi database aktif: versi 12
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -202,7 +202,7 @@ belum ada data atau biaya yang dikirim ke pihak ketiga.
 - [x] Adapter regression tests
 - [x] Incremental discovery via fingerprint; detail HTTP 403 tidak diambil
 - [x] Server-side keyword search, pagination terbatas, dan deduplikasi lintas keyword
-- [ ] Source-specific lag/error metrics
+- [x] Source-specific lag/error metrics
 - [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
 - [~] Lima source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur);
   perluas bertahap menuju 20 priority sources setelah stability observation
@@ -226,6 +226,13 @@ dan memfilter keyword berdasarkan batas kata. Total database menjadi 171 paket p
 nyata; 70 terklasifikasi relevant. Paket IT nyata pada batch ini mayoritas sudah selesai
 dan hanya tampil bila lifecycle `All` dipilih.
 
+Increment operasi 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
+jam untuk lima source publik aktif, serta source health console dengan health score,
+status dan metrik run terakhir, crawl lag, queue depth, dan safe error. Acceptance
+scheduler menghasilkan tepat satu run sukses per source pada satu attempt tanpa snapshot
+duplikat; fixture tetap tidak dijadwalkan. Go test/vet, 7 frontend tests, production
+build, container build, dan smoke test HTTP lulus.
+
 ### Notifications dan operations
 
 - [ ] Alert rules untuk opportunity/material changes
@@ -233,8 +240,8 @@ dan hanya tampil bila lifecycle `All` dipilih.
 - [ ] Notification deduplication
 - [ ] Email adapter
 - [ ] Webhook adapter
-- [ ] Source health console
-- [ ] Queue/lag/error dashboard
+- [x] Source health console
+- [x] Queue/lag/error dashboard
 - [ ] Dead-letter replay workflow
 - [ ] Failure recovery runbook
 

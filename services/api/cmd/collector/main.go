@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -32,7 +33,19 @@ func main() {
 		owner = "collector-local-1"
 	}
 	runner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}, collector.NewPublicSPSEAdapter(nil)), owner)
-	slog.Info("collector started", "owner", owner)
+	schedulerEnabled, _ := strconv.ParseBool(os.Getenv("COLLECTOR_SCHEDULER_ENABLED"))
+	scheduler := collector.NewScheduler(db)
+	scheduleTicker := time.NewTicker(time.Minute)
+	defer scheduleTicker.Stop()
+	if schedulerEnabled {
+		result, scheduleErr := scheduler.Tick(ctx)
+		if scheduleErr != nil {
+			slog.Error("initial source scheduling failed", "error", scheduleErr)
+		} else if result.Queued > 0 {
+			slog.Info("scheduled source runs", "eligible", result.Eligible, "queued", result.Queued)
+		}
+	}
+	slog.Info("collector started", "owner", owner, "scheduler_enabled", schedulerEnabled)
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -46,6 +59,15 @@ func main() {
 		select {
 		case <-ctx.Done():
 			return
+		case <-scheduleTicker.C:
+			if schedulerEnabled {
+				result, scheduleErr := scheduler.Tick(ctx)
+				if scheduleErr != nil {
+					slog.Error("source scheduling failed", "error", scheduleErr)
+				} else if result.Queued > 0 {
+					slog.Info("scheduled source runs", "eligible", result.Eligible, "queued", result.Queued)
+				}
+			}
 		case <-ticker.C:
 		}
 	}

@@ -32,7 +32,9 @@ describe('Dashboard', () => {
     })
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
       const path = String(input)
-      const body = path.includes(opportunity.id)
+      const body = path.includes('/api/v1/sources')
+        ? { items: [{ id: 'source-1', name: 'LPSE Contoh', status: 'active', health_score: 100, policy_version: 'v1', latest_run_status: 'succeeded', latest_run_metrics: { candidates: 1, new_snapshots: 1 }, lag_seconds: 60, pending_runs: 0 }] }
+        : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
       return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -46,6 +48,8 @@ describe('Dashboard', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('include_data')
     expect(screen.getByRole('dialog')).toHaveTextContent('Belum dijalankan')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
+    expect(await screen.findByText('Source health')).toBeInTheDocument()
+    expect(screen.getByText('100/100')).toBeInTheDocument()
   })
 
   it('switches to the needs-review queue endpoint', async () => {
@@ -53,7 +57,7 @@ describe('Dashboard', () => {
       accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
       user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
     })
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/sources') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     render(<AuthProvider><Dashboard /></AuthProvider>)
     await screen.findByText('No opportunities found.')
     await userEvent.click(screen.getByLabelText('Review queue only'))

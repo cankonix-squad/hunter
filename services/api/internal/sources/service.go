@@ -14,17 +14,28 @@ import (
 )
 
 type Source struct {
-	ID             string          `json:"id"`
-	Name           string          `json:"name"`
-	BaseURL        string          `json:"base_url"`
-	Timezone       string          `json:"timezone"`
-	AdapterName    string          `json:"adapter_name"`
-	AdapterVersion string          `json:"adapter_version"`
-	Status         string          `json:"status"`
-	Policy         json.RawMessage `json:"policy"`
-	HealthScore    int16           `json:"health_score"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
+	ID                  string          `json:"id"`
+	Name                string          `json:"name"`
+	BaseURL             string          `json:"base_url"`
+	Timezone            string          `json:"timezone"`
+	AdapterName         string          `json:"adapter_name"`
+	AdapterVersion      string          `json:"adapter_version"`
+	Status              string          `json:"status"`
+	Policy              json.RawMessage `json:"policy"`
+	HealthScore         int16           `json:"health_score"`
+	PolicyVersion       string          `json:"policy_version"`
+	ConsecutiveFailures int             `json:"consecutive_failures"`
+	CircuitOpenUntil    *time.Time      `json:"circuit_open_until,omitempty"`
+	LastSuccessAt       *time.Time      `json:"last_success_at,omitempty"`
+	LastFailureAt       *time.Time      `json:"last_failure_at,omitempty"`
+	LatestRunStatus     string          `json:"latest_run_status,omitempty"`
+	LatestRunMetrics    json.RawMessage `json:"latest_run_metrics"`
+	LatestRunError      string          `json:"latest_run_error,omitempty"`
+	LatestRunAt         *time.Time      `json:"latest_run_at,omitempty"`
+	LagSeconds          *int64          `json:"lag_seconds,omitempty"`
+	PendingRuns         int             `json:"pending_runs"`
+	CreatedAt           time.Time       `json:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at"`
 }
 
 type CreateInput struct {
@@ -47,8 +58,16 @@ type Service struct{ db *pgxpool.Pool }
 func New(db *pgxpool.Pool) *Service { return &Service{db: db} }
 
 func (s *Service) List(ctx context.Context) ([]Source, error) {
-	rows, err := s.db.Query(ctx, `SELECT id::text, name, base_url, timezone, adapter_name, adapter_version,
-		status::text, policy, health_score, created_at, updated_at FROM sources ORDER BY name`)
+	rows, err := s.db.Query(ctx, `SELECT s.id::text, s.name, s.base_url, s.timezone, s.adapter_name, s.adapter_version,
+		s.status::text, s.policy, s.health_score, s.policy_version, s.consecutive_failures,
+		s.circuit_open_until, s.last_success_at, s.last_failure_at,
+		coalesce(latest.status::text,''), coalesce(latest.metrics,'{}'::jsonb), coalesce(latest.safe_error,''),
+		latest.created_at,
+		CASE WHEN s.last_success_at IS NULL THEN NULL ELSE extract(epoch FROM now()-s.last_success_at)::bigint END,
+		(SELECT count(*)::integer FROM source_runs pending WHERE pending.source_id=s.id AND pending.status IN ('queued','running')),
+		s.created_at, s.updated_at
+		FROM sources s LEFT JOIN LATERAL (SELECT status,metrics,safe_error,created_at FROM source_runs
+		WHERE source_id=s.id ORDER BY created_at DESC LIMIT 1) latest ON true ORDER BY s.name`)
 	if err != nil {
 		return nil, fmt.Errorf("list sources: %w", err)
 	}
@@ -57,7 +76,10 @@ func (s *Service) List(ctx context.Context) ([]Source, error) {
 	for rows.Next() {
 		var item Source
 		if err := rows.Scan(&item.ID, &item.Name, &item.BaseURL, &item.Timezone, &item.AdapterName,
-			&item.AdapterVersion, &item.Status, &item.Policy, &item.HealthScore, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			&item.AdapterVersion, &item.Status, &item.Policy, &item.HealthScore, &item.PolicyVersion,
+			&item.ConsecutiveFailures, &item.CircuitOpenUntil, &item.LastSuccessAt, &item.LastFailureAt,
+			&item.LatestRunStatus, &item.LatestRunMetrics, &item.LatestRunError, &item.LatestRunAt,
+			&item.LagSeconds, &item.PendingRuns, &item.CreatedAt, &item.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan source: %w", err)
 		}
 		items = append(items, item)
@@ -107,6 +129,9 @@ func (s *Service) Update(ctx context.Context, actorID, sourceID string, in Updat
 	var object map[string]any
 	if json.Unmarshal(in.Policy, &object) != nil || object == nil {
 		return Source{}, errors.New("policy must be a JSON object")
+	}
+	if err := validateSchedulePolicy(object); err != nil {
+		return Source{}, err
 	}
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
@@ -163,6 +188,24 @@ func validate(in *CreateInput) error {
 	var object map[string]any
 	if json.Unmarshal(in.Policy, &object) != nil || object == nil {
 		return errors.New("policy must be a JSON object")
+	}
+	if err := validateSchedulePolicy(object); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateSchedulePolicy(policy map[string]any) error {
+	if enabled, exists := policy["schedule_enabled"]; exists {
+		if _, ok := enabled.(bool); !ok {
+			return errors.New("policy.schedule_enabled must be a boolean")
+		}
+	}
+	if interval, exists := policy["schedule_interval_minutes"]; exists {
+		minutes, ok := interval.(float64)
+		if !ok || minutes != float64(int64(minutes)) || minutes < 5 || minutes > 10080 {
+			return errors.New("policy.schedule_interval_minutes must be an integer between 5 and 10080")
+		}
 	}
 	return nil
 }

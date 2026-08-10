@@ -55,6 +55,7 @@ services:
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-168h}
       COLLECTOR_ID: ${COLLECTOR_ID:-collector-local-1}
+      COLLECTOR_SCHEDULER_ENABLED: ${COLLECTOR_SCHEDULER_ENABLED:-true}
     depends_on:
       postgres:
         condition: service_healthy

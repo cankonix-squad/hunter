@@ -220,7 +220,7 @@ owner saat ini. Acceptance API assign lalu unassign berhasil, assignment kembali
 dan event `opportunity.assigned` serta `opportunity.unassigned` tersimpan. Go race/vet,
 8 frontend tests, build, OpenAPI, container build, dan migration acceptance lulus.
 
-Internal comments memakai migration v15 dan menyimpan komentar immutable dengan author
+Internal comments (commit `dd94328`) memakai migration v15 dan menyimpan komentar immutable dengan author
 serta timestamp dalam timeline kronologis. Semua user terautentikasi dapat membaca dan
 menambahkan komentar tervalidasi maksimal 4000 karakter; setiap create menghasilkan audit
 event yang merujuk comment ID. Detail drawer memuat diskusi dan safe error state. Acceptance
@@ -324,6 +324,7 @@ build, container build, dan smoke test HTTP lulus.
 | `1d9d929` | Personal saved views dengan combined filters dan audit create/delete |
 | `598501f` | Full opportunity change timeline dengan material field diff |
 | `4b65a28` | Opportunity ownership assignment dengan team selector, RBAC, dan audit |
+| `dd94328` | Internal opportunity comments dengan author, timeline, dan audit |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

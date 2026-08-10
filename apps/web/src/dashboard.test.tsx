@@ -47,6 +47,8 @@ describe('Dashboard', () => {
         ? { opportunity_id: opportunity.id, shortlisted: false }
         : path.includes('/decision')
         ? { decision: null }
+        : path.includes('/next-action')
+        ? { next_action: null }
         : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
@@ -65,6 +67,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Perlu validasi teknis.')
     expect(screen.getByRole('button', { name: '☆ Add to shortlist' })).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toHaveTextContent('Undecided')
+    expect(screen.getByLabelText('Next action')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()

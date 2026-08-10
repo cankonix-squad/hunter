@@ -292,6 +292,36 @@ paths:
         '403': { description: Workflow role required }
         '404': { description: Opportunity not found }
         '422': { description: Invalid decision or missing reason }
+  /api/v1/opportunities/{id}/next-action:
+    get:
+      operationId: getOpportunityNextAction
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Current next action or null }
+        '404': { description: Opportunity not found }
+    patch:
+      operationId: updateOpportunityNextAction
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [action, due_at]
+              properties:
+                action: { type: [string, 'null'], minLength: 3, maxLength: 500 }
+                due_at: { type: [string, 'null'], format: date-time }
+      responses:
+        '200': { description: Next action updated or cleared }
+        '403': { description: Workflow role required }
+        '404': { description: Opportunity not found }
+        '422': { description: Action and due date must be provided together }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 17
+- Migrasi database aktif: versi 18
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -193,7 +193,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Internal comments
 - [x] Shortlist
 - [x] Pursue/pass decision dengan reason wajib
-- [ ] Next action dan deadline
+- [x] Next action dan deadline
 - [ ] Readiness checklist
 - [ ] Human override untuk recommendation/score
 - [ ] Audit log seluruh decision dan override
@@ -240,6 +240,13 @@ score, maupun AI. Workflow role dapat menetapkan `pursue` atau `pass` hanya deng
 dengan previous/new decision dan reason. Acceptance membuktikan alasan kosong ditolak HTTP
 422, transisi undecided → pursue → pass menghasilkan metadata audit yang tepat, lalu state
 acceptance dibersihkan. Go race/vet, 8 frontend tests, build, OpenAPI, dan container lulus.
+
+Next action memakai migration v18 dengan satu action aktif, UTC deadline, updating actor,
+serta timestamps per opportunity. Workflow role dapat update atau clear; UI menerima waktu
+Asia/Jakarta, mengirim UTC, dan menandai action overdue. Setiap perubahan menghasilkan audit
+event dengan action/deadline atau clear event. Acceptance update → clear mempertahankan UTC
+deadline yang tepat dan menyimpan kedua audit event. Go race/vet, 8 frontend tests, build,
+OpenAPI, migration, dan container acceptance lulus.
 
 ### Public SPSE adapter
 

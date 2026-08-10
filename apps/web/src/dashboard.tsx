@@ -57,9 +57,11 @@ interface Assignment { opportunity_id: string; assignee_user_id: string; assigne
 interface OpportunityComment { id: string; opportunity_id: string; author_user_id: string; author_name: string; body: string; created_at: string }
 interface ShortlistState { opportunity_id: string; shortlisted: boolean; shortlisted_by?: string; actor_name?: string; updated_at?: string }
 interface HumanDecision { opportunity_id: string; decision: 'pursue' | 'pass'; reason: string; decided_by: string; decider_name: string; decided_at: string; updated_at: string }
+interface NextAction { opportunity_id: string; action: string; due_at: string; updated_by: string; updater_name: string; created_at: string; updated_at: string }
 
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
+const jakartaInput = (value: string) => new Date(new Date(value).getTime() + 7 * 3600000).toISOString().slice(0, 16)
 
 export function Dashboard() {
   const auth = useAuth()
@@ -92,6 +94,10 @@ export function Dashboard() {
   const [decisionChoice, setDecisionChoice] = useState('')
   const [decisionReason, setDecisionReason] = useState('')
   const [decisionError, setDecisionError] = useState('')
+  const [nextAction, setNextAction] = useState<NextAction | null>(null)
+  const [nextActionInput, setNextActionInput] = useState('')
+  const [nextActionDue, setNextActionDue] = useState('')
+  const [nextActionError, setNextActionError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -173,8 +179,8 @@ export function Dashboard() {
     setError('')
     setAssignmentError('')
     try {
-      const [detail, owner, discussion, shortlist, humanDecision] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`), auth.request<{ items: OpportunityComment[] }>(`/api/v1/opportunities/${id}/comments`), auth.request<ShortlistState>(`/api/v1/opportunities/${id}/shortlist`), auth.request<{ decision: HumanDecision | null }>(`/api/v1/opportunities/${id}/decision`)])
-      setSelected(detail); setAssignment(owner.assignment); setComments(discussion.items); setShortlistState(shortlist); setDecision(humanDecision.decision); setDecisionChoice(humanDecision.decision?.decision ?? ''); setDecisionReason(humanDecision.decision?.reason ?? ''); setDecisionError(''); setCommentInput(''); setCommentError('')
+      const [detail, owner, discussion, shortlist, humanDecision, action] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`), auth.request<{ items: OpportunityComment[] }>(`/api/v1/opportunities/${id}/comments`), auth.request<ShortlistState>(`/api/v1/opportunities/${id}/shortlist`), auth.request<{ decision: HumanDecision | null }>(`/api/v1/opportunities/${id}/decision`), auth.request<{ next_action: NextAction | null }>(`/api/v1/opportunities/${id}/next-action`)])
+      setSelected(detail); setAssignment(owner.assignment); setComments(discussion.items); setShortlistState(shortlist); setDecision(humanDecision.decision); setDecisionChoice(humanDecision.decision?.decision ?? ''); setDecisionReason(humanDecision.decision?.reason ?? ''); setDecisionError(''); setNextAction(action.next_action); setNextActionInput(action.next_action?.action ?? ''); setNextActionDue(action.next_action ? jakartaInput(action.next_action.due_at) : ''); setNextActionError(''); setCommentInput(''); setCommentError('')
     }
     catch { setError('Detail peluang belum dapat dimuat.') }
   }
@@ -210,6 +216,12 @@ export function Dashboard() {
       setDecision(body.decision); setDecisionReason(body.decision.reason); setDecisionError('')
     } catch { setDecisionError('Keputusan gagal disimpan.') }
   }
+
+  async function submitNextAction(event: FormEvent) {
+    event.preventDefault(); if (!selected || nextActionInput.trim().length < 3 || !nextActionDue) { setNextActionError('Action dan deadline wajib diisi.'); return }
+    try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('') } catch { setNextActionError('Next action gagal disimpan.') }
+  }
+  async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('')}catch{setNextActionError('Next action gagal dihapus.')} }
 
   return (
     <div className="shell">
@@ -272,6 +284,7 @@ export function Dashboard() {
         <section className="assignment-card"><p className="eyebrow">Opportunity owner</p><strong>{assignment?.assignee_name ?? 'Unassigned'}</strong><select aria-label="Assign opportunity owner" value={assignment?.assignee_user_id ?? ''} onChange={event => void assignOwner(event.target.value)} disabled={!auth.session?.user.roles.some(role => ['administrator','operator','business_development','bid_manager'].includes(role))}><option value="">Unassigned</option>{team.map(member => <option key={member.user_id} value={member.user_id}>{member.name}</option>)}</select>{assignmentError && <small role="alert">{assignmentError}</small>}</section>
         {shortlistState && <button className={`shortlist-button ${shortlistState.shortlisted ? 'selected' : ''}`} onClick={() => void toggleShortlist()}>{shortlistState.shortlisted ? '★ Shortlisted' : '☆ Add to shortlist'}</button>}
         <section className={`decision-card ${decision?.decision ?? ''}`}><p className="eyebrow">Human decision</p><h3>{decision ? decision.decision : 'Undecided'}</h3>{decision && <p>{decision.reason}<small>Decided by {decision.decider_name} · {date.format(new Date(decision.updated_at))}</small></p>}<form onSubmit={submitDecision}><select aria-label="Pursue or pass decision" value={decisionChoice} onChange={event => setDecisionChoice(event.target.value)}><option value="">Choose decision…</option><option value="pursue">Pursue</option><option value="pass">Pass</option></select><textarea aria-label="Decision reason" maxLength={2000} value={decisionReason} onChange={event => setDecisionReason(event.target.value)} placeholder="Required reason…" /><button type="submit" disabled={!auth.session?.user.roles.some(role => ['administrator','operator','business_development','bid_manager','executive'].includes(role))}>Save decision</button>{decisionError && <small role="alert">{decisionError}</small>}</form></section>
+        <section className={`next-action-card ${nextAction && new Date(nextAction.due_at).getTime() < Date.now() ? 'overdue' : ''}`}><p className="eyebrow">Next action</p>{nextAction && <p><strong>{nextAction.action}</strong><span>Due {date.format(new Date(nextAction.due_at))} · updated by {nextAction.updater_name}</span></p>}<form onSubmit={submitNextAction}><input aria-label="Next action" maxLength={500} value={nextActionInput} onChange={event=>setNextActionInput(event.target.value)} placeholder="e.g. Validate technical scope"/><label>Deadline · Asia/Jakarta<input aria-label="Next action deadline" type="datetime-local" value={nextActionDue} onChange={event=>setNextActionDue(event.target.value)}/></label><div><button type="submit">Save action</button>{nextAction&&<button type="button" onClick={()=>void clearNextAction()}>Clear</button>}</div>{nextActionError&&<small role="alert">{nextActionError}</small>}</form></section>
         {selected.classification && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Deterministic classification</p><h3>{selected.classification.disposition.replaceAll('_', ' ')}</h3></div><strong>{(selected.classification.confidence_bp / 100).toFixed(0)}%</strong></div><p>{selected.classification.explanation}</p>{selected.classification.auto_rejected && <div className="exclusion-warning">Approved deterministic exclusion · not an AI recommendation</div>}<ul>{selected.classification.evidence.map((evidence, index) => <li key={`${evidence.rule_code}-${index}`}><strong>{evidence.rule_code}</strong><span>“{evidence.keyword}” in {evidence.source_field}</span></li>)}</ul></section>}
         {selected.score && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Explainable score</p><h3>{(selected.score.total_score_bp / 100).toFixed(0)} / 100</h3></div><strong>{selected.score.needs_review ? 'Review' : 'Ready'}</strong></div><p>{selected.score.explanation}</p><div className="score-breakdown">{selected.score.dimensions.map(dimension => <div key={dimension.code}><span>{dimension.code.replaceAll('_', ' ')}</span><progress max="10000" value={dimension.raw_score_bp} /><strong>{(dimension.raw_score_bp / 100).toFixed(0)}</strong><small>{dimension.explanation}</small></div>)}</div></section>}
         <section className="timeline"><p className="eyebrow">Change timeline</p><h3>{selected.history?.length ?? 0} observations</h3>{selected.history?.map((version, index) => <article key={version.id}><i /><div><strong>{index === selected.history!.length - 1 ? 'Initial observation' : version.changed_fields.length ? version.changed_fields.map(field => field.replaceAll('_', ' ')).join(' · ') : 'Observed again'}</strong><time>{date.format(new Date(version.observed_at))}</time><span>{version.lifecycle_status.replaceAll('_', ' ')} · snapshot {version.snapshot_id.slice(0, 8)}</span></div></article>)}</section>

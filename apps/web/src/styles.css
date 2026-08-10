@@ -114,6 +114,16 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .decision-card textarea { min-height: 74px; resize: vertical; }
 .decision-card form button { justify-self: start; margin: 0; }
 .decision-card form small { color: #7e2424; }
+.next-action-card { margin: 20px 0; padding: 18px; background: #e9e9e5; border: 1px solid #bbb; }
+.next-action-card.overdue { border-left: 5px solid #9b3232; }
+.next-action-card > p:not(.eyebrow) { display: grid; gap: 5px; }
+.next-action-card p span { color: #777; font-size: 10px; }
+.next-action-card form { display: grid; gap: 9px; margin-top: 14px; }
+.next-action-card form > input, .next-action-card label input { width: 100%; padding: 10px; border: 1px solid #aaa; font: inherit; }
+.next-action-card label { display: grid; gap: 5px; color: #777; font-size: 9px; text-transform: uppercase; }
+.next-action-card form div { display: flex; gap: 8px; }
+.next-action-card button { margin: 0; }
+.next-action-card form small { color: #7e2424; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

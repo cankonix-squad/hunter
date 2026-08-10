@@ -65,6 +65,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 | `opportunity_comments` | opportunity, author, immutable internal comment, timestamp |
 | `opportunity_shortlist` | shared shortlist state, actor, timestamps |
 | `opportunity_decisions` | human pursue/pass decision, mandatory reason, actor, timestamps |
+| `opportunity_next_actions` | active next action, UTC deadline, updating actor, timestamps |
 
 ## 6. API surface
 
@@ -80,6 +81,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `GET|POST /api/v1/opportunities/{id}/comments`
 - `GET|PATCH /api/v1/opportunities/{id}/shortlist`
 - `GET|PATCH /api/v1/opportunities/{id}/decision`
+- `GET|PATCH /api/v1/opportunities/{id}/next-action`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`

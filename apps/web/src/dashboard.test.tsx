@@ -49,6 +49,8 @@ describe('Dashboard', () => {
         ? { decision: null }
         : path.includes('/next-action')
         ? { next_action: null }
+        : path.includes('/readiness')
+        ? { opportunity_id: opportunity.id, version: 'readiness-v1', completed: 0, total: 1, items: [{ code: 'scope_validated', label: 'Scope and deliverables validated', completed: false, note: '' }] }
         : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
@@ -68,6 +70,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('button', { name: '☆ Add to shortlist' })).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toHaveTextContent('Undecided')
     expect(screen.getByLabelText('Next action')).toBeInTheDocument()
+    expect(screen.getByLabelText('Scope and deliverables validated')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()

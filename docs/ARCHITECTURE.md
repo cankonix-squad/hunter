@@ -66,6 +66,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 | `opportunity_shortlist` | shared shortlist state, actor, timestamps |
 | `opportunity_decisions` | human pursue/pass decision, mandatory reason, actor, timestamps |
 | `opportunity_next_actions` | active next action, UTC deadline, updating actor, timestamps |
+| `opportunity_readiness_items` | versioned checklist item status, note, actor, timestamp |
 
 ## 6. API surface
 
@@ -82,6 +83,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `GET|PATCH /api/v1/opportunities/{id}/shortlist`
 - `GET|PATCH /api/v1/opportunities/{id}/decision`
 - `GET|PATCH /api/v1/opportunities/{id}/next-action`
+- `GET|PATCH /api/v1/opportunities/{id}/readiness`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`

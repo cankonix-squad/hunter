@@ -124,6 +124,15 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .next-action-card form div { display: flex; gap: 8px; }
 .next-action-card button { margin: 0; }
 .next-action-card form small { color: #7e2424; }
+.readiness-card { margin: 20px 0; padding: 18px; background: white; border: 1px solid #bbb; }
+.readiness-card > div { display: flex; justify-content: space-between; align-items: center; }
+.readiness-card > div strong { font: 700 16px ui-monospace,monospace; }
+.readiness-card > progress { width: 100%; margin: 12px 0 16px; accent-color: #287342; }
+.readiness-card article { padding: 11px 0; display: grid; grid-template-columns: minmax(180px,1fr) 1fr auto; gap: 8px; border-top: 1px solid #ddd; align-items: center; }
+.readiness-card article label { display: flex; gap: 8px; align-items: center; font-size: 11px; }
+.readiness-card article > input { min-width: 0; padding: 8px; border: 1px solid #bbb; font: inherit; }
+.readiness-card article button { margin: 0; padding: 8px 10px; }
+.readiness-card > small { color: #7e2424; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

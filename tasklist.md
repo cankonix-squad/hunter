@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 18
+- Migrasi database aktif: versi 19
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -194,7 +194,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Shortlist
 - [x] Pursue/pass decision dengan reason wajib
 - [x] Next action dan deadline
-- [ ] Readiness checklist
+- [x] Readiness checklist
 - [ ] Human override untuk recommendation/score
 - [ ] Audit log seluruh decision dan override
 - [ ] Initial pipeline analytics
@@ -247,6 +247,14 @@ Asia/Jakarta, mengirim UTC, dan menandai action overdue. Setiap perubahan mengha
 event dengan action/deadline atau clear event. Acceptance update → clear mempertahankan UTC
 deadline yang tepat dan menyimpan kedua audit event. Go race/vet, 8 frontend tests, build,
 OpenAPI, migration, dan container acceptance lulus.
+
+Readiness checklist memakai migration v19 dan checklist version `readiness-v1` dengan lima
+item stabil: scope, eligibility, delivery capacity, commercial review, dan document plan.
+Setiap item memiliki completion state, note, updater, timestamp, serta audit metadata;
+API mengembalikan progress aggregate dan UI menampilkan progress/toggle/note. Acceptance
+menyelesaikan `scope_validated`, menghasilkan progress 1/5 dan audit yang tepat, lalu data
+acceptance dibersihkan. Go race/vet, 8 frontend tests, build, OpenAPI, migration, dan
+container acceptance lulus (satu retry build diperlukan setelah DNS registry transien).
 
 ### Public SPSE adapter
 

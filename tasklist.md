@@ -287,7 +287,8 @@ container build, dan health check lulus.
 - [x] Server-side keyword search, pagination terbatas, dan deduplikasi lintas keyword
 - [x] Source-specific lag/error metrics
 - [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
-- [~] Lima source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur);
+- [~] Sepuluh source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur,
+  Jawa Tengah, DI Yogyakarta, Banten, Sumatera Utara, Sulawesi Selatan);
   perluas bertahap menuju 20 priority sources setelah stability observation
 
 Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan halaman
@@ -308,6 +309,14 @@ nilai kontrak yang belum tersedia sebagai unknown, membersihkan badge HTML dari 
 dan memfilter keyword berdasarkan batas kata. Total database menjadi 171 paket publik
 nyata; 70 terklasifikasi relevant. Paket IT nyata pada batch ini mayoritas sudah selesai
 dan hanya tampil bila lifecycle `All` dipilih.
+
+Batch source kedua (commit `ebf1362`) memakai migration v21 dan menambah Jawa Tengah, DI Yogyakarta,
+Banten, Sumatera Utara, serta Sulawesi Selatan. Review 10 Agustus 2026 memastikan
+robots.txt resmi mengizinkan seluruh tenant dan kelima listing publik merespons HTTP
+200. Scheduler menghasilkan satu run per source; semuanya sukses pada attempt pertama:
+Jawa Tengah 0 kandidat, DI Yogyakarta 2, Banten 2, Sumatera Utara 3, dan Sulawesi
+Selatan 0. Seluruh tujuh paket yang ditemukan tersimpan sebagai snapshot baru; tidak
+ada safe error dan paket nonaktif tetap tidak masuk active feed.
 
 Increment operasi (commit `62946b7`) pada 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
 jam untuk lima source publik aktif, serta source health console dengan health score,
@@ -382,6 +391,7 @@ build, container build, dan smoke test HTTP lulus.
 | `c139fec` | Unified opportunity audit activity timeline untuk seluruh workflow |
 | `2281fd7` | Initial pipeline analytics untuk portfolio dan next-action risk |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
+| `ebf1362` | Batch kedua lima source SPSE hingga total sepuluh source aktif |
 
 ## Aturan pembaruan task list
 

@@ -1,0 +1,22 @@
+{
+  "version": "classification-golden-v1",
+  "taxonomy_version": "cankonix-it-v1",
+  "review_status": "candidate",
+  "cases": [
+    {"id":"software-web","title":"Pengembangan Aplikasi Web Pelayanan Publik","procurement_type":"Jasa Lainnya","expected_disposition":"relevant","expected_category":"software-engineering"},
+    {"id":"software-system","title":"Pembangunan Sistem Informasi Kepegawaian","procurement_type":"Jasa Konsultansi","expected_disposition":"relevant","expected_category":"software-engineering"},
+    {"id":"data-integration","title":"Pengadaan Layanan Integrasi Data","procurement_type":"Jasa Lainnya","expected_disposition":"relevant","expected_category":"data-ai"},
+    {"id":"data-analytics","title":"Pembangunan Analitik Data Sektoral","procurement_type":"Jasa Konsultansi","expected_disposition":"relevant","expected_category":"data-ai"},
+    {"id":"cloud","title":"Layanan Cloud untuk Platform Pemerintah","procurement_type":"Jasa Lainnya","expected_disposition":"relevant","expected_category":"cloud-infrastructure"},
+    {"id":"security","title":"Jasa Penetration Test Aplikasi","procurement_type":"Jasa Konsultansi","expected_disposition":"relevant","expected_category":"cybersecurity"},
+    {"id":"office-supply","title":"Pengadaan Alat Tulis Kantor Tahun 2026","procurement_type":"Barang","expected_disposition":"excluded"},
+    {"id":"uniform","title":"Belanja Seragam Pegawai Lapangan","procurement_type":"Barang","expected_disposition":"excluded"},
+    {"id":"catering","title":"Pengadaan Katering Rapat Koordinasi","procurement_type":"Jasa Lainnya","expected_disposition":"excluded"},
+    {"id":"printer-toner","title":"Pengadaan Toner Printer","procurement_type":"Barang","expected_disposition":"excluded"},
+    {"id":"printer-paper","title":"Belanja Kertas Printer Tahunan","procurement_type":"Barang","expected_disposition":"excluded"},
+    {"id":"organization","title":"Jasa Konsultansi Transformasi Organisasi","procurement_type":"Jasa Konsultansi","expected_disposition":"needs_review"},
+    {"id":"network","title":"Belanja Perangkat Jaringan Kantor","procurement_type":"Barang","expected_disposition":"needs_review"},
+    {"id":"training","title":"Pelatihan Literasi Digital Pegawai","procurement_type":"Jasa Lainnya","expected_disposition":"needs_review"},
+    {"id":"conflict","title":"Pengembangan Aplikasi dan Pengadaan Alat Tulis Kantor","procurement_type":"Jasa Lainnya","expected_disposition":"needs_review"}
+  ]
+}

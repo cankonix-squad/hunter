@@ -168,7 +168,7 @@ production build, `go test -race ./...`, dan `go vet ./...` lulus.
 - [x] Cache berdasarkan input fingerprint
 - [x] Per-run dan daily cost budget
 - [x] Provider/model/confidence/evidence persistence
-- [ ] Golden dataset dan evaluation runner
+- [~] Evaluation runner dan candidate golden dataset tersedia; menunggu domain-owner approval
 - [x] Safe fallback saat provider tidak tersedia atau output invalid
 
 Bukti: commit `28f2972`; migration v9; package `internal/ai` menyediakan provider, prompt, store, dan budget
@@ -176,6 +176,12 @@ contracts; output invalid diperbaiki paling banyak satu kali; evidence wajib ber
 field input; provider/budget failure menghasilkan fallback `needs_review`. `go test -race
 ./...` dan `go vet ./...` lulus. Provider eksternal dan AI worker belum diaktifkan, sehingga
 belum ada data atau biaya yang dikirim ke pihak ketiga.
+
+Candidate golden dataset v1 berisi 15 kasus versioned untuk tiga disposition dan empat
+kategori relevan. Runner memvalidasi schema/taxonomy, menghasilkan confusion matrix,
+precision/recall per label, accuracy, macro precision, serta exit gate untuk CI. Baseline
+saat ini 15/15 dan macro precision 10000 bp; status tetap `candidate`, sehingga MVP gate
+belum dianggap selesai sebelum review domain owner.
 
 ## Backlog MVP setelah classification/scoring
 

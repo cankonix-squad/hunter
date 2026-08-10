@@ -30,3 +30,23 @@ rule, keyword, source field, and matched field value. An excluded result only se
 
 This foundation does not remove opportunities from the active feed yet. Feed/API
 filters and the human review queue belong to the classification/scoring UI slice.
+
+## Golden-set regression evaluation
+
+The versioned candidate baseline lives at `services/api/testdata/classification_golden_v1.json`.
+It covers relevant categories, approved deterministic exclusions, unmatched cases,
+and conflicting evidence. Run the regression gate from `services/api`:
+
+```sh
+go run ./cmd/evaluate -dataset testdata/classification_golden_v1.json -minimum-precision-bp 8000
+```
+
+The runner validates dataset and taxonomy versions, reports a confusion matrix,
+per-label precision/recall, accuracy, failures, and macro precision. It exits with
+status 1 when macro precision is below the configured threshold and status 2 when
+the dataset or command is invalid. Dataset changes require human review; do not
+change labels merely to make a regression pass.
+
+The initial dataset has `review_status: candidate`. After domain-owner review, change
+that status to `approved`; release CI can then add `-require-approved`. A candidate
+result is useful for regression development but does not satisfy the MVP approval gate.

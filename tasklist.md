@@ -199,7 +199,7 @@ belum dianggap selesai sebelum review domain owner.
 - [ ] Audit log seluruh decision dan override
 - [ ] Initial pipeline analytics
 
-Saved views memakai migration v13 dan menyimpan kombinasi search, lifecycle, relevance,
+Saved views (commit `1d9d929`) memakai migration v13 dan menyimpan kombinasi search, lifecycle, relevance,
 minimum score, source, dan review-only per user. API create/list/delete membatasi ownership
 di query database dan mengaudit create/delete; dashboard dapat menyimpan, menerapkan, dan
 menghapus view. Acceptance API create/list/delete lulus dengan HTTP 204 saat delete dan dua
@@ -300,6 +300,7 @@ build, container build, dan smoke test HTTP lulus.
 | `28f2972` | Fondasi AI classification yang provider-neutral, tervalidasi, cached, dan budgeted |
 | `62946b7` | Scheduler source publik dan source health/lag/queue console |
 | `bca56f7` | Candidate golden dataset dan classification evaluation regression gate |
+| `1d9d929` | Personal saved views dengan combined filters dan audit create/delete |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

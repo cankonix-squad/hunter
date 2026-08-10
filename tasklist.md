@@ -241,7 +241,7 @@ dengan previous/new decision dan reason. Acceptance membuktikan alasan kosong di
 422, transisi undecided → pursue → pass menghasilkan metadata audit yang tepat, lalu state
 acceptance dibersihkan. Go race/vet, 8 frontend tests, build, OpenAPI, dan container lulus.
 
-Next action memakai migration v18 dengan satu action aktif, UTC deadline, updating actor,
+Next action (commit `03bca39`) memakai migration v18 dengan satu action aktif, UTC deadline, updating actor,
 serta timestamps per opportunity. Workflow role dapat update atau clear; UI menerima waktu
 Asia/Jakarta, mengirim UTC, dan menandai action overdue. Setiap perubahan menghasilkan audit
 event dengan action/deadline atau clear event. Acceptance update → clear mempertahankan UTC
@@ -348,6 +348,7 @@ build, container build, dan smoke test HTTP lulus.
 | `dd94328` | Internal opportunity comments dengan author, timeline, dan audit |
 | `baefc21` | Shared opportunity shortlist dengan feed filter dan audit toggle |
 | `bc7e121` | Auditable human pursue/pass decision dengan mandatory reason |
+| `03bca39` | Opportunity next action dengan UTC deadline dan overdue state |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

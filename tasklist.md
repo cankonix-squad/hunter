@@ -263,7 +263,7 @@ secara eksplisit terpisah dari model output. Acceptance menyimpan `relevant`/820
 clear, dan kedua audit event tersimpan. Go race/vet, 8 frontend tests, build, OpenAPI,
 migration, dan container acceptance lulus.
 
-Opportunity activity API/UI menyatukan audit assignment, comments, shortlist, decision,
+Opportunity activity API/UI (commit `c139fec`) menyatukan audit assignment, comments, shortlist, decision,
 next action, readiness, serta override dalam timeline newest-first, dengan actor, timestamp,
 dan metadata aman; hasil dibatasi 200 event per detail. Acceptance memuat 12 event dari 11
 jenis action workflow dengan actor yang benar. Go race/vet, 8 frontend tests, build,
@@ -372,6 +372,7 @@ build, container build, dan smoke test HTTP lulus.
 | `03bca39` | Opportunity next action dengan UTC deadline dan overdue state |
 | `f2b9fbd` | Versioned readiness checklist dengan progress, notes, RBAC, dan audit |
 | `0a961df` | Human recommendation/score override terpisah dengan mandatory reason |
+| `c139fec` | Unified opportunity audit activity timeline untuk seluruh workflow |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

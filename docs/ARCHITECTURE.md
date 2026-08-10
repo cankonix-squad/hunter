@@ -86,6 +86,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `GET|PATCH /api/v1/opportunities/{id}/next-action`
 - `GET|PATCH /api/v1/opportunities/{id}/readiness`
 - `GET|PATCH /api/v1/opportunities/{id}/override`
+- `GET /api/v1/opportunities/{id}/activity`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`

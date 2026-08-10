@@ -196,7 +196,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Next action dan deadline
 - [x] Readiness checklist
 - [x] Human override untuk recommendation/score
-- [ ] Audit log seluruh decision dan override
+- [x] Audit log seluruh decision dan override
 - [ ] Initial pipeline analytics
 
 Saved views (commit `1d9d929`) memakai migration v13 dan menyimpan kombinasi search, lifecycle, relevance,
@@ -262,6 +262,12 @@ actor, timestamp, RBAC, update, dan clear semuanya diaudit. Detail drawer menand
 secara eksplisit terpisah dari model output. Acceptance menyimpan `relevant`/8200 bp lalu
 clear, dan kedua audit event tersimpan. Go race/vet, 8 frontend tests, build, OpenAPI,
 migration, dan container acceptance lulus.
+
+Opportunity activity API/UI menyatukan audit assignment, comments, shortlist, decision,
+next action, readiness, serta override dalam timeline newest-first, dengan actor, timestamp,
+dan metadata aman; hasil dibatasi 200 event per detail. Acceptance memuat 12 event dari 11
+jenis action workflow dengan actor yang benar. Go race/vet, 8 frontend tests, build,
+OpenAPI, dan container acceptance lulus.
 
 ### Public SPSE adapter
 

@@ -383,6 +383,15 @@ paths:
         '200': { description: Human override updated or cleared }
         '403': { description: Workflow role required }
         '422': { description: Invalid override or missing reason }
+  /api/v1/opportunities/{id}/activity:
+    get:
+      operationId: listOpportunityActivity
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Newest-first auditable workflow activity, capped at 200 events }
+        '404': { description: Opportunity not found }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

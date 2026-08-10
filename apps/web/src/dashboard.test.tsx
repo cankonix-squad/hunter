@@ -53,6 +53,8 @@ describe('Dashboard', () => {
         ? { opportunity_id: opportunity.id, version: 'readiness-v1', completed: 0, total: 1, items: [{ code: 'scope_validated', label: 'Scope and deliverables validated', completed: false, note: '' }] }
         : path.includes('/override')
         ? { override: null }
+        : path.includes('/activity')
+        ? { items: [{ id: 1, action: 'opportunity.shortlisted', actor_name: 'Administrator', metadata: {}, occurred_at: '2026-08-10T00:00:00Z' }] }
         : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
@@ -74,6 +76,7 @@ describe('Dashboard', () => {
     expect(screen.getByLabelText('Next action')).toBeInTheDocument()
     expect(screen.getByLabelText('Scope and deliverables validated')).toBeInTheDocument()
     expect(screen.getByLabelText('Override reason')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · shortlisted')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()

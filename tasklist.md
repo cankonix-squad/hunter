@@ -227,7 +227,7 @@ event yang merujuk comment ID. Detail drawer memuat diskusi dan safe error state
 API create/list dan audit lulus; record komentar acceptance kemudian dibersihkan dari database
 lokal. Go race/vet, 8 frontend tests, build, OpenAPI, dan container acceptance lulus.
 
-Shortlist memakai migration v16 sebagai status bersama per opportunity dengan actor dan
+Shortlist (commit `baefc21`) memakai migration v16 sebagai status bersama per opportunity dengan actor dan
 timestamp. API mendukung get/toggle, feed mendukung filter `shortlisted`, dan saved views
 menyimpan filter tersebut. Detail drawer menyediakan toggle yang auditabel. Acceptance
 add → filtered feed → remove berhasil; feed shortlist memuat tepat opportunity acceptance
@@ -332,6 +332,7 @@ build, container build, dan smoke test HTTP lulus.
 | `598501f` | Full opportunity change timeline dengan material field diff |
 | `4b65a28` | Opportunity ownership assignment dengan team selector, RBAC, dan audit |
 | `dd94328` | Internal opportunity comments dengan author, timeline, dan audit |
+| `baefc21` | Shared opportunity shortlist dengan feed filter dan audit toggle |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

@@ -82,6 +82,12 @@ an allowed robots path is necessary but does not by itself authorize higher rate
 or broader routes. Listing matches are verified against whole words in the package
 title because the server-side search may also match agency or hidden columns.
 
+The second controlled batch adds `jatengprov`, `jogjaprov`, `bantenprov`,
+`sumutprov`, and `sulselprov`. On 10 August 2026, the official robots policy
+explicitly allowed every tenant path and each public `/lelang` page returned HTTP
+200. The same conservative limits apply: listing/DataTables routes only, one
+request at a time, a three-second interval, and bounded keyword pagination.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.

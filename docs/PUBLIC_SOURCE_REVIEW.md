@@ -36,7 +36,17 @@ Do not attempt CAPTCHA handling, alternate identities, proxy rotation, hidden
 endpoint discovery, or any other bypass. Do not register or use supplier
 credentials for collection.
 
-Collection may proceed only against the reviewed Maluku listing routes. The
+The initial approval permitted collection only against the reviewed Maluku listing routes. The
 adapter uses one request at a time, a three-second minimum interval, a 20-second
 timeout, a 1 MiB response limit, and stops on HTTP 403 or 429. It does not access
 login, supplier transactions, CAPTCHA, or blocked detail content.
+
+## Expansion review — 10 August 2026
+
+The official `https://spse.inaproc.id/robots.txt` explicitly allows the tenant
+paths for Jawa Tengah (`jatengprov`), DI Yogyakarta (`jogjaprov`), Banten
+(`bantenprov`), Sumatera Utara (`sumutprov`), and Sulawesi Selatan
+(`sulselprov`). Each corresponding public `/lelang` page returned HTTP 200 during
+review. This approval remains limited to the public listing and declared
+DataTables routes under the existing adapter safeguards; detail, authentication,
+supplier transaction, and challenge routes remain out of scope.

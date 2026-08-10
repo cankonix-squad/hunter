@@ -206,7 +206,7 @@ menghapus view. Acceptance API create/list/delete lulus dengan HTTP 204 saat del
 audit event tersimpan. `go test -race ./...`, `go vet ./...`, 8 frontend tests, production
 build, OpenAPI YAML, container build, migration v13, serta smoke test HTTP lulus.
 
-Change timeline memuat seluruh normalized version pada detail API dalam urutan terbaru,
+Change timeline (commit `598501f`) memuat seluruh normalized version pada detail API dalam urutan terbaru,
 menyertakan observed time, lifecycle, snapshot/fingerprint trace, dan daftar field yang
 berubah terhadap versi sebelumnya. Drawer membedakan initial observation, repeated
 observation, dan material field changes. Acceptance detail API memastikan history count
@@ -308,6 +308,7 @@ build, container build, dan smoke test HTTP lulus.
 | `62946b7` | Scheduler source publik dan source health/lag/queue console |
 | `bca56f7` | Candidate golden dataset dan classification evaluation regression gate |
 | `1d9d929` | Personal saved views dengan combined filters dan audit create/delete |
+| `598501f` | Full opportunity change timeline dengan material field diff |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

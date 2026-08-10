@@ -41,6 +41,8 @@ describe('Dashboard', () => {
         ? { items: [{ user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] }] }
         : path.includes('/assignment')
         ? { assignment: null }
+        : path.includes('/comments')
+        ? { items: [{ id: 'comment-1', opportunity_id: opportunity.id, author_user_id: 'user-1', author_name: 'Administrator', body: 'Perlu validasi teknis.', created_at: '2026-08-10T00:00:00Z' }] }
         : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
@@ -56,6 +58,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Belum dijalankan')
     expect(screen.getByRole('dialog')).toHaveTextContent('Initial observation')
     expect(screen.getByRole('dialog')).toHaveTextContent('Unassigned')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Perlu validasi teknis.')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()

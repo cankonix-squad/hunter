@@ -12,6 +12,7 @@ import (
 
 	"github.com/cankonix/cankonix-oi/services/api/internal/assignments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
+	"github.com/cankonix/cankonix-oi/services/api/internal/comments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/savedviews"
@@ -29,12 +30,13 @@ type Server struct {
 	opportunities *opportunities.Service
 	savedViews    *savedviews.Service
 	assignments   *assignments.Service
+	comments      *comments.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -52,10 +54,43 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("GET /api/v1/team", s.authenticate(http.HandlerFunc(s.listTeam)))
 	mux.Handle("GET /api/v1/opportunities/{id}/assignment", s.authenticate(http.HandlerFunc(s.getAssignment)))
 	mux.Handle("PATCH /api/v1/opportunities/{id}/assignment", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager")(http.HandlerFunc(s.updateAssignment))))
+	mux.Handle("GET /api/v1/opportunities/{id}/comments", s.authenticate(http.HandlerFunc(s.listComments)))
+	mux.Handle("POST /api/v1/opportunities/{id}/comments", s.authenticate(http.HandlerFunc(s.createComment)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) listComments(w http.ResponseWriter, r *http.Request) {
+	items, err := s.comments.List(r.Context(), r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Comments are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Server) createComment(w http.ResponseWriter, r *http.Request) {
+	var input comments.CreateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.comments.Create(r.Context(), r.PathValue("id"), p.UserID, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_comment", "Comment must contain between 1 and 4000 characters")
+		return
+	}
+	writeJSON(w, http.StatusCreated, item)
 }
 
 func (s *Server) listTeam(w http.ResponseWriter, r *http.Request) {

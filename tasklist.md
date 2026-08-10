@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 14
+- Migrasi database aktif: versi 15
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -190,7 +190,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Saved views dan combined filters
 - [x] Full change timeline dari version history
 - [x] Ownership dan assignment
-- [ ] Internal comments
+- [x] Internal comments
 - [ ] Shortlist
 - [ ] Pursue/pass decision dengan reason wajib
 - [ ] Next action dan deadline
@@ -219,6 +219,13 @@ dan unassign. Setiap perubahan menyimpan actor dan audit event; detail drawer me
 owner saat ini. Acceptance API assign lalu unassign berhasil, assignment kembali null,
 dan event `opportunity.assigned` serta `opportunity.unassigned` tersimpan. Go race/vet,
 8 frontend tests, build, OpenAPI, container build, dan migration acceptance lulus.
+
+Internal comments memakai migration v15 dan menyimpan komentar immutable dengan author
+serta timestamp dalam timeline kronologis. Semua user terautentikasi dapat membaca dan
+menambahkan komentar tervalidasi maksimal 4000 karakter; setiap create menghasilkan audit
+event yang merujuk comment ID. Detail drawer memuat diskusi dan safe error state. Acceptance
+API create/list dan audit lulus; record komentar acceptance kemudian dibersihkan dari database
+lokal. Go race/vet, 8 frontend tests, build, OpenAPI, dan container acceptance lulus.
 
 ### Public SPSE adapter
 

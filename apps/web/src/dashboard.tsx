@@ -54,6 +54,7 @@ interface SavedView {
 }
 interface TeamMember { user_id: string; email: string; name: string; roles: string[] }
 interface Assignment { opportunity_id: string; assignee_user_id: string; assignee_name: string; assignee_email: string; assigned_by: string; assigned_at: string; updated_at: string }
+interface OpportunityComment { id: string; opportunity_id: string; author_user_id: string; author_name: string; body: string; created_at: string }
 
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
@@ -80,6 +81,9 @@ export function Dashboard() {
   const [team, setTeam] = useState<TeamMember[]>([])
   const [assignment, setAssignment] = useState<Assignment | null>(null)
   const [assignmentError, setAssignmentError] = useState('')
+  const [comments, setComments] = useState<OpportunityComment[]>([])
+  const [commentInput, setCommentInput] = useState('')
+  const [commentError, setCommentError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -159,8 +163,8 @@ export function Dashboard() {
     setError('')
     setAssignmentError('')
     try {
-      const [detail, owner] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`)])
-      setSelected(detail); setAssignment(owner.assignment)
+      const [detail, owner, discussion] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`), auth.request<{ items: OpportunityComment[] }>(`/api/v1/opportunities/${id}/comments`)])
+      setSelected(detail); setAssignment(owner.assignment); setComments(discussion.items); setCommentInput(''); setCommentError('')
     }
     catch { setError('Detail peluang belum dapat dimuat.') }
   }
@@ -171,6 +175,15 @@ export function Dashboard() {
       const body = await auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${selected.id}/assignment`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee_user_id: userID || null }) })
       setAssignment(body.assignment); setAssignmentError('')
     } catch { setAssignmentError('Assignment gagal diperbarui.') }
+  }
+
+  async function submitComment(event: FormEvent) {
+    event.preventDefault()
+    if (!selected || !commentInput.trim()) { setCommentError('Komentar wajib diisi.'); return }
+    try {
+      const item = await auth.request<OpportunityComment>(`/api/v1/opportunities/${selected.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: commentInput.trim() }) })
+      setComments(items => [...items,item]); setCommentInput(''); setCommentError('')
+    } catch { setCommentError('Komentar gagal disimpan.') }
   }
 
   return (
@@ -234,6 +247,7 @@ export function Dashboard() {
         {selected.classification && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Deterministic classification</p><h3>{selected.classification.disposition.replaceAll('_', ' ')}</h3></div><strong>{(selected.classification.confidence_bp / 100).toFixed(0)}%</strong></div><p>{selected.classification.explanation}</p>{selected.classification.auto_rejected && <div className="exclusion-warning">Approved deterministic exclusion · not an AI recommendation</div>}<ul>{selected.classification.evidence.map((evidence, index) => <li key={`${evidence.rule_code}-${index}`}><strong>{evidence.rule_code}</strong><span>“{evidence.keyword}” in {evidence.source_field}</span></li>)}</ul></section>}
         {selected.score && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Explainable score</p><h3>{(selected.score.total_score_bp / 100).toFixed(0)} / 100</h3></div><strong>{selected.score.needs_review ? 'Review' : 'Ready'}</strong></div><p>{selected.score.explanation}</p><div className="score-breakdown">{selected.score.dimensions.map(dimension => <div key={dimension.code}><span>{dimension.code.replaceAll('_', ' ')}</span><progress max="10000" value={dimension.raw_score_bp} /><strong>{(dimension.raw_score_bp / 100).toFixed(0)}</strong><small>{dimension.explanation}</small></div>)}</div></section>}
         <section className="timeline"><p className="eyebrow">Change timeline</p><h3>{selected.history?.length ?? 0} observations</h3>{selected.history?.map((version, index) => <article key={version.id}><i /><div><strong>{index === selected.history!.length - 1 ? 'Initial observation' : version.changed_fields.length ? version.changed_fields.map(field => field.replaceAll('_', ' ')).join(' · ') : 'Observed again'}</strong><time>{date.format(new Date(version.observed_at))}</time><span>{version.lifecycle_status.replaceAll('_', ' ')} · snapshot {version.snapshot_id.slice(0, 8)}</span></div></article>)}</section>
+        <section className="comments"><p className="eyebrow">Internal discussion</p><h3>{comments.length} comments</h3>{comments.length === 0 ? <p>No internal comments yet.</p> : <div>{comments.map(comment => <article key={comment.id}><header><strong>{comment.author_name}</strong><time>{date.format(new Date(comment.created_at))}</time></header><p>{comment.body}</p></article>)}</div>}<form onSubmit={submitComment}><textarea aria-label="Internal comment" maxLength={4000} value={commentInput} onChange={event => setCommentInput(event.target.value)} placeholder="Add context for the team…" /><button type="submit">Add comment</button>{commentError && <small role="alert">{commentError}</small>}</form></section>
         <section className="ai-separation"><strong>AI recommendation</strong><span>Belum dijalankan. Hasil di atas berasal dari deterministic rules dan scoring.</span></section>
         <a className="official-link" href={selected.canonical_url} target="_blank" rel="noreferrer">Open official source ↗</a><p className="detail-note">Verify all procurement details on the official source before making a decision.</p>
       </section></div>}

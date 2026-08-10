@@ -206,6 +206,34 @@ paths:
         '403': { description: Workflow role required }
         '404': { description: Opportunity not found }
         '422': { description: Assignee is invalid or inactive }
+  /api/v1/opportunities/{id}/comments:
+    get:
+      operationId: listOpportunityComments
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Chronological internal opportunity discussion }
+        '404': { description: Opportunity not found }
+    post:
+      operationId: createOpportunityComment
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 4000 }
+      responses:
+        '201': { description: Internal comment created }
+        '404': { description: Opportunity not found }
+        '422': { description: Empty or oversized comment }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

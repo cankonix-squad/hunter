@@ -62,6 +62,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 | `audit_logs` | actor, action, object, metadata, time |
 | `saved_opportunity_views` | user owner, name, validated combined filters, timestamps |
 | `opportunity_assignments` | opportunity owner, assigning actor, assignment timestamps |
+| `opportunity_comments` | opportunity, author, immutable internal comment, timestamp |
 
 ## 6. API surface
 
@@ -74,6 +75,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `DELETE /api/v1/saved-views/{id}`
 - `GET|PATCH /api/v1/opportunities/{id}/assignment`
 - `GET /api/v1/team`
+- `GET|POST /api/v1/opportunities/{id}/comments`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`

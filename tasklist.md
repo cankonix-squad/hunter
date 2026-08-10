@@ -256,7 +256,7 @@ menyelesaikan `scope_validated`, menghasilkan progress 1/5 dan audit yang tepat,
 acceptance dibersihkan. Go race/vet, 8 frontend tests, build, OpenAPI, migration, dan
 container acceptance lulus (satu retry build diperlukan setelah DNS registry transien).
 
-Human override memakai migration v20 dan menyimpan recommendation dan/atau score override
+Human override (commit `0a961df`) memakai migration v20 dan menyimpan recommendation dan/atau score override
 sebagai layer terpisah tanpa mengubah output deterministic/AI asli. Reason 3–2000 karakter,
 actor, timestamp, RBAC, update, dan clear semuanya diaudit. Detail drawer menandai override
 secara eksplisit terpisah dari model output. Acceptance menyimpan `relevant`/8200 bp lalu
@@ -365,6 +365,7 @@ build, container build, dan smoke test HTTP lulus.
 | `bc7e121` | Auditable human pursue/pass decision dengan mandatory reason |
 | `03bca39` | Opportunity next action dengan UTC deadline dan overdue state |
 | `f2b9fbd` | Versioned readiness checklist dengan progress, notes, RBAC, dan audit |
+| `0a961df` | Human recommendation/score override terpisah dengan mandatory reason |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

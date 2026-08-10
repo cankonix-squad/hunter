@@ -61,6 +61,7 @@ interface NextAction { opportunity_id: string; action: string; due_at: string; u
 interface ReadinessChecklist { opportunity_id: string; version: string; completed: number; total: number; items: Array<{ code: string; label: string; completed: boolean; note: string; updater_name?: string; updated_at?: string }> }
 interface HumanOverride { opportunity_id:string; recommendation?:string; score_bp?:number; reason:string; overridden_by:string; overrider_name:string; created_at:string; updated_at:string }
 interface ActivityEvent { id:number; action:string; actor_name?:string; metadata:Record<string,unknown>; occurred_at:string }
+interface PipelineAnalytics { total:number; active:number; shortlisted:number; assigned:number; pursue:number; pass:number; undecided:number; overdue_actions:number; actions_due_seven_days:number }
 
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
@@ -105,6 +106,7 @@ export function Dashboard() {
   const [readinessError, setReadinessError] = useState('')
   const [humanOverride,setHumanOverride]=useState<HumanOverride|null>(null);const [overrideRecommendation,setOverrideRecommendation]=useState('');const [overrideScore,setOverrideScore]=useState('');const [overrideReason,setOverrideReason]=useState('');const [overrideError,setOverrideError]=useState('')
   const [activity,setActivity]=useState<ActivityEvent[]>([])
+  const [pipeline,setPipeline]=useState<PipelineAnalytics>({total:0,active:0,shortlisted:0,assigned:0,pursue:0,pass:0,undecided:0,overdue_actions:0,actions_due_seven_days:0})
 
   const load = useCallback(() => {
     setLoading(true)
@@ -140,6 +142,7 @@ export function Dashboard() {
   useEffect(loadSavedViews, [loadSavedViews])
 
   useEffect(() => { auth.request<{ items: TeamMember[] }>('/api/v1/team').then(body => setTeam(body.items)).catch(() => setTeam([])) }, [auth.request])
+  useEffect(() => { auth.request<PipelineAnalytics>('/api/v1/analytics/pipeline').then(setPipeline).catch(() => setPipeline({total:0,active:0,shortlisted:0,assigned:0,pursue:0,pass:0,undecided:0,overdue_actions:0,actions_due_seven_days:0})) }, [auth.request])
 
   function applySavedView(id: string) {
     const view = savedViews.find(item => item.id === id)
@@ -248,6 +251,11 @@ export function Dashboard() {
           <article><p>Deadline &lt; 7 hari</p><strong>{deadlineSoon}</strong><small>Asia/Jakarta</small></article>
           <article><p>Visible packages</p><strong>{result.items.length}</strong><small>Page {result.page}</small></article>
           <article><p>Needs review</p><strong>{needsReview}</strong><small>Visible on this page</small></article>
+        </section>
+
+        <section className="pipeline-analytics" id="overview" aria-labelledby="pipeline-heading">
+          <div><p className="eyebrow">Portfolio overview</p><h2 id="pipeline-heading">Pipeline analytics</h2><small>{pipeline.active} active of {pipeline.total} total opportunities</small></div>
+          <dl><div><dt>Pursue</dt><dd>{pipeline.pursue}</dd></div><div><dt>Pass</dt><dd>{pipeline.pass}</dd></div><div><dt>Undecided</dt><dd>{pipeline.undecided}</dd></div><div><dt>Shortlisted</dt><dd>{pipeline.shortlisted}</dd></div><div><dt>Assigned</dt><dd>{pipeline.assigned}</dd></div><div className={pipeline.overdue_actions > 0 ? 'risk' : ''}><dt>Overdue actions</dt><dd>{pipeline.overdue_actions}</dd><small>{pipeline.actions_due_seven_days} due in 7 days</small></div></dl>
         </section>
 
         <section className="feed" id="opportunities">

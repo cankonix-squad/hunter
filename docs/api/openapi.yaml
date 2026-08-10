@@ -392,6 +392,17 @@ paths:
       responses:
         '200': { description: Newest-first auditable workflow activity, capped at 200 events }
         '404': { description: Opportunity not found }
+  /api/v1/analytics/pipeline:
+    get:
+      operationId: getPipelineAnalytics
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current portfolio and decision-pipeline counters
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineAnalytics' }
+        '401': { description: Authentication required }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView
@@ -646,3 +657,16 @@ components:
         page_size: { type: integer }
         total: { type: integer }
         total_pages: { type: integer }
+    PipelineAnalytics:
+      type: object
+      required: [total, active, shortlisted, assigned, pursue, pass, undecided, overdue_actions, actions_due_seven_days]
+      properties:
+        total: { type: integer, minimum: 0 }
+        active: { type: integer, minimum: 0 }
+        shortlisted: { type: integer, minimum: 0 }
+        assigned: { type: integer, minimum: 0 }
+        pursue: { type: integer, minimum: 0 }
+        pass: { type: integer, minimum: 0 }
+        undecided: { type: integer, minimum: 0 }
+        overdue_actions: { type: integer, minimum: 0 }
+        actions_due_seven_days: { type: integer, minimum: 0 }

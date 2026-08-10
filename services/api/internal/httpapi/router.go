@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cankonix/cankonix-oi/services/api/internal/activity"
+	"github.com/cankonix/cankonix-oi/services/api/internal/analytics"
 	"github.com/cankonix/cankonix-oi/services/api/internal/assignments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/comments"
@@ -43,12 +44,13 @@ type Server struct {
 	readiness     *readiness.Service
 	overrides     *overrides.Service
 	activity      *activity.Service
+	analytics     *analytics.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -79,10 +81,20 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("GET /api/v1/opportunities/{id}/override", s.authenticate(http.HandlerFunc(s.getOverride)))
 	mux.Handle("PATCH /api/v1/opportunities/{id}/override", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager", "executive")(http.HandlerFunc(s.updateOverride))))
 	mux.Handle("GET /api/v1/opportunities/{id}/activity", s.authenticate(http.HandlerFunc(s.listActivity)))
+	mux.Handle("GET /api/v1/analytics/pipeline", s.authenticate(http.HandlerFunc(s.pipelineAnalytics)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) pipelineAnalytics(w http.ResponseWriter, r *http.Request) {
+	item, err := s.analytics.Pipeline(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Pipeline analytics are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
 }
 
 func (s *Server) listActivity(w http.ResponseWriter, r *http.Request) {

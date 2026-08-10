@@ -234,7 +234,7 @@ add → filtered feed → remove berhasil; feed shortlist memuat tepat opportuni
 dan audit `opportunity.shortlisted`/`opportunity.unshortlisted` tersimpan. Go race/vet,
 8 frontend tests, build, OpenAPI, migration, dan container acceptance lulus.
 
-Human pursue/pass decision memakai migration v17 dan sepenuhnya terpisah dari hasil rules,
+Human pursue/pass decision (commit `bc7e121`) memakai migration v17 dan sepenuhnya terpisah dari hasil rules,
 score, maupun AI. Workflow role dapat menetapkan `pursue` atau `pass` hanya dengan alasan
 3–2000 karakter; current state menyimpan decider dan timestamp. Setiap perubahan diaudit
 dengan previous/new decision dan reason. Acceptance membuktikan alasan kosong ditolak HTTP
@@ -340,6 +340,7 @@ build, container build, dan smoke test HTTP lulus.
 | `4b65a28` | Opportunity ownership assignment dengan team selector, RBAC, dan audit |
 | `dd94328` | Internal opportunity comments dengan author, timeline, dan audit |
 | `baefc21` | Shared opportunity shortlist dengan feed filter dan audit toggle |
+| `bc7e121` | Auditable human pursue/pass decision dengan mandatory reason |
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 
 ## Aturan pembaruan task list

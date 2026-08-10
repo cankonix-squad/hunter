@@ -353,6 +353,36 @@ paths:
         '403': { description: Workflow or technical-lead role required }
         '404': { description: Opportunity not found }
         '422': { description: Unknown item or oversized note }
+  /api/v1/opportunities/{id}/override:
+    get:
+      operationId: getOpportunityOverride
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Current human recommendation/score override or null }
+    patch:
+      operationId: updateOpportunityOverride
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [recommendation, score_bp, reason, clear]
+              properties:
+                recommendation: { type: [string, 'null'], enum: [relevant, excluded, needs_review, null] }
+                score_bp: { type: [integer, 'null'], minimum: 0, maximum: 10000 }
+                reason: { type: string, maxLength: 2000 }
+                clear: { type: boolean }
+      responses:
+        '200': { description: Human override updated or cleared }
+        '403': { description: Workflow role required }
+        '422': { description: Invalid override or missing reason }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

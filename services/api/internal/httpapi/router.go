@@ -17,6 +17,7 @@ import (
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/nextactions"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
+	"github.com/cankonix/cankonix-oi/services/api/internal/overrides"
 	"github.com/cankonix/cankonix-oi/services/api/internal/readiness"
 	"github.com/cankonix/cankonix-oi/services/api/internal/savedviews"
 	"github.com/cankonix/cankonix-oi/services/api/internal/shortlist"
@@ -39,12 +40,13 @@ type Server struct {
 	decisions     *decisions.Service
 	nextActions   *nextactions.Service
 	readiness     *readiness.Service
+	overrides     *overrides.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -72,10 +74,42 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("PATCH /api/v1/opportunities/{id}/next-action", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager")(http.HandlerFunc(s.updateNextAction))))
 	mux.Handle("GET /api/v1/opportunities/{id}/readiness", s.authenticate(http.HandlerFunc(s.getReadiness)))
 	mux.Handle("PATCH /api/v1/opportunities/{id}/readiness", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager", "technical_lead")(http.HandlerFunc(s.updateReadiness))))
+	mux.Handle("GET /api/v1/opportunities/{id}/override", s.authenticate(http.HandlerFunc(s.getOverride)))
+	mux.Handle("PATCH /api/v1/opportunities/{id}/override", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager", "executive")(http.HandlerFunc(s.updateOverride))))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) getOverride(w http.ResponseWriter, r *http.Request) {
+	item, err := s.overrides.Get(r.Context(), r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Override is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"override": item})
+}
+func (s *Server) updateOverride(w http.ResponseWriter, r *http.Request) {
+	var input overrides.UpdateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.overrides.Update(r.Context(), r.PathValue("id"), p.UserID, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_override", "Override requires a valid recommendation or score and a mandatory reason")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"override": item})
 }
 
 func (s *Server) getReadiness(w http.ResponseWriter, r *http.Request) {

@@ -67,6 +67,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 | `opportunity_decisions` | human pursue/pass decision, mandatory reason, actor, timestamps |
 | `opportunity_next_actions` | active next action, UTC deadline, updating actor, timestamps |
 | `opportunity_readiness_items` | versioned checklist item status, note, actor, timestamp |
+| `opportunity_overrides` | human recommendation/score override, mandatory reason, actor |
 
 ## 6. API surface
 
@@ -84,6 +85,7 @@ Start as a modular monolith plus independently scalable workers. Preserve clear 
 - `GET|PATCH /api/v1/opportunities/{id}/decision`
 - `GET|PATCH /api/v1/opportunities/{id}/next-action`
 - `GET|PATCH /api/v1/opportunities/{id}/readiness`
+- `GET|PATCH /api/v1/opportunities/{id}/override`
 - `POST /api/v1/admin/sources`
 - `POST /api/v1/admin/source-runs`
 - `POST /api/v1/alert-rules`

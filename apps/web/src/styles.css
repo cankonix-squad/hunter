@@ -133,6 +133,7 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .readiness-card article > input { min-width: 0; padding: 8px; border: 1px solid #bbb; font: inherit; }
 .readiness-card article button { margin: 0; padding: 8px 10px; }
 .readiness-card > small { color: #7e2424; }
+.override-card { margin:20px 0;padding:18px;border:1px dashed #8c6b24;background:#f4ecda; }.override-card>p:not(.eyebrow){display:grid;gap:5px}.override-card p span{font-size:10px;color:#765}.override-card form{display:grid;gap:8px;margin-top:14px}.override-card select,.override-card input,.override-card textarea{padding:10px;border:1px solid #a98;background:white;font:inherit}.override-card textarea{min-height:74px}.override-card form div{display:flex;gap:8px}.override-card button{margin:0}.override-card small{color:#7e2424}
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

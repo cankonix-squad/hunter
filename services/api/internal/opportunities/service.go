@@ -92,6 +92,7 @@ type Query struct {
 	Relevance      string
 	MinimumScoreBP int
 	NeedsReview    string
+	Shortlisted    string
 }
 
 type Page struct {
@@ -121,6 +122,7 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 	query.SourceID = strings.TrimSpace(query.SourceID)
 	query.Relevance = strings.TrimSpace(query.Relevance)
 	query.NeedsReview = strings.TrimSpace(query.NeedsReview)
+	query.Shortlisted = strings.TrimSpace(query.Shortlisted)
 	if query.Status == "" {
 		query.Status = "active"
 	}
@@ -142,16 +144,24 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 	if query.NeedsReview != "all" && query.NeedsReview != "true" && query.NeedsReview != "false" {
 		return Page{}, errors.New("invalid needs review")
 	}
+	if query.Shortlisted == "" {
+		query.Shortlisted = "all"
+	}
+	if query.Shortlisted != "all" && query.Shortlisted != "true" && query.Shortlisted != "false" {
+		return Page{}, errors.New("invalid shortlisted")
+	}
 
 	statusSQL := "($2 = 'all' OR ($2 = 'active' AND o.lifecycle_status IN ('announced','registration_open')) OR o.lifecycle_status = $2)"
 	filterSQL := "($1 = '' OR (o.title || ' ' || o.agency || ' ' || o.package_identity) ILIKE '%' || $1 || '%') AND " + statusSQL +
 		" AND ($3 = '' OR o.source_id::text = $3) AND ($4 = 'all' OR c.disposition = $4)" +
-		" AND ($5 < 0 OR sc.total_score_bp >= $5) AND ($6 = 'all' OR sc.needs_review = ($6 = 'true'))"
+		" AND ($5 < 0 OR sc.total_score_bp >= $5) AND ($6 = 'all' OR sc.needs_review = ($6 = 'true'))" +
+		" AND ($7 = 'all' OR (sl.opportunity_id IS NOT NULL) = ($7 = 'true'))"
 	joins := ` JOIN sources src ON src.id = o.source_id
 		LEFT JOIN LATERAL (SELECT * FROM opportunity_classifications x WHERE x.opportunity_id=o.id AND x.opportunity_fingerprint=o.current_fingerprint ORDER BY x.evaluated_at DESC LIMIT 1) c ON true
-		LEFT JOIN LATERAL (SELECT * FROM opportunity_scores x WHERE x.opportunity_id=o.id AND x.opportunity_fingerprint=o.current_fingerprint ORDER BY x.evaluated_at DESC LIMIT 1) sc ON true `
+		LEFT JOIN LATERAL (SELECT * FROM opportunity_scores x WHERE x.opportunity_id=o.id AND x.opportunity_fingerprint=o.current_fingerprint ORDER BY x.evaluated_at DESC LIMIT 1) sc ON true
+		LEFT JOIN opportunity_shortlist sl ON sl.opportunity_id=o.id `
 	var total int
-	args := []any{query.Search, query.Status, query.SourceID, query.Relevance, query.MinimumScoreBP, query.NeedsReview}
+	args := []any{query.Search, query.Status, query.SourceID, query.Relevance, query.MinimumScoreBP, query.NeedsReview, query.Shortlisted}
 	if err := s.db.QueryRow(ctx, "SELECT count(*) FROM opportunities o "+joins+" WHERE "+filterSQL, args...).Scan(&total); err != nil {
 		return Page{}, fmt.Errorf("count opportunities: %w", err)
 	}
@@ -165,7 +175,7 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 		coalesce(sc.needs_review,false), coalesce(sc.reason_code,''), coalesce(sc.explanation,'')
 		FROM opportunities o `+joins+` WHERE `+filterSQL+`
 		ORDER BY o.registration_deadline ASC NULLS LAST, o.last_seen_at DESC
-		LIMIT $7 OFFSET $8`, append(args, query.PageSize, (query.Page-1)*query.PageSize)...)
+		LIMIT $8 OFFSET $9`, append(args, query.PageSize, (query.Page-1)*query.PageSize)...)
 	if err != nil {
 		return Page{}, fmt.Errorf("list opportunities: %w", err)
 	}

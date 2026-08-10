@@ -50,11 +50,12 @@ interface SourceHealth {
 
 interface SavedView {
   id: string; name: string; created_at: string; updated_at: string
-  filters: { q: string; status: string; source_id?: string; relevance: string; min_score_bp?: number; review_only: boolean }
+  filters: { q: string; status: string; source_id?: string; relevance: string; min_score_bp?: number; review_only: boolean; shortlisted?: string }
 }
 interface TeamMember { user_id: string; email: string; name: string; roles: string[] }
 interface Assignment { opportunity_id: string; assignee_user_id: string; assignee_name: string; assignee_email: string; assigned_by: string; assigned_at: string; updated_at: string }
 interface OpportunityComment { id: string; opportunity_id: string; author_user_id: string; author_name: string; body: string; created_at: string }
+interface ShortlistState { opportunity_id: string; shortlisted: boolean; shortlisted_by?: string; actor_name?: string; updated_at?: string }
 
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
@@ -69,6 +70,7 @@ export function Dashboard() {
   const [relevance, setRelevance] = useState('all')
   const [minimumScore, setMinimumScore] = useState('')
   const [reviewOnly, setReviewOnly] = useState(false)
+  const [shortlistOnly, setShortlistOnly] = useState(false)
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Opportunity | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,19 +86,21 @@ export function Dashboard() {
   const [comments, setComments] = useState<OpportunityComment[]>([])
   const [commentInput, setCommentInput] = useState('')
   const [commentError, setCommentError] = useState('')
+  const [shortlistState, setShortlistState] = useState<ShortlistState | null>(null)
 
   const load = useCallback(() => {
     setLoading(true)
     setError('')
     const params = new URLSearchParams({ q: search, status, relevance, page: String(page), page_size: '20' })
     if (sourceID) params.set('source_id', sourceID)
+    if (shortlistOnly) params.set('shortlisted', 'true')
     if (minimumScore) params.set('min_score', String(Math.round(Number(minimumScore) * 100)))
     const path = reviewOnly ? '/api/v1/opportunities/review' : '/api/v1/opportunities'
     auth.request<OpportunityPage>(`${path}?${params}`)
       .then(setResult)
       .catch(() => setError('Feed peluang belum dapat dimuat. Coba beberapa saat lagi.'))
       .finally(() => setLoading(false))
-  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, sourceID, status])
+  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, shortlistOnly, sourceID, status])
 
   useEffect(load, [load])
 
@@ -126,6 +130,7 @@ export function Dashboard() {
     setSourceID(view.filters.source_id ?? '')
     setRelevance(view.filters.relevance); setMinimumScore(view.filters.min_score_bp == null ? '' : String(view.filters.min_score_bp / 100))
     setReviewOnly(view.filters.review_only); setPage(1); setViewError('')
+    setShortlistOnly(view.filters.shortlisted === 'true')
   }
 
   async function saveCurrentView(event: FormEvent) {
@@ -133,7 +138,7 @@ export function Dashboard() {
     const name = viewName.trim()
     if (!name) { setViewError('Nama saved view wajib diisi.'); return }
     try {
-      const item = await auth.request<SavedView>('/api/v1/saved-views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, filters: { q: search, status, source_id: sourceID || undefined, relevance, min_score_bp: minimumScore ? Math.round(Number(minimumScore) * 100) : undefined, review_only: reviewOnly } }) })
+      const item = await auth.request<SavedView>('/api/v1/saved-views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, filters: { q: search, status, source_id: sourceID || undefined, relevance, min_score_bp: minimumScore ? Math.round(Number(minimumScore) * 100) : undefined, review_only: reviewOnly, shortlisted: shortlistOnly ? 'true' : 'all' } }) })
       setSavedViews(items => [...items.filter(view => view.id !== item.id), item].sort((a, b) => a.name.localeCompare(b.name)))
       setViewName(''); setViewError('')
     } catch { setViewError('Saved view gagal disimpan. Gunakan nama yang unik.') }
@@ -163,8 +168,8 @@ export function Dashboard() {
     setError('')
     setAssignmentError('')
     try {
-      const [detail, owner, discussion] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`), auth.request<{ items: OpportunityComment[] }>(`/api/v1/opportunities/${id}/comments`)])
-      setSelected(detail); setAssignment(owner.assignment); setComments(discussion.items); setCommentInput(''); setCommentError('')
+      const [detail, owner, discussion, shortlist] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`), auth.request<{ items: OpportunityComment[] }>(`/api/v1/opportunities/${id}/comments`), auth.request<ShortlistState>(`/api/v1/opportunities/${id}/shortlist`)])
+      setSelected(detail); setAssignment(owner.assignment); setComments(discussion.items); setShortlistState(shortlist); setCommentInput(''); setCommentError('')
     }
     catch { setError('Detail peluang belum dapat dimuat.') }
   }
@@ -184,6 +189,12 @@ export function Dashboard() {
       const item = await auth.request<OpportunityComment>(`/api/v1/opportunities/${selected.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: commentInput.trim() }) })
       setComments(items => [...items,item]); setCommentInput(''); setCommentError('')
     } catch { setCommentError('Komentar gagal disimpan.') }
+  }
+
+  async function toggleShortlist() {
+    if (!selected || !shortlistState) return
+    try { setShortlistState(await auth.request<ShortlistState>(`/api/v1/opportunities/${selected.id}/shortlist`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shortlisted: !shortlistState.shortlisted }) })) }
+    catch { setError('Shortlist gagal diperbarui.') }
   }
 
   return (
@@ -217,6 +228,7 @@ export function Dashboard() {
             <label>Relevance<select aria-label="Filter relevance" value={relevance} onChange={event => { setRelevance(event.target.value); setPage(1) }}><option value="all">All</option><option value="relevant">Relevant</option><option value="needs_review">Ambiguous</option><option value="excluded">Excluded</option></select></label>
             <label>Min score<input className="score-input" aria-label="Minimum score" type="number" min="0" max="100" value={minimumScore} onChange={event => { setMinimumScore(event.target.value); setPage(1) }} placeholder="0–100" /></label>
             <label className="review-toggle"><input aria-label="Review queue only" type="checkbox" checked={reviewOnly} onChange={event => { setReviewOnly(event.target.checked); setPage(1) }} />Review queue</label>
+            <label className="review-toggle"><input aria-label="Shortlist only" type="checkbox" checked={shortlistOnly} onChange={event => { setShortlistOnly(event.target.checked); setPage(1) }} />Shortlist</label>
           </div>
           {error && <div className="feed-error" role="alert">{error}<button onClick={load}>Retry</button></div>}
           {loading ? <div className="feed-state">Loading canonical opportunities…</div> : result.items.length === 0 ? <div className="feed-state"><strong>No opportunities found.</strong><span>Adjust the search or lifecycle filter.</span></div> :
@@ -244,6 +256,7 @@ export function Dashboard() {
         <button className="detail-close" aria-label="Tutup detail" onClick={() => setSelected(null)}>×</button><p className="eyebrow">{selected.package_identity}</p><h2 id="detail-title">{selected.title}</h2><span className={`lifecycle ${selected.lifecycle_status}`}>{selected.lifecycle_status.replaceAll('_', ' ')}</span>
         <dl><div><dt>Instansi</dt><dd>{selected.agency}</dd></div><div><dt>Jenis pengadaan</dt><dd>{selected.procurement_type}</dd></div><div><dt>Nilai paket</dt><dd>{selected.budget_minor == null ? 'Belum tersedia' : money.format(selected.budget_minor)}</dd></div><div><dt>Batas pendaftaran</dt><dd>{selected.registration_deadline ? date.format(new Date(selected.registration_deadline)) : 'Belum tersedia'}</dd></div><div><dt>Sumber</dt><dd>{selected.source_name}</dd></div><div><dt>Riwayat terdeteksi</dt><dd>{selected.version_count} versi · pertama {date.format(new Date(selected.first_seen_at))}</dd></div></dl>
         <section className="assignment-card"><p className="eyebrow">Opportunity owner</p><strong>{assignment?.assignee_name ?? 'Unassigned'}</strong><select aria-label="Assign opportunity owner" value={assignment?.assignee_user_id ?? ''} onChange={event => void assignOwner(event.target.value)} disabled={!auth.session?.user.roles.some(role => ['administrator','operator','business_development','bid_manager'].includes(role))}><option value="">Unassigned</option>{team.map(member => <option key={member.user_id} value={member.user_id}>{member.name}</option>)}</select>{assignmentError && <small role="alert">{assignmentError}</small>}</section>
+        {shortlistState && <button className={`shortlist-button ${shortlistState.shortlisted ? 'selected' : ''}`} onClick={() => void toggleShortlist()}>{shortlistState.shortlisted ? '★ Shortlisted' : '☆ Add to shortlist'}</button>}
         {selected.classification && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Deterministic classification</p><h3>{selected.classification.disposition.replaceAll('_', ' ')}</h3></div><strong>{(selected.classification.confidence_bp / 100).toFixed(0)}%</strong></div><p>{selected.classification.explanation}</p>{selected.classification.auto_rejected && <div className="exclusion-warning">Approved deterministic exclusion · not an AI recommendation</div>}<ul>{selected.classification.evidence.map((evidence, index) => <li key={`${evidence.rule_code}-${index}`}><strong>{evidence.rule_code}</strong><span>“{evidence.keyword}” in {evidence.source_field}</span></li>)}</ul></section>}
         {selected.score && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Explainable score</p><h3>{(selected.score.total_score_bp / 100).toFixed(0)} / 100</h3></div><strong>{selected.score.needs_review ? 'Review' : 'Ready'}</strong></div><p>{selected.score.explanation}</p><div className="score-breakdown">{selected.score.dimensions.map(dimension => <div key={dimension.code}><span>{dimension.code.replaceAll('_', ' ')}</span><progress max="10000" value={dimension.raw_score_bp} /><strong>{(dimension.raw_score_bp / 100).toFixed(0)}</strong><small>{dimension.explanation}</small></div>)}</div></section>}
         <section className="timeline"><p className="eyebrow">Change timeline</p><h3>{selected.history?.length ?? 0} observations</h3>{selected.history?.map((version, index) => <article key={version.id}><i /><div><strong>{index === selected.history!.length - 1 ? 'Initial observation' : version.changed_fields.length ? version.changed_fields.map(field => field.replaceAll('_', ' ')).join(' · ') : 'Observed again'}</strong><time>{date.format(new Date(version.observed_at))}</time><span>{version.lifecycle_status.replaceAll('_', ' ')} · snapshot {version.snapshot_id.slice(0, 8)}</span></div></article>)}</section>

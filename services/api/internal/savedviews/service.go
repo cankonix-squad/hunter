@@ -20,6 +20,7 @@ type Filters struct {
 	Relevance      string `json:"relevance"`
 	MinimumScoreBP *int   `json:"min_score_bp,omitempty"`
 	ReviewOnly     bool   `json:"review_only"`
+	Shortlisted    string `json:"shortlisted"`
 }
 
 type View struct {
@@ -128,6 +129,12 @@ func validate(input *CreateInput) error {
 	}
 	if input.Filters.Relevance == "" {
 		input.Filters.Relevance = "all"
+	}
+	if input.Filters.Shortlisted == "" {
+		input.Filters.Shortlisted = "all"
+	}
+	if input.Filters.Shortlisted != "all" && input.Filters.Shortlisted != "true" && input.Filters.Shortlisted != "false" {
+		return errors.New("filters.shortlisted is invalid")
 	}
 	if input.Filters.Relevance != "all" && input.Filters.Relevance != "relevant" && input.Filters.Relevance != "excluded" && input.Filters.Relevance != "needs_review" {
 		return errors.New("filters.relevance is invalid")

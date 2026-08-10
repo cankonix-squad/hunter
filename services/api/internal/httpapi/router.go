@@ -16,6 +16,7 @@ import (
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/savedviews"
+	"github.com/cankonix/cankonix-oi/services/api/internal/shortlist"
 	"github.com/cankonix/cankonix-oi/services/api/internal/sources"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -31,12 +32,13 @@ type Server struct {
 	savedViews    *savedviews.Service
 	assignments   *assignments.Service
 	comments      *comments.Service
+	shortlist     *shortlist.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -56,6 +58,8 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("PATCH /api/v1/opportunities/{id}/assignment", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager")(http.HandlerFunc(s.updateAssignment))))
 	mux.Handle("GET /api/v1/opportunities/{id}/comments", s.authenticate(http.HandlerFunc(s.listComments)))
 	mux.Handle("POST /api/v1/opportunities/{id}/comments", s.authenticate(http.HandlerFunc(s.createComment)))
+	mux.Handle("GET /api/v1/opportunities/{id}/shortlist", s.authenticate(http.HandlerFunc(s.getShortlist)))
+	mux.Handle("PATCH /api/v1/opportunities/{id}/shortlist", s.authenticate(http.HandlerFunc(s.updateShortlist)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
@@ -187,7 +191,7 @@ func (s *Server) listOpportunities(w http.ResponseWriter, r *http.Request) {
 		Search: r.URL.Query().Get("q"), Status: r.URL.Query().Get("status"),
 		SourceID: r.URL.Query().Get("source_id"), Page: page, PageSize: pageSize,
 		Relevance: r.URL.Query().Get("relevance"), MinimumScoreBP: minimumScore,
-		NeedsReview: r.URL.Query().Get("needs_review"),
+		NeedsReview: r.URL.Query().Get("needs_review"), Shortlisted: r.URL.Query().Get("shortlisted"),
 	})
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "invalid") {
@@ -198,6 +202,36 @@ func (s *Server) listOpportunities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (s *Server) getShortlist(w http.ResponseWriter, r *http.Request) {
+	item, err := s.shortlist.Get(r.Context(), r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Shortlist is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
+}
+func (s *Server) updateShortlist(w http.ResponseWriter, r *http.Request) {
+	var input shortlist.UpdateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.shortlist.Update(r.Context(), r.PathValue("id"), p.UserID, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Shortlist could not be updated")
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
 }
 
 func (s *Server) listReviewOpportunities(w http.ResponseWriter, r *http.Request) {

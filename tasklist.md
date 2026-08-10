@@ -16,7 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 15
+- Migrasi database aktif: versi 16
 - Data acceptance: 173 opportunity canonical dan 173 version history
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
@@ -191,7 +191,7 @@ belum dianggap selesai sebelum review domain owner.
 - [x] Full change timeline dari version history
 - [x] Ownership dan assignment
 - [x] Internal comments
-- [ ] Shortlist
+- [x] Shortlist
 - [ ] Pursue/pass decision dengan reason wajib
 - [ ] Next action dan deadline
 - [ ] Readiness checklist
@@ -226,6 +226,13 @@ menambahkan komentar tervalidasi maksimal 4000 karakter; setiap create menghasil
 event yang merujuk comment ID. Detail drawer memuat diskusi dan safe error state. Acceptance
 API create/list dan audit lulus; record komentar acceptance kemudian dibersihkan dari database
 lokal. Go race/vet, 8 frontend tests, build, OpenAPI, dan container acceptance lulus.
+
+Shortlist memakai migration v16 sebagai status bersama per opportunity dengan actor dan
+timestamp. API mendukung get/toggle, feed mendukung filter `shortlisted`, dan saved views
+menyimpan filter tersebut. Detail drawer menyediakan toggle yang auditabel. Acceptance
+add → filtered feed → remove berhasil; feed shortlist memuat tepat opportunity acceptance
+dan audit `opportunity.shortlisted`/`opportunity.unshortlisted` tersimpan. Go race/vet,
+8 frontend tests, build, OpenAPI, migration, dan container acceptance lulus.
 
 ### Public SPSE adapter
 

@@ -97,6 +97,7 @@ paths:
         - { in: query, name: relevance, schema: { type: string, enum: [all, relevant, excluded, needs_review], default: all } }
         - { in: query, name: min_score, description: Minimum total score in basis points, schema: { type: integer, minimum: 0, maximum: 10000 } }
         - { in: query, name: needs_review, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
+        - { in: query, name: shortlisted, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
         - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
         - { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
       responses:
@@ -234,6 +235,33 @@ paths:
         '201': { description: Internal comment created }
         '404': { description: Opportunity not found }
         '422': { description: Empty or oversized comment }
+  /api/v1/opportunities/{id}/shortlist:
+    get:
+      operationId: getOpportunityShortlist
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Current shared shortlist state }
+        '404': { description: Opportunity not found }
+    patch:
+      operationId: updateOpportunityShortlist
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [shortlisted]
+              properties:
+                shortlisted: { type: boolean }
+      responses:
+        '200': { description: Shared shortlist state updated }
+        '404': { description: Opportunity not found }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView
@@ -341,6 +369,7 @@ components:
         relevance: { type: string, enum: [all, relevant, excluded, needs_review] }
         min_score_bp: { type: integer, minimum: 0, maximum: 10000 }
         review_only: { type: boolean }
+        shortlisted: { type: string, enum: [all, 'true', 'false'], default: all }
     CreateSavedView:
       type: object
       additionalProperties: false

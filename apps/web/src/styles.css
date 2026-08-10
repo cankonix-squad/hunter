@@ -101,6 +101,8 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .assignment-card > strong { font-size: 15px; }
 .assignment-card select { padding: 10px; border: 1px solid #aaa; background: white; }
 .assignment-card small { color: #7e2424; }
+.shortlist-button { width: 100%; margin: 0 0 20px; background: white; color: #111; border: 1px solid #aaa; }
+.shortlist-button.selected { background: #111; color: white; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

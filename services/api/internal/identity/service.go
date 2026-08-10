@@ -34,6 +34,25 @@ type Tokens struct {
 	Principal    Principal `json:"user"`
 }
 
+func (s *Service) ListTeam(ctx context.Context) ([]Principal, error) {
+	rows, err := s.db.Query(ctx, `SELECT u.id::text,u.email,u.display_name,
+		ARRAY(SELECT r.name FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=u.id ORDER BY r.name)
+		FROM users u WHERE u.active ORDER BY lower(u.display_name),u.email`)
+	if err != nil {
+		return nil, fmt.Errorf("list team: %w", err)
+	}
+	defer rows.Close()
+	items := make([]Principal, 0)
+	for rows.Next() {
+		var item Principal
+		if err := rows.Scan(&item.UserID, &item.Email, &item.Name, &item.Roles); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
 type claims struct {
 	Email string   `json:"email"`
 	Name  string   `json:"name"`

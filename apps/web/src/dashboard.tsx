@@ -52,6 +52,8 @@ interface SavedView {
   id: string; name: string; created_at: string; updated_at: string
   filters: { q: string; status: string; source_id?: string; relevance: string; min_score_bp?: number; review_only: boolean }
 }
+interface TeamMember { user_id: string; email: string; name: string; roles: string[] }
+interface Assignment { opportunity_id: string; assignee_user_id: string; assignee_name: string; assignee_email: string; assigned_by: string; assigned_at: string; updated_at: string }
 
 const money = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Jakarta' })
@@ -75,6 +77,9 @@ export function Dashboard() {
   const [savedViews, setSavedViews] = useState<SavedView[]>([])
   const [viewName, setViewName] = useState('')
   const [viewError, setViewError] = useState('')
+  const [team, setTeam] = useState<TeamMember[]>([])
+  const [assignment, setAssignment] = useState<Assignment | null>(null)
+  const [assignmentError, setAssignmentError] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -107,6 +112,8 @@ export function Dashboard() {
   }, [auth.request])
 
   useEffect(loadSavedViews, [loadSavedViews])
+
+  useEffect(() => { auth.request<{ items: TeamMember[] }>('/api/v1/team').then(body => setTeam(body.items)).catch(() => setTeam([])) }, [auth.request])
 
   function applySavedView(id: string) {
     const view = savedViews.find(item => item.id === id)
@@ -150,8 +157,20 @@ export function Dashboard() {
 
   async function openDetail(id: string) {
     setError('')
-    try { setSelected(await auth.request<Opportunity>(`/api/v1/opportunities/${id}`)) }
+    setAssignmentError('')
+    try {
+      const [detail, owner] = await Promise.all([auth.request<Opportunity>(`/api/v1/opportunities/${id}`), auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${id}/assignment`)])
+      setSelected(detail); setAssignment(owner.assignment)
+    }
     catch { setError('Detail peluang belum dapat dimuat.') }
+  }
+
+  async function assignOwner(userID: string) {
+    if (!selected) return
+    try {
+      const body = await auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${selected.id}/assignment`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee_user_id: userID || null }) })
+      setAssignment(body.assignment); setAssignmentError('')
+    } catch { setAssignmentError('Assignment gagal diperbarui.') }
   }
 
   return (
@@ -208,9 +227,10 @@ export function Dashboard() {
             </article>)}</div>}
         </section>
       </main>
-      {selected && <div className="detail-backdrop" role="presentation" onMouseDown={() => setSelected(null)}><section className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={event => event.stopPropagation()}>
+      {selected && <div className="detail-backdrop" role="presentation" onMouseDown={() => { setSelected(null); setAssignment(null) }}><section className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={event => event.stopPropagation()}>
         <button className="detail-close" aria-label="Tutup detail" onClick={() => setSelected(null)}>×</button><p className="eyebrow">{selected.package_identity}</p><h2 id="detail-title">{selected.title}</h2><span className={`lifecycle ${selected.lifecycle_status}`}>{selected.lifecycle_status.replaceAll('_', ' ')}</span>
         <dl><div><dt>Instansi</dt><dd>{selected.agency}</dd></div><div><dt>Jenis pengadaan</dt><dd>{selected.procurement_type}</dd></div><div><dt>Nilai paket</dt><dd>{selected.budget_minor == null ? 'Belum tersedia' : money.format(selected.budget_minor)}</dd></div><div><dt>Batas pendaftaran</dt><dd>{selected.registration_deadline ? date.format(new Date(selected.registration_deadline)) : 'Belum tersedia'}</dd></div><div><dt>Sumber</dt><dd>{selected.source_name}</dd></div><div><dt>Riwayat terdeteksi</dt><dd>{selected.version_count} versi · pertama {date.format(new Date(selected.first_seen_at))}</dd></div></dl>
+        <section className="assignment-card"><p className="eyebrow">Opportunity owner</p><strong>{assignment?.assignee_name ?? 'Unassigned'}</strong><select aria-label="Assign opportunity owner" value={assignment?.assignee_user_id ?? ''} onChange={event => void assignOwner(event.target.value)} disabled={!auth.session?.user.roles.some(role => ['administrator','operator','business_development','bid_manager'].includes(role))}><option value="">Unassigned</option>{team.map(member => <option key={member.user_id} value={member.user_id}>{member.name}</option>)}</select>{assignmentError && <small role="alert">{assignmentError}</small>}</section>
         {selected.classification && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Deterministic classification</p><h3>{selected.classification.disposition.replaceAll('_', ' ')}</h3></div><strong>{(selected.classification.confidence_bp / 100).toFixed(0)}%</strong></div><p>{selected.classification.explanation}</p>{selected.classification.auto_rejected && <div className="exclusion-warning">Approved deterministic exclusion · not an AI recommendation</div>}<ul>{selected.classification.evidence.map((evidence, index) => <li key={`${evidence.rule_code}-${index}`}><strong>{evidence.rule_code}</strong><span>“{evidence.keyword}” in {evidence.source_field}</span></li>)}</ul></section>}
         {selected.score && <section className="analysis-card"><div className="analysis-heading"><div><p className="eyebrow">Explainable score</p><h3>{(selected.score.total_score_bp / 100).toFixed(0)} / 100</h3></div><strong>{selected.score.needs_review ? 'Review' : 'Ready'}</strong></div><p>{selected.score.explanation}</p><div className="score-breakdown">{selected.score.dimensions.map(dimension => <div key={dimension.code}><span>{dimension.code.replaceAll('_', ' ')}</span><progress max="10000" value={dimension.raw_score_bp} /><strong>{(dimension.raw_score_bp / 100).toFixed(0)}</strong><small>{dimension.explanation}</small></div>)}</div></section>}
         <section className="timeline"><p className="eyebrow">Change timeline</p><h3>{selected.history?.length ?? 0} observations</h3>{selected.history?.map((version, index) => <article key={version.id}><i /><div><strong>{index === selected.history!.length - 1 ? 'Initial observation' : version.changed_fields.length ? version.changed_fields.map(field => field.replaceAll('_', ' ')).join(' · ') : 'Observed again'}</strong><time>{date.format(new Date(version.observed_at))}</time><span>{version.lifecycle_status.replaceAll('_', ' ')} · snapshot {version.snapshot_id.slice(0, 8)}</span></div></article>)}</section>

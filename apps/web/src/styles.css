@@ -97,6 +97,10 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .detail-panel dl div { padding: 16px 0; display: grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid #ccc; }
 .detail-panel dt { color: #777; font-size: 11px; }
 .detail-panel dd { margin: 0; font-size: 13px; line-height: 1.5; }
+.assignment-card { margin: 20px 0; padding: 18px; display: grid; gap: 9px; background: #e9e9e5; border: 1px solid #ccc; }
+.assignment-card > strong { font-size: 15px; }
+.assignment-card select { padding: 10px; border: 1px solid #aaa; background: white; }
+.assignment-card small { color: #7e2424; }
 .official-link { display: block; background: #111; color: white; padding: 15px 18px; text-decoration: none; text-align: center; font-weight: 700; font-size: 13px; }
 .detail-note { color: #888; font-size: 11px; line-height: 1.6; }
 .analysis-card { margin: 20px 0; padding: 20px; background: white; border: 1px solid #ccc; }

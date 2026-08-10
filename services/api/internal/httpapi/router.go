@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cankonix/cankonix-oi/services/api/internal/assignments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
@@ -27,12 +28,13 @@ type Server struct {
 	collector     *collector.Runner
 	opportunities *opportunities.Service
 	savedViews    *savedviews.Service
+	assignments   *assignments.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -47,10 +49,49 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("GET /api/v1/saved-views", s.authenticate(http.HandlerFunc(s.listSavedViews)))
 	mux.Handle("POST /api/v1/saved-views", s.authenticate(http.HandlerFunc(s.createSavedView)))
 	mux.Handle("DELETE /api/v1/saved-views/{id}", s.authenticate(http.HandlerFunc(s.deleteSavedView)))
+	mux.Handle("GET /api/v1/team", s.authenticate(http.HandlerFunc(s.listTeam)))
+	mux.Handle("GET /api/v1/opportunities/{id}/assignment", s.authenticate(http.HandlerFunc(s.getAssignment)))
+	mux.Handle("PATCH /api/v1/opportunities/{id}/assignment", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager")(http.HandlerFunc(s.updateAssignment))))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) listTeam(w http.ResponseWriter, r *http.Request) {
+	items, err := s.identity.ListTeam(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Team is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
+func (s *Server) getAssignment(w http.ResponseWriter, r *http.Request) {
+	item, err := s.assignments.Get(r.Context(), r.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Assignment is temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"assignment": item})
+}
+
+func (s *Server) updateAssignment(w http.ResponseWriter, r *http.Request) {
+	var input assignments.UpdateInput
+	if err := decodeJSON(w, r, &input); err != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.assignments.Update(r.Context(), r.PathValue("id"), p.UserID, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "opportunity_not_found", "Opportunity was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_assignment", "Assignee must be an active team member")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"assignment": item})
 }
 
 func (s *Server) listSavedViews(w http.ResponseWriter, r *http.Request) {

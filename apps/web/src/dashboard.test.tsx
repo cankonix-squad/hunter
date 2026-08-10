@@ -37,6 +37,10 @@ describe('Dashboard', () => {
         ? { items: [{ id: 'source-1', name: 'LPSE Contoh', status: 'active', health_score: 100, policy_version: 'v1', latest_run_status: 'succeeded', latest_run_metrics: { candidates: 1, new_snapshots: 1 }, lag_seconds: 60, pending_runs: 0 }] }
         : path.includes('/api/v1/saved-views')
         ? { items: [] }
+        : path.includes('/api/v1/team')
+        ? { items: [{ user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] }] }
+        : path.includes('/assignment')
+        ? { assignment: null }
         : path.includes(opportunity.id)
         ? opportunity
         : { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
@@ -51,6 +55,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('include_data')
     expect(screen.getByRole('dialog')).toHaveTextContent('Belum dijalankan')
     expect(screen.getByRole('dialog')).toHaveTextContent('Initial observation')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Unassigned')
     expect(screen.getByRole('link', { name: /open official source/i })).toHaveAttribute('href', opportunity.canonical_url)
     expect(await screen.findByText('Source health')).toBeInTheDocument()
     expect(screen.getByText('100/100')).toBeInTheDocument()
@@ -61,7 +66,7 @@ describe('Dashboard', () => {
       accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
       user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
     })
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/sources') || String(input).includes('/api/v1/saved-views') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/sources') || String(input).includes('/api/v1/saved-views') || String(input).includes('/api/v1/team') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     render(<AuthProvider><Dashboard /></AuthProvider>)
     await screen.findByText('No opportunities found.')
     await userEvent.click(screen.getByLabelText('Review queue only'))
@@ -77,7 +82,7 @@ describe('Dashboard', () => {
       const path = String(input)
       const body = path.includes('/api/v1/saved-views')
         ? { items: [{ id: 'view-1', name: 'Relevant closed', filters: { q: 'data', status: 'completed', relevance: 'relevant', min_score_bp: 7500, review_only: true }, created_at: '2026-08-10T00:00:00Z', updated_at: '2026-08-10T00:00:00Z' }] }
-        : path.includes('/api/v1/sources') ? { items: [] }
+        : path.includes('/api/v1/sources') || path.includes('/api/v1/team') ? { items: [] }
         : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }
       return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
     })

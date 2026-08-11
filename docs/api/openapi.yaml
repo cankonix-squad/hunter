@@ -465,6 +465,23 @@ paths:
       responses:
         '200': { description: Quiet-hours preference updated }
         '422': { description: Invalid time range or IANA timezone }
+  /api/v1/operations/dead-letters:
+    get:
+      operationId: listNotificationDeadLetters
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Newest 200 dead-letter notification deliveries }
+        '403': { description: Administrator or operator role required }
+  /api/v1/operations/dead-letters/{id}/replay:
+    post:
+      operationId: replayNotificationDeadLetter
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        '200': { description: Delivery reset to queued with replay audit metadata }
+        '403': { description: Administrator or operator role required }
+        '404': { description: Delivery not found or no longer dead-lettered }
   /api/v1/saved-views/{id}:
     delete:
       operationId: deleteSavedOpportunityView

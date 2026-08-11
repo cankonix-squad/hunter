@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"github.com/cankonix/cankonix-oi/services/api/internal/decisions"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
 	"github.com/cankonix/cankonix-oi/services/api/internal/nextactions"
+	"github.com/cankonix/cankonix-oi/services/api/internal/notifications"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/overrides"
 	"github.com/cankonix/cankonix-oi/services/api/internal/readiness"
@@ -47,12 +49,13 @@ type Server struct {
 	activity      *activity.Service
 	analytics     *analytics.Service
 	alerts        *alerts.Service
+	notifications *notifications.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), alerts: alerts.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), alerts: alerts.New(db), notifications: notifications.NewService(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -91,6 +94,8 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("GET /api/v1/alerts", s.authenticate(http.HandlerFunc(s.listAlerts)))
 	mux.Handle("GET /api/v1/notification-preferences", s.authenticate(http.HandlerFunc(s.getNotificationPreferences)))
 	mux.Handle("PUT /api/v1/notification-preferences", s.authenticate(http.HandlerFunc(s.updateNotificationPreferences)))
+	mux.Handle("GET /api/v1/operations/dead-letters", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.listDeadLetters))))
+	mux.Handle("POST /api/v1/operations/dead-letters/{id}/replay", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.replayDeadLetter))))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
@@ -176,6 +181,33 @@ func (s *Server) updateNotificationPreferences(w http.ResponseWriter, r *http.Re
 	item, err := s.alerts.UpdatePreferences(r.Context(), p.UserID, input)
 	if err != nil {
 		writeError(w, http.StatusUnprocessableEntity, "invalid_notification_preferences", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
+}
+func (s *Server) listDeadLetters(w http.ResponseWriter, r *http.Request) {
+	items, err := s.notifications.ListDeadLetters(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Dead letters are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+func (s *Server) replayDeadLetter(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id < 1 {
+		writeError(w, http.StatusNotFound, "delivery_not_found", "Dead-letter delivery was not found")
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.notifications.Replay(r.Context(), id, p.UserID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "delivery_not_found", "Dead-letter delivery was not found")
+		return
+	}
+	if err != nil {
+		slog.Error("dead-letter replay failed", "delivery_id", id, "error", err)
+		writeError(w, http.StatusInternalServerError, "internal_error", "Dead-letter delivery could not be replayed")
 		return
 	}
 	writeJSON(w, http.StatusOK, item)

@@ -48,3 +48,12 @@ and `X-Cankonix-Signature: sha256={HMAC}` over the exact body. The shared secret
 contain at least 32 characters, redirects are not followed, response bodies are bounded,
 and only HTTP 2xx is successful. Response status codes are retained for operations while
 body content is discarded. Webhook delivery also supports explicit local dry-run mode.
+
+## Dead-letter replay
+
+After five failed attempts, a delivery becomes `dead_letter` and stops retrying. The
+administrator/operator console lists up to 200 newest items with channel, destination,
+attempt count, HTTP status, and capped safe error. Replay is accepted only from the
+dead-letter state, resets transient execution fields, increments a durable replay count,
+records actor/time, and writes an audit event. The original alert event and delivery row
+remain unchanged in identity, preserving deduplication and forensic history.

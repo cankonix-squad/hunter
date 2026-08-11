@@ -353,7 +353,7 @@ build, container build, dan smoke test HTTP lulus.
 - [x] Webhook adapter
 - [x] Source health console
 - [x] Queue/lag/error dashboard
-- [ ] Dead-letter replay workflow
+- [x] Dead-letter replay workflow
 - [ ] Failure recovery runbook
 
 Alert rules (commit `9dd7dbd`) memakai migration v24 dan mendukung event `opportunity.new` serta
@@ -401,6 +401,15 @@ dicatat tanpa menyimpan body. Acceptance dry-run menghasilkan delivery `webhook`
 pada attempt pertama tanpa safe error, kemudian data uji dibersihkan dan notifier kembali
 nonaktif. Go race/vet, signature/idempotency tests, Compose validation, migration v28, dan
 notifier container build lulus.
+
+Dead-letter replay (commit `4745e0b`) memakai migration v29 dan console administrator/operator untuk 200
+failure terbaru. Replay hanya berlaku pada status `dead_letter`, mengantrekan ulang row
+yang sama agar dedup identity terjaga, mereset attempts/lease/error/response, menaikkan
+durable replay count, menyimpan actor dan timestamp, serta menulis audit event atomik.
+Destination dan safe error terlihat untuk operasi, sedangkan lease/secret tidak masuk
+kontrak JSON. Acceptance mengubah email dead letter attempt ke-5 menjadi `queued`, attempt
+0, replay count 1, dan membuktikan audit metadata yang benar sebelum cleanup. Go race/vet,
+8 frontend tests, production build, OpenAPI YAML, migration v29, dan container build lulus.
 
 ### Hardening dan release
 
@@ -464,6 +473,7 @@ notifier container build lulus.
 | `2f36033` | Auditable per-user quiet hours dengan timezone-aware delivery deferral |
 | `6dc92a8` | Reliable STARTTLS email notifier dengan transactional outbox dan retry |
 | `74fe9e1` | Signed HTTPS webhook notifier dengan idempotency key dan bounded response handling |
+| `4745e0b` | RBAC dead-letter console dan auditable replay dengan preserved delivery identity |
 
 ## Aturan pembaruan task list
 

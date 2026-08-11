@@ -28,26 +28,65 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	enabled, _ := strconv.ParseBool(os.Getenv("EMAIL_DELIVERY_ENABLED"))
-	if !enabled {
+	emailEnabled, _ := strconv.ParseBool(os.Getenv("EMAIL_DELIVERY_ENABLED"))
+	webhookEnabled, _ := strconv.ParseBool(os.Getenv("WEBHOOK_DELIVERY_ENABLED"))
+	if !emailEnabled && !webhookEnabled {
 		slog.Info("notifier disabled")
 		<-ctx.Done()
 		return
 	}
-	dryRun, _ := strconv.ParseBool(os.Getenv("EMAIL_DRY_RUN"))
+	owner := value("NOTIFIER_ID", "notifier-local-1")
+	var emailDispatcher *notifications.Dispatcher
+	emailDryRun, _ := strconv.ParseBool(os.Getenv("EMAIL_DRY_RUN"))
 	var sender notifications.EmailSender = notifications.DryRunSender{}
-	if !dryRun {
+	if emailEnabled && !emailDryRun {
 		port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
-		sender = notifications.SMTPSender{Config: notifications.SMTPConfig{Host: os.Getenv("SMTP_HOST"), Port: port, Username: os.Getenv("SMTP_USERNAME"), Password: os.Getenv("SMTP_PASSWORD"), From: os.Getenv("SMTP_FROM"), Timeout: 20 * time.Second}}
+		smtpConfig := notifications.SMTPConfig{Host: os.Getenv("SMTP_HOST"), Port: port, Username: os.Getenv("SMTP_USERNAME"), Password: os.Getenv("SMTP_PASSWORD"), From: os.Getenv("SMTP_FROM"), Timeout: 20 * time.Second}
+		if err := smtpConfig.Validate(); err != nil {
+			slog.Error("invalid SMTP configuration", "error", err)
+			os.Exit(1)
+		}
+		sender = notifications.SMTPSender{Config: smtpConfig}
 	}
-	dispatcher := notifications.NewDispatcher(db, sender, value("NOTIFIER_ID", "notifier-local-1"))
-	slog.Info("notifier started", "dry_run", dryRun)
+	if emailEnabled {
+		emailDispatcher = notifications.NewDispatcher(db, sender, owner)
+	}
+	var webhookDispatcher *notifications.WebhookDispatcher
+	webhookDryRun, _ := strconv.ParseBool(os.Getenv("WEBHOOK_DRY_RUN"))
+	webhookURL := os.Getenv("WEBHOOK_URL")
+	var webhookSender notifications.WebhookSender = notifications.DryRunWebhookSender{}
+	if webhookEnabled && !webhookDryRun {
+		webhookConfig := notifications.WebhookConfig{URL: webhookURL, Secret: os.Getenv("WEBHOOK_SECRET"), Timeout: 20 * time.Second}
+		if err := webhookConfig.Validate(); err != nil {
+			slog.Error("invalid webhook configuration", "error", err)
+			os.Exit(1)
+		}
+		webhookSender = notifications.HTTPWebhookSender{Config: webhookConfig}
+	}
+	if webhookEnabled {
+		if webhookDryRun && webhookURL == "" {
+			webhookURL = "dry-run://webhook"
+		}
+		webhookDispatcher = notifications.NewWebhookDispatcher(db, webhookSender, owner, webhookURL)
+	}
+	slog.Info("notifier started", "email_enabled", emailEnabled, "email_dry_run", emailDryRun, "webhook_enabled", webhookEnabled, "webhook_dry_run", webhookDryRun)
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for {
-		processed, runErr := dispatcher.RunOne(ctx)
-		if runErr != nil && ctx.Err() == nil {
-			slog.Warn("email delivery failed", "error", runErr)
+		processed := false
+		if emailDispatcher != nil {
+			done, runErr := emailDispatcher.RunOne(ctx)
+			processed = processed || done
+			if runErr != nil && ctx.Err() == nil {
+				slog.Warn("email delivery failed", "error", runErr)
+			}
+		}
+		if webhookDispatcher != nil {
+			done, runErr := webhookDispatcher.RunOne(ctx)
+			processed = processed || done
+			if runErr != nil && ctx.Err() == nil {
+				slog.Warn("webhook delivery failed", "error", runErr)
+			}
 		}
 		if processed {
 			continue

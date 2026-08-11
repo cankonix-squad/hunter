@@ -78,6 +78,10 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
       NOTIFIER_ID: ${NOTIFIER_ID:-notifier-local-1}
+      WEBHOOK_DELIVERY_ENABLED: ${WEBHOOK_DELIVERY_ENABLED:-false}
+      WEBHOOK_DRY_RUN: ${WEBHOOK_DRY_RUN:-false}
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy

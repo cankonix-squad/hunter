@@ -39,3 +39,12 @@ SMTP delivery requires STARTTLS with TLS 1.2 or newer. Configure it only through
 environment variables. `EMAIL_DRY_RUN=true` uses the same outbox/claim/status path but
 does not contact an external server; it is intended only for local acceptance. Both
 `EMAIL_DELIVERY_ENABLED` and dry-run default to false.
+
+## Webhook delivery
+
+The same notifier/outbox pipeline can deliver a structured JSON payload to one
+deployment-level HTTPS endpoint. Requests include `Idempotency-Key: alert-event-{id}`
+and `X-Cankonix-Signature: sha256={HMAC}` over the exact body. The shared secret must
+contain at least 32 characters, redirects are not followed, response bodies are bounded,
+and only HTTP 2xx is successful. Response status codes are retained for operations while
+body content is discarded. Webhook delivery also supports explicit local dry-run mode.

@@ -26,7 +26,7 @@ func (d *Dispatcher) RunOne(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("release expired delivery leases: %w", err)
 	}
 	if _, err := d.db.Exec(ctx, `INSERT INTO notification_deliveries(alert_event_id,channel,destination)
-	SELECT e.id,'email',u.email FROM alert_events e JOIN users u ON u.id=e.user_id WHERE e.delivery_status='pending' AND e.available_after<=now() AND u.active ON CONFLICT DO NOTHING`); err != nil {
+	SELECT e.id,'email',u.email FROM alert_events e JOIN users u ON u.id=e.user_id WHERE e.delivery_status IN('pending','delivered') AND e.available_after<=now() AND u.active ON CONFLICT DO NOTHING`); err != nil {
 		return false, fmt.Errorf("enqueue email deliveries: %w", err)
 	}
 	tx, err := d.db.Begin(ctx)
@@ -50,19 +50,19 @@ func (d *Dispatcher) RunOne(ctx context.Context) (bool, error) {
 	}
 	message := Message{To: to, Subject: "CANKONIX alert: " + title, Text: fmt.Sprintf("%s\n\nEvent: %s\nOfficial source: %s\n\nVerify procurement details on the official source before making a decision.", title, eventType, canonicalURL)}
 	if err = d.sender.Send(message); err != nil {
-		return true, d.fail(ctx, id, attempts, err)
+		return true, failDelivery(ctx, d.db, id, attempts, err, 0)
 	}
-	return true, d.complete(ctx, id)
+	return true, completeDelivery(ctx, d.db, id, 0)
 }
 
-func (d *Dispatcher) complete(ctx context.Context, id int64) error {
-	tx, err := d.db.Begin(ctx)
+func completeDelivery(ctx context.Context, db *pgxpool.Pool, id int64, responseCode int) error {
+	tx, err := db.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 	var eventID int64
-	err = tx.QueryRow(ctx, `UPDATE notification_deliveries SET status='delivered',delivered_at=now(),lease_owner=NULL,lease_expires_at=NULL,safe_error=NULL,updated_at=now() WHERE id=$1 RETURNING alert_event_id`, id).Scan(&eventID)
+	err = tx.QueryRow(ctx, `UPDATE notification_deliveries SET status='delivered',delivered_at=now(),lease_owner=NULL,lease_expires_at=NULL,safe_error=NULL,response_code=NULLIF($2,0),updated_at=now() WHERE id=$1 RETURNING alert_event_id`, id, responseCode).Scan(&eventID)
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (d *Dispatcher) complete(ctx context.Context, id int64) error {
 	return tx.Commit(ctx)
 }
 
-func (d *Dispatcher) fail(ctx context.Context, id int64, attempts int, sendErr error) error {
+func failDelivery(ctx context.Context, db *pgxpool.Pool, id int64, attempts int, sendErr error, responseCode int) error {
 	status := "failed"
 	if attempts >= 5 {
 		status = "dead_letter"
@@ -82,6 +82,6 @@ func (d *Dispatcher) fail(ctx context.Context, id int64, attempts int, sendErr e
 	if len(safe) > 500 {
 		safe = safe[:500]
 	}
-	_, err := d.db.Exec(ctx, `UPDATE notification_deliveries SET status=$2,next_attempt_at=now()+$3::interval,lease_owner=NULL,lease_expires_at=NULL,safe_error=$4,updated_at=now() WHERE id=$1`, id, status, fmt.Sprintf("%f seconds", backoff.Seconds()), safe)
+	_, err := db.Exec(ctx, `UPDATE notification_deliveries SET status=$2,next_attempt_at=now()+$3::interval,lease_owner=NULL,lease_expires_at=NULL,safe_error=$4,response_code=NULLIF($5,0),updated_at=now() WHERE id=$1`, id, status, fmt.Sprintf("%f seconds", backoff.Seconds()), safe, responseCode)
 	return err
 }

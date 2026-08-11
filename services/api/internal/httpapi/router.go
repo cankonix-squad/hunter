@@ -89,6 +89,8 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("PUT /api/v1/alert-rules/{id}", s.authenticate(http.HandlerFunc(s.updateAlertRule)))
 	mux.Handle("DELETE /api/v1/alert-rules/{id}", s.authenticate(http.HandlerFunc(s.deleteAlertRule)))
 	mux.Handle("GET /api/v1/alerts", s.authenticate(http.HandlerFunc(s.listAlerts)))
+	mux.Handle("GET /api/v1/notification-preferences", s.authenticate(http.HandlerFunc(s.getNotificationPreferences)))
+	mux.Handle("PUT /api/v1/notification-preferences", s.authenticate(http.HandlerFunc(s.updateNotificationPreferences)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
@@ -155,6 +157,28 @@ func (s *Server) listAlerts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+func (s *Server) getNotificationPreferences(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	item, err := s.alerts.GetPreferences(r.Context(), p.UserID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Notification preferences are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
+}
+func (s *Server) updateNotificationPreferences(w http.ResponseWriter, r *http.Request) {
+	var input alerts.PreferencesInput
+	if decodeJSON(w, r, &input) != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.alerts.UpdatePreferences(r.Context(), p.UserID, input)
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_notification_preferences", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
 }
 
 func (s *Server) pipelineAnalytics(w http.ResponseWriter, r *http.Request) {

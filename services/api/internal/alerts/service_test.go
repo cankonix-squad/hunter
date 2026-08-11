@@ -19,3 +19,15 @@ func TestValidateAlertRuleRejectsDuplicateEvents(t *testing.T) {
 		t.Fatal("expected duplicate event rejection")
 	}
 }
+
+func TestValidatePreferences(t *testing.T) {
+	if err := validatePreferences(PreferencesInput{QuietHoursEnabled: true, QuietHoursStart: "22:00", QuietHoursEnd: "07:00", Timezone: "Asia/Jakarta"}); err != nil {
+		t.Fatal(err)
+	}
+	if validatePreferences(PreferencesInput{QuietHoursStart: "07:00", QuietHoursEnd: "07:00", Timezone: "Asia/Jakarta"}) == nil {
+		t.Fatal("expected equal range rejection")
+	}
+	if validatePreferences(PreferencesInput{QuietHoursStart: "22:00", QuietHoursEnd: "07:00", Timezone: "Mars/Olympus"}) == nil {
+		t.Fatal("expected timezone rejection")
+	}
+}

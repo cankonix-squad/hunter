@@ -19,3 +19,11 @@ must reuse the alert event identity rather than create another event.
 
 Quiet hours and email/webhook delivery are subsequent layers. They may change
 delivery state, but must not weaken or bypass this invariant.
+
+## Quiet hours
+
+Each user may define an enabled quiet-hours range and IANA timezone. Both same-day
+and overnight ranges are supported. Matching remains immediate and immutable, but
+events created during the range receive an `available_after` timestamp at the next
+local end time. Delivery workers must select only pending events whose
+`available_after <= now()`; this preserves alerts without sending during quiet hours.

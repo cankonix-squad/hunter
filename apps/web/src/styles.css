@@ -202,6 +202,10 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .source-metrics { margin: 8px 0 0; }
 .source-error { padding: 8px; background: #f2dddd; color: #7e2424; font-size: 9px; overflow-wrap: anywhere; }
 .alert-console { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #ccc; }
+.quiet-hours { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 20px; padding: 12px 14px; border: 1px solid #ccc; background: white; }
+.quiet-hours label { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.quiet-hours input[type="time"], .quiet-hours select { padding: 7px; border: 1px solid #aaa; background: white; }
+.quiet-hours button { margin: 0 0 0 auto; padding: 9px 12px; }
 .alert-console > form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px; border: 1px solid #ccc; background: #e9e9e5; }
 .alert-console > form input:not([type="checkbox"]), .alert-console > form select { padding: 9px; border: 1px solid #aaa; background: white; }
 .alert-console > form label { font-size: 11px; }

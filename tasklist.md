@@ -346,7 +346,7 @@ build, container build, dan smoke test HTTP lulus.
 
 ### Notifications dan operations
 
-- [ ] Alert rules untuk opportunity/material changes
+- [x] Alert rules untuk opportunity/material changes
 - [ ] Quiet hours
 - [ ] Notification deduplication
 - [ ] Email adapter
@@ -355,6 +355,17 @@ build, container build, dan smoke test HTTP lulus.
 - [x] Queue/lag/error dashboard
 - [ ] Dead-letter replay workflow
 - [ ] Failure recovery runbook
+
+Alert rules (commit `9dd7dbd`) memakai migration v24 dan mendukung event `opportunity.new` serta
+`opportunity.material_change` dengan filter source, relevance, dan minimum score.
+Rule dibatasi per user, dapat diaktifkan/nonaktifkan, dan create/update/delete diaudit.
+Collector mencocokkan rule secara atomik setelah classification/scoring tersimpan;
+event immutable hanya dibuat untuk opportunity version baru, sementara fingerprint
+duplikat dan perubahan normalized non-material tidak memicu event. Dashboard menyediakan
+rule manager dan inbox 200 event terbaru; delivery tetap `pending` untuk increment
+deduplication/quiet-hours/adapter berikutnya. Acceptance create/list/delete lulus dengan
+HTTP 204 dan dua audit event yang benar. Go race/vet, 8 frontend tests, production build,
+OpenAPI YAML, migration v24, serta container build/health lulus.
 
 ### Hardening dan release
 
@@ -413,6 +424,7 @@ build, container build, dan smoke test HTTP lulus.
 | `ebf1362` | Batch kedua lima source SPSE hingga total sepuluh source aktif |
 | `1f59e59` | Batch ketiga lima source SPSE hingga total lima belas source aktif |
 | `77d53ac` | Batch keempat mencapai target dua puluh source SPSE aktif |
+| `9dd7dbd` | Personal alert rules dan immutable new/material-change event inbox |
 
 ## Aturan pembaruan task list
 

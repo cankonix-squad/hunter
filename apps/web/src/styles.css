@@ -201,5 +201,17 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .source-grid small, .source-metrics { color: #888; font-size: 9px; }
 .source-metrics { margin: 8px 0 0; }
 .source-error { padding: 8px; background: #f2dddd; color: #7e2424; font-size: 9px; overflow-wrap: anywhere; }
+.alert-console { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #ccc; }
+.alert-console > form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px; border: 1px solid #ccc; background: #e9e9e5; }
+.alert-console > form input:not([type="checkbox"]), .alert-console > form select { padding: 9px; border: 1px solid #aaa; background: white; }
+.alert-console > form label { font-size: 11px; }
+.alert-console > form button, .alert-console article button { margin: 0; padding: 9px 12px; }
+.alert-console > small { display: block; margin-top: 8px; color: #7e2424; }
+.alert-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+.alert-layout > div { border: 1px solid #ccc; background: white; padding: 14px; }
+.alert-layout h3 { margin: 0 0 10px; font-size: 15px; }
+.alert-layout article { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid #ddd; }
+.alert-layout article span, .alert-layout article small { color: #777; font-size: 10px; }
+.alert-layout article button { grid-column: 2; grid-row: 1 / span 2; }
 @media (max-width: 1100px) { .opportunity-row { grid-template-columns: 110px 1fr 160px 80px; } .opportunity-row .lifecycle { display: none; } }
 @media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } .pipeline-analytics { grid-template-columns: 1fr; } .pipeline-analytics dl { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }

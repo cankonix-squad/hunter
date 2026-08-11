@@ -271,7 +271,7 @@ func (s *Service) Get(ctx context.Context, id string) (Item, error) {
 		if err := json.Unmarshal(raw, &version.Data); err != nil {
 			return Item{}, fmt.Errorf("decode opportunity history: %w", err)
 		}
-		version.ChangedFields = changedFields(previous, version.Data)
+		version.ChangedFields = ChangedFields(previous, version.Data)
 		current := version.Data
 		previous = &current
 		chronological = append(chronological, version)
@@ -286,7 +286,7 @@ func (s *Service) Get(ctx context.Context, id string) (Item, error) {
 	return item, nil
 }
 
-func changedFields(previous *Normalized, current Normalized) []string {
+func ChangedFields(previous *Normalized, current Normalized) []string {
 	if previous == nil {
 		return []string{}
 	}

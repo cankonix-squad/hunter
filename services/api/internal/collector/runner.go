@@ -9,6 +9,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/cankonix/cankonix-oi/services/api/internal/alerts"
 	"github.com/cankonix/cankonix-oi/services/api/internal/classification"
 	"github.com/cankonix/cankonix-oi/services/api/internal/opportunities"
 	"github.com/cankonix/cankonix-oi/services/api/internal/scoring"
@@ -152,6 +153,19 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		if err != nil {
 			return fmt.Errorf("insert snapshot: %w", err)
 		}
+		var previous opportunities.Normalized
+		previousErr := tx.QueryRow(ctx, `SELECT title,agency,procurement_type,lifecycle_status,budget_minor,currency,registration_deadline
+			FROM opportunities WHERE source_id=$1 AND package_identity=$2`, source.ID, candidate.PackageIdentity).
+			Scan(&previous.Title, &previous.Agency, &previous.ProcurementType, &previous.LifecycleStatus,
+				&previous.BudgetMinor, &previous.Currency, &previous.RegistrationDeadline)
+		isNew := errors.Is(previousErr, pgx.ErrNoRows)
+		if previousErr != nil && !isNew {
+			return fmt.Errorf("load previous opportunity: %w", previousErr)
+		}
+		changed := opportunities.ChangedFields(nil, normalized)
+		if !isNew {
+			changed = opportunities.ChangedFields(&previous, normalized)
+		}
 		var opportunityID string
 		err = tx.QueryRow(ctx, `INSERT INTO opportunities(source_id, package_identity, title, agency,
 			procurement_type, lifecycle_status, budget_minor, currency, registration_deadline,
@@ -173,11 +187,12 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		if err != nil {
 			return fmt.Errorf("encode normalized opportunity: %w", err)
 		}
-		tag, err := tx.Exec(ctx, `INSERT INTO opportunity_versions(opportunity_id, snapshot_id, fingerprint,
+		var versionID int64
+		err = tx.QueryRow(ctx, `INSERT INTO opportunity_versions(opportunity_id, snapshot_id, fingerprint,
 			lifecycle_status, normalized_data, observed_at)
 			SELECT $1, $2, $3, $4, $5, observed_at FROM source_snapshots WHERE id = $2
-			ON CONFLICT DO NOTHING`, opportunityID, snapshotID, fingerprint, normalized.LifecycleStatus, normalizedJSON)
-		if err != nil {
+			ON CONFLICT DO NOTHING RETURNING id`, opportunityID, snapshotID, fingerprint, normalized.LifecycleStatus, normalizedJSON).Scan(&versionID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return fmt.Errorf("insert opportunity version: %w", err)
 		}
 		classificationResult := classification.DefaultEngine().Evaluate(classification.Input{
@@ -198,7 +213,20 @@ func (r *Runner) execute(ctx context.Context, run Run) error {
 		if err := persistScore(ctx, tx, opportunityID, fingerprint, classificationID, score); err != nil {
 			return err
 		}
-		inserted += int(tag.RowsAffected())
+		if versionID != 0 {
+			inserted++
+			eventType := ""
+			if isNew {
+				eventType = "opportunity.new"
+			} else if len(changed) > 0 {
+				eventType = "opportunity.material_change"
+			}
+			if eventType != "" {
+				if err := alerts.Match(ctx, tx, opportunityID, versionID, eventType, changed); err != nil {
+					return err
+				}
+			}
+		}
 	}
 	runMetrics := map[string]int{"candidates": len(candidates), "new_snapshots": inserted}
 	if provider, ok := adapter.(MetricsProvider); ok {

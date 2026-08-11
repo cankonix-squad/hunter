@@ -16,10 +16,10 @@ func TestChangedFields(t *testing.T) {
 	after.BudgetMinor = &budgetAfter
 	after.RegistrationDeadline = &deadlineAfter
 	want := []string{"lifecycle_status", "budget_minor", "registration_deadline"}
-	if got := changedFields(&before, after); !reflect.DeepEqual(got, want) {
+	if got := ChangedFields(&before, after); !reflect.DeepEqual(got, want) {
 		t.Fatalf("changedFields() = %v, want %v", got, want)
 	}
-	if got := changedFields(nil, after); len(got) != 0 {
+	if got := ChangedFields(nil, after); len(got) != 0 {
 		t.Fatalf("initial version changes = %v", got)
 	}
 }

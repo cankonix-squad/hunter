@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cankonix/cankonix-oi/services/api/internal/activity"
+	"github.com/cankonix/cankonix-oi/services/api/internal/alerts"
 	"github.com/cankonix/cankonix-oi/services/api/internal/analytics"
 	"github.com/cankonix/cankonix-oi/services/api/internal/assignments"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
@@ -45,12 +46,13 @@ type Server struct {
 	overrides     *overrides.Service
 	activity      *activity.Service
 	analytics     *analytics.Service
+	alerts        *alerts.Service
 	startedAt     time.Time
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
-		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), startedAt: time.Now().UTC()}
+		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), alerts: alerts.New(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
@@ -82,10 +84,77 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("PATCH /api/v1/opportunities/{id}/override", s.authenticate(requireRoles("administrator", "operator", "business_development", "bid_manager", "executive")(http.HandlerFunc(s.updateOverride))))
 	mux.Handle("GET /api/v1/opportunities/{id}/activity", s.authenticate(http.HandlerFunc(s.listActivity)))
 	mux.Handle("GET /api/v1/analytics/pipeline", s.authenticate(http.HandlerFunc(s.pipelineAnalytics)))
+	mux.Handle("GET /api/v1/alert-rules", s.authenticate(http.HandlerFunc(s.listAlertRules)))
+	mux.Handle("POST /api/v1/alert-rules", s.authenticate(http.HandlerFunc(s.createAlertRule)))
+	mux.Handle("PUT /api/v1/alert-rules/{id}", s.authenticate(http.HandlerFunc(s.updateAlertRule)))
+	mux.Handle("DELETE /api/v1/alert-rules/{id}", s.authenticate(http.HandlerFunc(s.deleteAlertRule)))
+	mux.Handle("GET /api/v1/alerts", s.authenticate(http.HandlerFunc(s.listAlerts)))
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
 	return requestID(recoverer(securityHeaders(mux)))
+}
+
+func (s *Server) listAlertRules(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	items, err := s.alerts.List(r.Context(), p.UserID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Alert rules are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+func (s *Server) createAlertRule(w http.ResponseWriter, r *http.Request) {
+	var input alerts.Input
+	if decodeJSON(w, r, &input) != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.alerts.Create(r.Context(), p.UserID, input)
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_alert_rule", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, item)
+}
+func (s *Server) updateAlertRule(w http.ResponseWriter, r *http.Request) {
+	var input alerts.Input
+	if decodeJSON(w, r, &input) != nil {
+		return
+	}
+	p, _ := principalFrom(r)
+	item, err := s.alerts.Update(r.Context(), p.UserID, r.PathValue("id"), input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "alert_rule_not_found", "Alert rule was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "invalid_alert_rule", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, item)
+}
+func (s *Server) deleteAlertRule(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	err := s.alerts.Delete(r.Context(), p.UserID, r.PathValue("id"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		writeError(w, http.StatusNotFound, "alert_rule_not_found", "Alert rule was not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Alert rule could not be deleted")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+func (s *Server) listAlerts(w http.ResponseWriter, r *http.Request) {
+	p, _ := principalFrom(r)
+	items, err := s.alerts.ListEvents(r.Context(), p.UserID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "internal_error", "Alerts are temporarily unavailable")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
 func (s *Server) pipelineAnalytics(w http.ResponseWriter, r *http.Request) {

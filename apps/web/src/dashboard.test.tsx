@@ -41,6 +41,8 @@ describe('Dashboard', () => {
         ? { items: [{ user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] }] }
         : path.includes('/api/v1/analytics/pipeline')
         ? { total: 173, active: 2, shortlisted: 1, assigned: 1, pursue: 1, pass: 0, undecided: 172, overdue_actions: 0, actions_due_seven_days: 1 }
+        : path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts')
+        ? { items: [] }
         : path.includes('/assignment')
         ? { assignment: null }
         : path.includes('/comments')
@@ -91,7 +93,7 @@ describe('Dashboard', () => {
       accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
       user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
     })
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 } : String(input).includes('/api/v1/sources') || String(input).includes('/api/v1/saved-views') || String(input).includes('/api/v1/team') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 } : String(input).includes('/api/v1/sources') || String(input).includes('/api/v1/saved-views') || String(input).includes('/api/v1/team') || String(input).includes('/api/v1/alert-rules') || String(input).includes('/api/v1/alerts') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     render(<AuthProvider><Dashboard /></AuthProvider>)
     await screen.findByText('No opportunities found.')
     await userEvent.click(screen.getByLabelText('Review queue only'))
@@ -108,7 +110,7 @@ describe('Dashboard', () => {
       const body = path.includes('/api/v1/saved-views')
         ? { items: [{ id: 'view-1', name: 'Relevant closed', filters: { q: 'data', status: 'completed', relevance: 'relevant', min_score_bp: 7500, review_only: true }, created_at: '2026-08-10T00:00:00Z', updated_at: '2026-08-10T00:00:00Z' }] }
         : path.includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 }
-        : path.includes('/api/v1/sources') || path.includes('/api/v1/team') ? { items: [] }
+        : path.includes('/api/v1/sources') || path.includes('/api/v1/team') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') ? { items: [] }
         : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }
       return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
     })

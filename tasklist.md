@@ -287,10 +287,11 @@ container build, dan health check lulus.
 - [x] Server-side keyword search, pagination terbatas, dan deduplikasi lintas keyword
 - [x] Source-specific lag/error metrics
 - [x] Validasi tidak ada login, CAPTCHA bypass, atau supplier transaction
-- [~] Lima belas source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur,
+- [~] Dua puluh source aktif (Maluku, Komdigi, Jakarta, Jawa Barat, Jawa Timur,
   Jawa Tengah, DI Yogyakarta, Banten, Sumatera Utara, Sulawesi Selatan,
-  Sumatera Barat, Sumatera Selatan, Kalimantan Barat, Kalimantan Timur, Bali);
-  perluas bertahap menuju 20 priority sources setelah stability observation
+  Sumatera Barat, Sumatera Selatan, Kalimantan Barat, Kalimantan Timur, Bali,
+  NTB, NTT, Sulawesi Utara, Sulawesi Tengah, Sulawesi Tenggara); target coverage
+  tercapai, menunggu stability observation tujuh hari
 
 Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan halaman
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
@@ -326,6 +327,15 @@ HTTP 200. Kelima scheduler run sukses pada attempt pertama tanpa safe error: Bal
 Kalimantan Timur masing-masing menghasilkan satu snapshot completed, sedangkan tiga
 source lain valid dengan hasil nol. Total registry menjadi tepat 15 source SPSE aktif;
 dua paket nonaktif yang ditemukan tidak masuk active feed.
+
+Batch source keempat (commit `77d53ac`) memakai migration v23 dan menambah NTB, NTT, Sulawesi Utara,
+Sulawesi Tengah, serta Sulawesi Tenggara. Review 11 Agustus 2026 memastikan robots.txt
+resmi mengizinkan seluruh tenant dan kelima listing merespons HTTP 200. Semua scheduler
+run sukses pada attempt pertama tanpa safe error: NTT menghasilkan satu snapshot
+completed dan Sulawesi Tengah lima snapshot (satu completed, empat evaluation); tiga
+source lainnya valid dengan hasil nol. Registry mencapai tepat 20 source SPSE aktif dan
+seluruh enam paket nonaktif tetap tidak masuk active feed. Completion gate tetap menunggu
+observasi stabilitas tujuh hari.
 
 Increment operasi (commit `62946b7`) pada 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
 jam untuk lima source publik aktif, serta source health console dengan health score,
@@ -402,6 +412,7 @@ build, container build, dan smoke test HTTP lulus.
 | `45a8568` | Batch lima source SPSE dan parser nilai/keyword yang lebih tangguh |
 | `ebf1362` | Batch kedua lima source SPSE hingga total sepuluh source aktif |
 | `1f59e59` | Batch ketiga lima source SPSE hingga total lima belas source aktif |
+| `77d53ac` | Batch keempat mencapai target dua puluh source SPSE aktif |
 
 ## Aturan pembaruan task list
 

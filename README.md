@@ -51,6 +51,7 @@ COI is a decision-support system. It collects only publicly available informatio
 - [AI agent design](docs/AI_AGENT.md)
 - [MVP roadmap](docs/ROADMAP.md)
 - [Architecture decisions](docs/DECISIONS.md)
+- [Failure recovery runbook](docs/FAILURE_RECOVERY_RUNBOOK.md)
 - [Codex execution rules](AGENTS.md)
 
 ## MVP completion signal

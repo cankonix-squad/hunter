@@ -57,3 +57,6 @@ attempt count, HTTP status, and capped safe error. Replay is accepted only from 
 dead-letter state, resets transient execution fields, increments a durable replay count,
 records actor/time, and writes an audit event. The original alert event and delivery row
 remain unchanged in identity, preserving deduplication and forensic history.
+
+Operational triage, controlled replay, recovery verification, and escalation are
+documented in the [failure recovery runbook](FAILURE_RECOVERY_RUNBOOK.md).

@@ -350,7 +350,7 @@ build, container build, dan smoke test HTTP lulus.
 - [x] Quiet hours
 - [x] Notification deduplication
 - [x] Email adapter
-- [ ] Webhook adapter
+- [x] Webhook adapter
 - [x] Source health console
 - [x] Queue/lag/error dashboard
 - [ ] Dead-letter replay workflow
@@ -391,6 +391,16 @@ status yang sama tanpa koneksi eksternal. Acceptance end-to-end menghasilkan del
 `delivered` pada attempt pertama dan memperbarui alert event secara atomik, kemudian seluruh
 data uji dibersihkan dan notifier dikembalikan ke default nonaktif. Go race/vet, Compose
 validation, migration v27, dan notifier container build lulus.
+
+Webhook adapter (commit `74fe9e1`) memakai migration v28 dan shared notifier/outbox reliability path.
+Payload JSON terstruktur menyertakan event, opportunity, changed fields, canonical URL,
+dan timestamp; request memiliki deterministic idempotency key serta HMAC-SHA256 atas body
+exact. URL production wajib HTTPS tanpa embedded credentials, secret minimal 32 karakter,
+redirect ditolak, timeout dibatasi, response body dibuang secara bounded, dan status HTTP
+dicatat tanpa menyimpan body. Acceptance dry-run menghasilkan delivery `webhook` HTTP 204
+pada attempt pertama tanpa safe error, kemudian data uji dibersihkan dan notifier kembali
+nonaktif. Go race/vet, signature/idempotency tests, Compose validation, migration v28, dan
+notifier container build lulus.
 
 ### Hardening dan release
 
@@ -453,6 +463,7 @@ validation, migration v27, dan notifier container build lulus.
 | `b2448c6` | Deterministic per-user alert deduplication untuk overlapping rules dan retry |
 | `2f36033` | Auditable per-user quiet hours dengan timezone-aware delivery deferral |
 | `6dc92a8` | Reliable STARTTLS email notifier dengan transactional outbox dan retry |
+| `74fe9e1` | Signed HTTPS webhook notifier dengan idempotency key dan bounded response handling |
 
 ## Aturan pembaruan task list
 

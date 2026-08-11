@@ -94,6 +94,12 @@ allowed by the official robots policy and every public `/lelang` page returned
 HTTP 200. Collection remains limited to the same reviewed listing contract and
 conservative request budget.
 
+The fourth controlled batch adds `ntbprov`, `nttprov`, `sulutprov`,
+`sultengprov`, and `sultraprov`. On 11 August 2026, the official robots policy
+explicitly allowed all five paths and each public `/lelang` page returned HTTP
+200. This batch reaches the 20-source coverage target without changing adapter
+scope, concurrency, pagination, or request-rate limits.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.

@@ -59,3 +59,13 @@ Timur (`kaltimprov`), and Bali (`baliprov`). Each public `/lelang` page returned
 HTTP 200 during review. Approval is restricted to listing and declared
 DataTables routes under the existing timeout, response-size, concurrency,
 rate-limit, and stop-on-403/429 safeguards.
+
+## Target-coverage review — 11 August 2026
+
+The official robots policy explicitly allows Nusa Tenggara Barat (`ntbprov`),
+Nusa Tenggara Timur (`nttprov`), Sulawesi Utara (`sulutprov`), Sulawesi Tengah
+(`sultengprov`), and Sulawesi Tenggara (`sultraprov`). Each public `/lelang`
+page returned HTTP 200 during review. Approval remains restricted to listing and
+declared DataTables routes under the existing safeguards. Adding this batch
+reaches 20 active public SPSE sources but does not complete the separate
+seven-day stability gate.

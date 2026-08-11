@@ -424,7 +424,7 @@ health/readiness melalui edge HTTP 200.
 
 - [~] Structured logs dan health/readiness sudah tersedia; metrics/traces belum lengkap
 - [~] CI pipeline tersedia dan lulus lokal; menunggu remote GitHub serta hosted run pertama
-- [ ] API authorization/contract integration suite
+- [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [ ] End-to-end discover → normalize → classify → score → review test
 - [ ] Security review dan dependency/container scanning
@@ -444,6 +444,17 @@ Acceptance lokal: Go race/vet lulus, 8 frontend tests dan production build lulus
 vulnerability, database disposable berhasil dari v1 sampai v29 lalu dihapus, YAML/shell syntax
 dan Compose config valid, serta seluruh image berhasil dibangun. Status CI tetap parsial sampai
 repository memiliki remote GitHub dan satu hosted run terbukti hijau.
+
+API authorization/contract suite (commit `5159e0e`) menjalankan handler produksi melalui
+`httptest` terhadap PostgreSQL 16 yang dimigrasikan penuh dan memakai credential test acak.
+Coverage membuktikan health/security header/request ID, login bearer response, 401 untuk token
+hilang/invalid, authenticated read bagi user tanpa privileged role, 403 viewer/operator pada
+source administration, akses administrator untuk create/update source, akses operator untuk
+durable source-run queue dan dead-letter console, serta safe JSON error envelope untuk unknown
+field dan pagination invalid. Suite memakai build tag `integration` dan menjadi gate job migration
+CI. Acceptance `go test -race -tags=integration ./internal/httpapi` lulus pada database disposable
+yang kemudian dihapus; seluruh regression `go test -race ./...`, `go vet ./...`, YAML, dan diff
+check tetap lulus.
 
 ## MVP completion gate
 
@@ -495,6 +506,7 @@ repository memiliki remote GitHub dan satu hosted run terbukti hijau.
 | `4745e0b` | RBAC dead-letter console dan auditable replay dengan preserved delivery identity |
 | `f077593` | Failure recovery runbook dengan triage, canary, replay, verification, dan escalation gate |
 | `8d395f2` | CI release gates dan fresh PostgreSQL migration-chain verification sampai v29 |
+| `5159e0e` | PostgreSQL-backed API authorization dan response-contract integration suite |
 
 ## Aturan pembaruan task list
 

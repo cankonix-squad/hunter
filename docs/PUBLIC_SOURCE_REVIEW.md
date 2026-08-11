@@ -50,3 +50,12 @@ paths for Jawa Tengah (`jatengprov`), DI Yogyakarta (`jogjaprov`), Banten
 review. This approval remains limited to the public listing and declared
 DataTables routes under the existing adapter safeguards; detail, authentication,
 supplier transaction, and challenge routes remain out of scope.
+
+## Expansion review — 11 August 2026
+
+The official robots policy explicitly allows Sumatera Barat (`sumbarprov`),
+Sumatera Selatan (`sumselprov`), Kalimantan Barat (`kalbarprov`), Kalimantan
+Timur (`kaltimprov`), and Bali (`baliprov`). Each public `/lelang` page returned
+HTTP 200 during review. Approval is restricted to listing and declared
+DataTables routes under the existing timeout, response-size, concurrency,
+rate-limit, and stop-on-403/429 safeguards.

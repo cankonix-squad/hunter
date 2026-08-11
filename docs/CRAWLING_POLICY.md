@@ -88,6 +88,12 @@ explicitly allowed every tenant path and each public `/lelang` page returned HTT
 200. The same conservative limits apply: listing/DataTables routes only, one
 request at a time, a three-second interval, and bounded keyword pagination.
 
+The third controlled batch adds `sumbarprov`, `sumselprov`, `kalbarprov`,
+`kaltimprov`, and `baliprov`. On 11 August 2026, every path remained explicitly
+allowed by the official robots policy and every public `/lelang` page returned
+HTTP 200. Collection remains limited to the same reviewed listing contract and
+conservative request budget.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.

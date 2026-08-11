@@ -27,3 +27,15 @@ and overnight ranges are supported. Matching remains immediate and immutable, bu
 events created during the range receive an `available_after` timestamp at the next
 local end time. Delivery workers must select only pending events whose
 `available_after <= now()`; this preserves alerts without sending during quiet hours.
+
+## Email delivery
+
+The notifier process materializes one email outbox row per alert event and claims due
+rows with a database lease. Successful sends become `delivered`; failures use bounded
+exponential retry and become `dead_letter` after five attempts. Safe errors are capped
+and credentials are never stored in delivery records.
+
+SMTP delivery requires STARTTLS with TLS 1.2 or newer. Configure it only through
+environment variables. `EMAIL_DRY_RUN=true` uses the same outbox/claim/status path but
+does not contact an external server; it is intended only for local acceptance. Both
+`EMAIL_DELIVERY_ENABLED` and dry-run default to false.

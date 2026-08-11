@@ -61,6 +61,28 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  notifier:
+    build:
+      context: ./services/api
+      args:
+        TARGET: notifier
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-postgres://cankonix:change-me-for-local-development@postgres:5432/cankonix_oi?sslmode=disable}
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-now}
+      EMAIL_DELIVERY_ENABLED: ${EMAIL_DELIVERY_ENABLED:-false}
+      EMAIL_DRY_RUN: ${EMAIL_DRY_RUN:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      NOTIFIER_ID: ${NOTIFIER_ID:-notifier-local-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   web:
     build:
       context: ./apps/web

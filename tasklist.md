@@ -426,7 +426,7 @@ health/readiness melalui edge HTTP 200.
 - [~] CI pipeline tersedia dan lulus lokal; menunggu remote GitHub serta hosted run pertama
 - [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
-- [ ] End-to-end discover → normalize → classify → score → review test
+- [x] End-to-end discover → normalize → classify → score → review test
 - [ ] Security review dan dependency/container scanning
 - [ ] Performance dan pagination load test
 - [ ] Backup dan restore drill
@@ -455,6 +455,16 @@ field dan pagination invalid. Suite memakai build tag `integration` dan menjadi 
 CI. Acceptance `go test -race -tags=integration ./internal/httpapi` lulus pada database disposable
 yang kemudian dihapus; seluruh regression `go test -race ./...`, `go vet ./...`, YAML, dan diff
 check tetap lulus.
+
+Collector workflow E2E (commit `ef22ccd`) memakai embedded SPSE fixture, runner produksi, API
+handler produksi, credential test acak, dan PostgreSQL 16 yang dimigrasikan penuh. Discovery
+pertama menghasilkan tepat 2 snapshot, canonical opportunity, version, classification, dan score,
+serta 10 score dimension. Feed relevant dengan minimum score 7000 mengembalikan Integrasi Data
+sebagai `relevant/data-ai`, score 8000, satu evidence, lima dimension, dan satu history version;
+paket jaringan ambigu muncul tepat sekali pada review API sebagai `needs_review`. Discovery kedua
+dengan idempotency key baru sukses tetapi `new_snapshots=0`; snapshot/version/classification/score/
+dimension count tidak berubah. Suite menjadi bagian gate integration CI. Acceptance race test
+integration dan seluruh Go regression/vet lulus; database/container disposable dihapus otomatis.
 
 ## MVP completion gate
 
@@ -507,6 +517,7 @@ check tetap lulus.
 | `f077593` | Failure recovery runbook dengan triage, canary, replay, verification, dan escalation gate |
 | `8d395f2` | CI release gates dan fresh PostgreSQL migration-chain verification sampai v29 |
 | `5159e0e` | PostgreSQL-backed API authorization dan response-contract integration suite |
+| `ef22ccd` | Idempotent discover-to-review collector workflow E2E pada PostgreSQL kosong |
 
 ## Aturan pembaruan task list
 

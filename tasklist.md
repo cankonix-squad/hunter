@@ -347,7 +347,7 @@ build, container build, dan smoke test HTTP lulus.
 ### Notifications dan operations
 
 - [x] Alert rules untuk opportunity/material changes
-- [ ] Quiet hours
+- [x] Quiet hours
 - [x] Notification deduplication
 - [ ] Email adapter
 - [ ] Webhook adapter
@@ -372,6 +372,15 @@ opportunity version, serta event type. Matcher memilih tepat satu rule paling sp
 per user dengan tie-break deterministik sebelum insert; constraint database tetap menjadi
 pengaman terhadap concurrent collector dan retry. Acceptance dalam transaksi rollback
 membuat dua rule overlap dan membuktikan hanya satu event tersimpan. Go race/vet lulus.
+
+Quiet hours (commit `2f36033`) memakai migration v26 dan preferensi per user untuk enabled state, waktu
+mulai/akhir, serta IANA timezone. Rentang same-day dan overnight didukung; matcher tetap
+mencatat event segera tetapi mengisi `available_after` pada akhir waktu hening lokal,
+sehingga delivery worker kelak hanya mengambil event pending yang sudah due. Update API
+bersifat atomik dengan audit log dan dashboard menyediakan kontrol WIB/WITA/WIT.
+Acceptance mengaktifkan rentang 00:00–23:59 Asia/Jakarta, membuktikan waktu defer berada
+di masa depan, lalu mengembalikan setting ke disabled 22:00–07:00. Go race/vet, 8 frontend
+tests, production build, OpenAPI YAML, migration v26, dan seluruh container build lulus.
 
 ### Hardening dan release
 
@@ -432,6 +441,7 @@ membuat dua rule overlap dan membuktikan hanya satu event tersimpan. Go race/vet
 | `77d53ac` | Batch keempat mencapai target dua puluh source SPSE aktif |
 | `9dd7dbd` | Personal alert rules dan immutable new/material-change event inbox |
 | `b2448c6` | Deterministic per-user alert deduplication untuk overlapping rules dan retry |
+| `2f36033` | Auditable per-user quiet hours dengan timezone-aware delivery deferral |
 
 ## Aturan pembaruan task list
 

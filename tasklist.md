@@ -349,7 +349,7 @@ build, container build, dan smoke test HTTP lulus.
 - [x] Alert rules untuk opportunity/material changes
 - [x] Quiet hours
 - [x] Notification deduplication
-- [ ] Email adapter
+- [x] Email adapter
 - [ ] Webhook adapter
 - [x] Source health console
 - [x] Queue/lag/error dashboard
@@ -381,6 +381,16 @@ bersifat atomik dengan audit log dan dashboard menyediakan kontrol WIB/WITA/WIT.
 Acceptance mengaktifkan rentang 00:00–23:59 Asia/Jakarta, membuktikan waktu defer berada
 di masa depan, lalu mengembalikan setting ke disabled 22:00–07:00. Go race/vet, 8 frontend
 tests, production build, OpenAPI YAML, migration v26, dan seluruh container build lulus.
+
+Email adapter (commit `6dc92a8`) memakai migration v27 dan notifier process terpisah dengan transactional
+outbox per alert event, database lease, expired-lease recovery, bounded exponential retry,
+dead-letter setelah lima attempt, serta safe error maksimal 500 karakter. SMTP production
+mewajibkan STARTTLS TLS 1.2+, mendukung auth opsional, dan mencegah subject header injection;
+credential hanya berasal dari environment. Mode dry-run eksplisit memakai jalur outbox dan
+status yang sama tanpa koneksi eksternal. Acceptance end-to-end menghasilkan delivery email
+`delivered` pada attempt pertama dan memperbarui alert event secara atomik, kemudian seluruh
+data uji dibersihkan dan notifier dikembalikan ke default nonaktif. Go race/vet, Compose
+validation, migration v27, dan notifier container build lulus.
 
 ### Hardening dan release
 
@@ -442,6 +452,7 @@ tests, production build, OpenAPI YAML, migration v26, dan seluruh container buil
 | `9dd7dbd` | Personal alert rules dan immutable new/material-change event inbox |
 | `b2448c6` | Deterministic per-user alert deduplication untuk overlapping rules dan retry |
 | `2f36033` | Auditable per-user quiet hours dengan timezone-aware delivery deferral |
+| `6dc92a8` | Reliable STARTTLS email notifier dengan transactional outbox dan retry |
 
 ## Aturan pembaruan task list
 

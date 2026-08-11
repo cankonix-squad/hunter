@@ -119,6 +119,10 @@ curl http://localhost:3000/readyz
 curl http://localhost:3000/api/v1/system
 ```
 
+CI runs Go formatting/tests/vet, frontend tests/build/audit, fresh-database
+migrations, and Compose image builds. To verify migrations against an empty disposable
+PostgreSQL database, set `DATABASE_URL` and run `./scripts/check-migrations.sh`.
+
 Open `http://localhost:3000` to use the browser login, or log in through the
 API with the bootstrap administrator configured in `.env`:
 

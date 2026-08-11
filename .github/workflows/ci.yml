@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Go format, test, vet, and dependency verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/api/go.mod
+          cache-dependency-path: services/api/go.sum
+      - name: Verify formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Verify dependencies
+        run: go mod verify
+      - name: Run tests with race detector
+        run: go test -race ./...
+      - name: Run vet
+        run: go vet ./...
+
+  frontend:
+    name: Frontend test, build, and dependency audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  migrations:
+    name: Fresh PostgreSQL migration chain
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: cankonix_migration_test
+          POSTGRES_USER: cankonix
+          POSTGRES_PASSWORD: migration-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cankonix -d cankonix_migration_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://cankonix:migration-test-only@localhost:5432/cankonix_migration_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply and verify all migrations
+        run: ./scripts/check-migrations.sh
+
+  containers:
+    name: Compose validation and image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Build application images
+        run: docker compose build api collector notifier web

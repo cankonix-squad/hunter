@@ -348,7 +348,7 @@ build, container build, dan smoke test HTTP lulus.
 
 - [x] Alert rules untuk opportunity/material changes
 - [ ] Quiet hours
-- [ ] Notification deduplication
+- [x] Notification deduplication
 - [ ] Email adapter
 - [ ] Webhook adapter
 - [x] Source health console
@@ -366,6 +366,12 @@ rule manager dan inbox 200 event terbaru; delivery tetap `pending` untuk increme
 deduplication/quiet-hours/adapter berikutnya. Acceptance create/list/delete lulus dengan
 HTTP 204 dan dua audit event yang benar. Go race/vet, 8 frontend tests, production build,
 OpenAPI YAML, migration v24, serta container build/health lulus.
+
+Notification deduplication (commit `b2448c6`) memakai migration v25 dan unique invariant per user,
+opportunity version, serta event type. Matcher memilih tepat satu rule paling spesifik
+per user dengan tie-break deterministik sebelum insert; constraint database tetap menjadi
+pengaman terhadap concurrent collector dan retry. Acceptance dalam transaksi rollback
+membuat dua rule overlap dan membuktikan hanya satu event tersimpan. Go race/vet lulus.
 
 ### Hardening dan release
 
@@ -425,6 +431,7 @@ OpenAPI YAML, migration v24, serta container build/health lulus.
 | `1f59e59` | Batch ketiga lima source SPSE hingga total lima belas source aktif |
 | `77d53ac` | Batch keempat mencapai target dua puluh source SPSE aktif |
 | `9dd7dbd` | Personal alert rules dan immutable new/material-change event inbox |
+| `b2448c6` | Deterministic per-user alert deduplication untuk overlapping rules dan retry |
 
 ## Aturan pembaruan task list
 

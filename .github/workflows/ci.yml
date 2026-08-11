@@ -54,7 +54,7 @@ jobs:
         run: npm audit --audit-level=high
 
   migrations:
-    name: Fresh PostgreSQL migration chain
+    name: Fresh migrations and API integration contracts
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -76,6 +76,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply and verify all migrations
         run: ./scripts/check-migrations.sh
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: services/api/go.mod
+          cache-dependency-path: services/api/go.sum
+      - name: Test authorization and API contracts
+        working-directory: services/api
+        run: go test -race -tags=integration ./internal/httpapi
 
   containers:
     name: Compose validation and image builds

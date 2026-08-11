@@ -167,10 +167,13 @@ func (s *Service) ListEvents(ctx context.Context, userID string) ([]Event, error
 
 func Match(ctx context.Context, tx pgx.Tx, opportunityID string, versionID int64, eventType string, changedFields []string) error {
 	_, err := tx.Exec(ctx, `INSERT INTO alert_events(rule_id,user_id,opportunity_id,opportunity_version_id,event_type,changed_fields)
-	SELECT r.id,r.user_id,o.id,$2,$3,$4 FROM alert_rules r CROSS JOIN opportunities o
+	SELECT matched.id,matched.user_id,matched.opportunity_id,$2,$3,$4 FROM (
+	SELECT DISTINCT ON(r.user_id) r.id,r.user_id,o.id AS opportunity_id FROM alert_rules r CROSS JOIN opportunities o
 	LEFT JOIN LATERAL(SELECT disposition FROM opportunity_classifications c WHERE c.opportunity_id=o.id AND c.opportunity_fingerprint=o.current_fingerprint ORDER BY evaluated_at DESC LIMIT 1)c ON true
 	LEFT JOIN LATERAL(SELECT total_score_bp FROM opportunity_scores s WHERE s.opportunity_id=o.id AND s.opportunity_fingerprint=o.current_fingerprint ORDER BY evaluated_at DESC LIMIT 1)s ON true
-	WHERE o.id=$1 AND r.enabled AND $3=ANY(r.event_types) AND (coalesce(r.filters->>'source_id','')='' OR r.filters->>'source_id'=o.source_id::text) AND (coalesce(r.filters->>'relevance','all')='all' OR r.filters->>'relevance'=c.disposition) AND (NOT(r.filters?'min_score_bp') OR s.total_score_bp >= (r.filters->>'min_score_bp')::integer) ON CONFLICT DO NOTHING`, opportunityID, versionID, eventType, changedFields)
+	WHERE o.id=$1 AND r.enabled AND $3=ANY(r.event_types) AND (coalesce(r.filters->>'source_id','')='' OR r.filters->>'source_id'=o.source_id::text) AND (coalesce(r.filters->>'relevance','all')='all' OR r.filters->>'relevance'=c.disposition) AND (NOT(r.filters?'min_score_bp') OR s.total_score_bp >= (r.filters->>'min_score_bp')::integer)
+	ORDER BY r.user_id,(CASE WHEN r.filters?'source_id' THEN 1 ELSE 0 END + CASE WHEN coalesce(r.filters->>'relevance','all')<>'all' THEN 1 ELSE 0 END + CASE WHEN r.filters?'min_score_bp' THEN 1 ELSE 0 END) DESC,r.created_at,r.id
+	) matched ON CONFLICT DO NOTHING`, opportunityID, versionID, eventType, changedFields)
 	if err != nil {
 		return fmt.Errorf("match alert rules: %w", err)
 	}

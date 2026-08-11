@@ -354,7 +354,7 @@ build, container build, dan smoke test HTTP lulus.
 - [x] Source health console
 - [x] Queue/lag/error dashboard
 - [x] Dead-letter replay workflow
-- [ ] Failure recovery runbook
+- [x] Failure recovery runbook
 
 Alert rules (commit `9dd7dbd`) memakai migration v24 dan mendukung event `opportunity.new` serta
 `opportunity.material_change` dengan filter source, relevance, dan minimum score.
@@ -410,6 +410,15 @@ Destination dan safe error terlihat untuk operasi, sedangkan lease/secret tidak 
 kontrak JSON. Acceptance mengubah email dead letter attempt ke-5 menjadi `queued`, attempt
 0, replay count 1, dan membuktikan audit metadata yang benar sebelum cleanup. Go race/vet,
 8 frontend tests, production build, OpenAPI YAML, migration v29, dan container build lulus.
+
+Failure recovery runbook (commit `f077593`) mendefinisikan severity/ownership, evidence capture,
+triage read-only, stabilisasi writer, pemulihan API/edge/database, circuit breaker source,
+canary source run, notifier/dead-letter replay, rollback forward-only, escalation criteria,
+closure gate, dan template incident record. Semua recovery mutation memakai endpoint RBAC
+yang sudah tersedia; dokumen melarang bypass upstream, perubahan queue langsung, rollback
+migration, dan penghapusan volume. Acceptance memvalidasi referensi route terhadap router dan
+OpenAPI, Compose config, query diagnosis pada migration v29, seluruh container aktif, serta
+health/readiness melalui edge HTTP 200.
 
 ### Hardening dan release
 
@@ -474,6 +483,7 @@ kontrak JSON. Acceptance mengubah email dead letter attempt ke-5 menjadi `queued
 | `6dc92a8` | Reliable STARTTLS email notifier dengan transactional outbox dan retry |
 | `74fe9e1` | Signed HTTPS webhook notifier dengan idempotency key dan bounded response handling |
 | `4745e0b` | RBAC dead-letter console dan auditable replay dengan preserved delivery identity |
+| `f077593` | Failure recovery runbook dengan triage, canary, replay, verification, dan escalation gate |
 
 ## Aturan pembaruan task list
 

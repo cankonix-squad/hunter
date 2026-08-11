@@ -120,7 +120,8 @@ curl http://localhost:3000/api/v1/system
 ```
 
 CI runs Go formatting/tests/vet, frontend tests/build/audit, fresh-database
-migrations, API authorization/contract integration tests, and Compose image builds.
+migrations, API authorization/contract integration and collector E2E tests, and
+Compose image builds.
 To verify migrations against an empty disposable PostgreSQL database, set
 `DATABASE_URL` and run `./scripts/check-migrations.sh`. The integration suite uses the
 same URL with `go test -race -tags=integration ./internal/httpapi` from `services/api`.

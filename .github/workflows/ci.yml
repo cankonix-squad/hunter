@@ -80,7 +80,7 @@ jobs:
         with:
           go-version-file: services/api/go.mod
           cache-dependency-path: services/api/go.sum
-      - name: Test authorization and API contracts
+      - name: Test API contracts and collector E2E
         working-directory: services/api
         run: go test -race -tags=integration ./internal/httpapi
 

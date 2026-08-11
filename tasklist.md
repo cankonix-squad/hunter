@@ -423,9 +423,9 @@ health/readiness melalui edge HTTP 200.
 ### Hardening dan release
 
 - [~] Structured logs dan health/readiness sudah tersedia; metrics/traces belum lengkap
-- [ ] CI pipeline untuk format, test, vet, build, migration, dan audit
+- [~] CI pipeline tersedia dan lulus lokal; menunggu remote GitHub serta hosted run pertama
 - [ ] API authorization/contract integration suite
-- [ ] Fresh-database migration test dari v1 sampai versi terbaru
+- [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [ ] End-to-end discover → normalize → classify → score → review test
 - [ ] Security review dan dependency/container scanning
 - [ ] Performance dan pagination load test
@@ -434,6 +434,16 @@ health/readiness melalui edge HTTP 200.
 - [ ] TLS/staging deployment configuration
 - [ ] UAT dan deployment runbook
 - [ ] Tujuh hari stability observation
+
+CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
+concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,
+frontend test/build/dependency audit, migration PostgreSQL 16 kosong, serta Compose validation
+dan build image API/collector/notifier/web. Skrip reusable memverifikasi nama migration berurutan,
+menerapkan seluruh file dengan `ON_ERROR_STOP`, lalu mewajibkan count dan versi maksimum sama.
+Acceptance lokal: Go race/vet lulus, 8 frontend tests dan production build lulus, npm audit 0
+vulnerability, database disposable berhasil dari v1 sampai v29 lalu dihapus, YAML/shell syntax
+dan Compose config valid, serta seluruh image berhasil dibangun. Status CI tetap parsial sampai
+repository memiliki remote GitHub dan satu hosted run terbukti hijau.
 
 ## MVP completion gate
 
@@ -484,6 +494,7 @@ health/readiness melalui edge HTTP 200.
 | `74fe9e1` | Signed HTTPS webhook notifier dengan idempotency key dan bounded response handling |
 | `4745e0b` | RBAC dead-letter console dan auditable replay dengan preserved delivery identity |
 | `f077593` | Failure recovery runbook dengan triage, canary, replay, verification, dan escalation gate |
+| `8d395f2` | CI release gates dan fresh PostgreSQL migration-chain verification sampai v29 |
 
 ## Aturan pembaruan task list
 

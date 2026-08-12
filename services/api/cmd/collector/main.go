@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -34,11 +35,22 @@ func main() {
 	}
 	runner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}, collector.NewPublicSPSEAdapter(nil)), owner)
 	schedulerEnabled, _ := strconv.ParseBool(os.Getenv("COLLECTOR_SCHEDULER_ENABLED"))
+	monitor := collector.NewMonitor(schedulerEnabled)
+	healthServer := &http.Server{Addr: value("COLLECTOR_HEALTH_ADDR", ":8081"), Handler: monitor.Handler(), ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 5 * time.Second, WriteTimeout: 5 * time.Second, IdleTimeout: 30 * time.Second}
+	serverErrors := make(chan error, 1)
+	go func() { serverErrors <- healthServer.ListenAndServe() }()
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = healthServer.Shutdown(shutdownCtx)
+	}()
 	scheduler := collector.NewScheduler(db)
 	scheduleTicker := time.NewTicker(time.Minute)
 	defer scheduleTicker.Stop()
 	if schedulerEnabled {
 		result, scheduleErr := scheduler.Tick(ctx)
+		monitor.ObserveSchedule(result.Queued, scheduleErr)
 		if scheduleErr != nil {
 			slog.Error("initial source scheduling failed", "error", scheduleErr)
 		} else if result.Queued > 0 {
@@ -49,7 +61,16 @@ func main() {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	for {
+		select {
+		case serverErr := <-serverErrors:
+			if serverErr != nil && serverErr != http.ErrServerClosed {
+				slog.Error("collector health server failed", "error", serverErr)
+				os.Exit(1)
+			}
+		default:
+		}
 		processed, err := runner.ExecuteOne(ctx)
+		monitor.ObserveIteration(processed, err)
 		if err != nil && ctx.Err() == nil {
 			slog.Error("collector iteration failed", "error", err)
 		}
@@ -62,6 +83,7 @@ func main() {
 		case <-scheduleTicker.C:
 			if schedulerEnabled {
 				result, scheduleErr := scheduler.Tick(ctx)
+				monitor.ObserveSchedule(result.Queued, scheduleErr)
 				if scheduleErr != nil {
 					slog.Error("source scheduling failed", "error", scheduleErr)
 				} else if result.Queued > 0 {
@@ -71,4 +93,11 @@ func main() {
 		case <-ticker.C:
 		}
 	}
+}
+
+func value(key, fallback string) string {
+	if configured := os.Getenv(key); configured != "" {
+		return configured
+	}
+	return fallback
 }

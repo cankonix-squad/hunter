@@ -1,7 +1,7 @@
 # Staging and production monitoring
 
-The API exposes Prometheus text metrics at `/metrics` on its internal container port. The staging
-edge does not route this path to the API, so it is not internet-facing. Request labels use the Go
+The API and collector expose Prometheus text metrics at `/metrics` on internal container ports. The
+staging edge does not route these paths, so they are not internet-facing. Request labels use the Go
 route pattern rather than raw URL paths, preventing opportunity IDs or attacker-controlled paths
 from creating high-cardinality series or leaking into monitoring.
 
@@ -18,6 +18,11 @@ sustained 5xx rate above 5%, sustained p95 latency above one second, operational
 source lag/backlog/open circuit/dead letters, and notification dead letters. Connect Prometheus
 alerts to the organization-owned Alertmanager/on-call route during hosted deployment and test one
 controlled alert before UAT approval. A rule being loaded is not proof that a human will receive it.
+
+Collector process metrics include uptime, scheduler-enabled state, claimed/idle/error iterations,
+scheduler ticks, queued runs, and scheduler errors. Docker checks `/healthz` on internal port 8081;
+Prometheus scrapes the same port and alerts within two minutes when the process disappears or when
+scheduler errors increase.
 
 Validate configuration with `scripts/check-monitoring.sh`. During release stabilization, record
 dashboard/query links and UTC windows for availability, 5xx, p95, resource capacity, database

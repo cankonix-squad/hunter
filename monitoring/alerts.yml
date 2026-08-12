@@ -8,6 +8,20 @@ groups:
           severity: critical
         annotations:
           summary: CANKONIX API metrics target is down
+      - alert: CankonixCollectorDown
+        expr: up{job="cankonix-collector"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: CANKONIX collector process is down
+      - alert: CankonixCollectorSchedulerErrors
+        expr: increase(cankonix_collector_schedule_errors_total[10m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX collector scheduler is failing
       - alert: CankonixAPIHighErrorRate
         expr: >-
           sum(rate(cankonix_http_requests_total{status=~"5.."}[5m]))

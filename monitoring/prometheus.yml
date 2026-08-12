@@ -10,3 +10,7 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: [api:8080]
+  - job_name: cankonix-collector
+    metrics_path: /metrics
+    static_configs:
+      - targets: [collector:8081]

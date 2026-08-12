@@ -570,6 +570,17 @@ approval. Acceptance menghasilkan review packet 15 baris dan precision 10000 bp,
 test serta vet lulus, dan release gate menghasilkan `BLOCKED` karena status masih candidate—hasil
 yang benar sampai reviewer CANKONIX memberikan keputusan nyata sesuai `docs/CLASSIFICATION_APPROVAL.md`.
 
+Fail-closed release preflight (commit `c5587f9`) menggabungkan clean immutable commit, remote origin,
+hosted CI untuk commit yang sama, HTTPS staging, tiga UAT approval reference, backup/restore evidence,
+on-call owner, rollback commit, dan empat immutable image digest. Setelah metadata tersedia, command
+menjalankan ulang production secret, staging TLS, UAT/runbook, stability contract, approved
+classification, database seven-day report, dan CA-verified staging smoke; kegagalan child gate tidak
+dapat jatuh-through menjadi GO. CI memvalidasi syntax dan seluruh required field. Acceptance contract
+lulus dan kondisi repository saat ini menghasilkan `NO-GO` dengan blocker eksplisit: belum ada
+remote/hosted evidence, approval, staging URL, artifact digest, on-call/rollback reference, serta gate
+classification dan waktu stabilitas yang masih terbuka. Tidak ada nilai secret yang diterima sebagai
+evidence metadata atau dicetak oleh preflight.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -632,6 +643,7 @@ yang benar sampai reviewer CANKONIX memberikan keputusan nyata sesuai `docs/CLAS
 | `a93c7f5` | Bounded transient collector recovery dan immediate permanent access-policy failure |
 | `0c85b68` | Full inactive-lifecycle integration gate untuk active opportunity feed |
 | `1323806` | Auditable domain-owner classification approval metadata dan release gate |
+| `c5587f9` | Unified fail-closed GO/NO-GO release preflight untuk seluruh local dan hosted evidence |
 
 ## Aturan pembaruan task list
 

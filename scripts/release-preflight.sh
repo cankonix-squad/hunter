@@ -38,8 +38,12 @@ fi
 if [ -n "${HOSTED_CI_COMMIT:-}" ] && [ "$HOSTED_CI_COMMIT" != "$head_commit" ]; then
   block "HOSTED_CI_COMMIT does not match HEAD"
 fi
-case "${HOSTED_CI_URL:-}" in https://*) ;; *) block "HOSTED_CI_URL must use HTTPS" ;; esac
-case "${STAGING_URL:-}" in https://*) ;; *) block "STAGING_URL must use HTTPS" ;; esac
+if [ -n "${HOSTED_CI_URL:-}" ]; then
+  case "$HOSTED_CI_URL" in https://*) ;; *) block "HOSTED_CI_URL must use HTTPS" ;; esac
+fi
+if [ -n "${STAGING_URL:-}" ]; then
+  case "$STAGING_URL" in https://*) ;; *) block "STAGING_URL must use HTTPS" ;; esac
+fi
 
 for key in API_IMAGE_DIGEST COLLECTOR_IMAGE_DIGEST NOTIFIER_IMAGE_DIGEST WEB_IMAGE_DIGEST; do
   eval "digest=\${$key:-}"

@@ -52,6 +52,7 @@ COI is a decision-support system. It collects only publicly available informatio
 - [MVP roadmap](docs/ROADMAP.md)
 - [Architecture decisions](docs/DECISIONS.md)
 - [Failure recovery runbook](docs/FAILURE_RECOVERY_RUNBOOK.md)
+- [Security release review](docs/SECURITY_REVIEW.md)
 - [Codex execution rules](AGENTS.md)
 
 ## MVP completion signal

@@ -33,6 +33,10 @@ jobs:
         run: go test -race ./...
       - name: Run vet
         run: go vet ./...
+      - name: Install Go vulnerability scanner
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
+      - name: Scan reachable Go vulnerabilities
+        run: govulncheck ./...
 
   frontend:
     name: Frontend test, build, and dependency audit
@@ -93,3 +97,44 @@ jobs:
         run: docker compose config --quiet
       - name: Build application images
         run: docker compose build api collector notifier web
+      - name: Scan repository vulnerabilities, misconfiguration, and secrets
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Scan API runtime image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: cankonix-oi-api:latest
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Scan collector runtime image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: cankonix-oi-collector:latest
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Scan notifier runtime image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: cankonix-oi-notifier:latest
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1
+      - name: Scan web runtime image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: cankonix-oi-web:latest
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 1

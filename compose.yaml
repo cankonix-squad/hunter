@@ -2,7 +2,7 @@ name: cankonix-oi
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.10-alpine
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-cankonix_oi}
       POSTGRES_USER: ${POSTGRES_USER:-cankonix}
@@ -96,7 +96,7 @@ services:
     restart: unless-stopped
 
   edge:
-    image: nginx:1.27-alpine
+    image: nginx:1.29-alpine
     ports:
       - "3000:80"
     volumes:

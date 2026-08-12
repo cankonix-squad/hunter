@@ -427,7 +427,7 @@ health/readiness melalui edge HTTP 200.
 - [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [x] End-to-end discover → normalize → classify → score → review test
-- [ ] Security review dan dependency/container scanning
+- [x] Security review dan dependency/container scanning
 - [ ] Performance dan pagination load test
 - [ ] Backup dan restore drill
 - [ ] Production secret management
@@ -466,6 +466,17 @@ dengan idempotency key baru sukses tetapi `new_snapshots=0`; snapshot/version/cl
 dimension count tidak berubah. Suite menjadi bagian gate integration CI. Acceptance race test
 integration dan seluruh Go regression/vet lulus; database/container disposable dihapus otomatis.
 
+Security release gate (commit `90b7e32`) menemukan vulnerability fixable HIGH/CRITICAL pada
+image lama (Go 1.23.12, pgx 5.7.2, x/crypto 0.36.0, dan base nginx lama), lalu memperbarui Go
+ke 1.25, jwt 5.3.1, pgx 5.10.0, x/crypto 0.54.0, Alpine 3.23, Node 24, Nginx 1.29, dan
+PostgreSQL Compose 16.10. Build dibuat reproducible dengan `go.sum` serta `npm ci`. CI kini
+menjalankan govulncheck v1.6.0 dan Trivy release terverifikasi yang dipin full commit untuk
+filesystem vulnerability/misconfiguration/secret serta keempat application image; tidak ada
+exception suppression. Acceptance: govulncheck 0 reachable vulnerability, npm audit 0,
+Docker Scout 0 fixable HIGH/CRITICAL pada API/collector/notifier/web hasil rebuild, Go race/vet,
+8 frontend tests/build, Compose validation, dan runtime hardened health/readiness HTTP 200.
+Review dan residual production blocker dicatat di `docs/SECURITY_REVIEW.md`.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -473,7 +484,7 @@ integration dan seluruh Go regression/vet lulus; database/container disposable d
 - [ ] Classification precision minimal 80% pada golden dataset yang disetujui
 - [ ] Recommendation dapat dijelaskan dan di-override manusia
 - [ ] Alert terdeduplikasi
-- [ ] Security checks lulus
+- [x] Security checks lulus
 - [ ] Backup/restore checks lulus
 
 ## Riwayat commit utama
@@ -518,6 +529,7 @@ integration dan seluruh Go regression/vet lulus; database/container disposable d
 | `8d395f2` | CI release gates dan fresh PostgreSQL migration-chain verification sampai v29 |
 | `5159e0e` | PostgreSQL-backed API authorization dan response-contract integration suite |
 | `ef22ccd` | Idempotent discover-to-review collector workflow E2E pada PostgreSQL kosong |
+| `90b7e32` | Dependency remediation dan automated repository/container vulnerability gates |
 
 ## Aturan pembaruan task list
 

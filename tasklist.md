@@ -422,7 +422,7 @@ health/readiness melalui edge HTTP 200.
 
 ### Hardening dan release
 
-- [~] Structured logs dan health/readiness sudah tersedia; metrics/traces belum lengkap
+- [~] Structured logs, health/readiness, HTTP metrics, dan staging alerts tersedia; traces/exporter lanjutan
 - [~] CI pipeline tersedia dan lulus lokal; menunggu remote GitHub serta hosted run pertama
 - [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
@@ -581,6 +581,17 @@ remote/hosted evidence, approval, staging URL, artifact digest, on-call/rollback
 classification dan waktu stabilitas yang masih terbuka. Tidak ada nilai secret yang diterima sebagai
 evidence metadata atau dicetak oleh preflight.
 
+Staging monitoring (commit `75b06aa`) menambahkan internal `/metrics` dengan process uptime,
+counter method/route/status, dan cumulative request-duration histogram. Label route memakai pattern
+terbatas, bukan raw URL/ID, dan unit test membuktikan identifier request tidak bocor serta bucket
+kumulatif benar. Overlay staging menjalankan Prometheus 3.13.1 LTS distroless dengan retention 15
+hari, storage persistent, read-only root, dan UI hanya bind `127.0.0.1`; edge tidak mengekspos
+metrics. Tiga rule awal mendeteksi API scrape down, sustained 5xx di atas 5%, dan p95 di atas satu
+detik. `promtool` memvalidasi config dan tiga rule, staging Compose/Nginx tetap valid, seluruh Go
+race test/vet lulus, API image dibangun/diterapkan, metrics internal merespons, dan edge
+health/readiness HTTP 200. Hosted Alertmanager routing/canary, collector/database exporter, dan
+distributed tracing tetap dicatat sebagai pekerjaan observability deployment, bukan diklaim selesai.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -644,6 +655,7 @@ evidence metadata atau dicetak oleh preflight.
 | `0c85b68` | Full inactive-lifecycle integration gate untuk active opportunity feed |
 | `1323806` | Auditable domain-owner classification approval metadata dan release gate |
 | `c5587f9` | Unified fail-closed GO/NO-GO release preflight untuk seluruh local dan hosted evidence |
+| `75b06aa` | Bounded-cardinality API metrics, Prometheus staging, dan validated alert rules |
 
 ## Aturan pembaruan task list
 

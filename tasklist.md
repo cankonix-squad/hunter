@@ -561,6 +561,15 @@ dan external acceptance dicatat di `docs/MVP_GATE_EVIDENCE.md`. Integration-tag 
 race test/vet, dan diff check lulus. Gate classification tetap terbuka walaupun candidate dataset
 mencapai macro precision 100%, karena domain owner belum menyetujui label dan coverage-nya.
 
+Classification approval hardening (commit `1323806`) menambahkan review packet Markdown deterministik
+untuk seluruh 15 case dan prosedur koreksi/coverage review oleh domain owner. Dataset berstatus
+`approved` kini wajib memuat nama/role reviewer, timestamp RFC3339 non-future, dan approval reference;
+candidate dilarang membawa metadata approval prematur. Release script mewajibkan status approved dan
+macro precision minimal 8000 bp, sedangkan CI terus menjaga candidate precision tanpa mengarang
+approval. Acceptance menghasilkan review packet 15 baris dan precision 10000 bp, unit/full Go race
+test serta vet lulus, dan release gate menghasilkan `BLOCKED` karena status masih candidate—hasil
+yang benar sampai reviewer CANKONIX memberikan keputusan nyata sesuai `docs/CLASSIFICATION_APPROVAL.md`.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -622,6 +631,7 @@ mencapai macro precision 100%, karena domain owner belum menyetujui label dan co
 | `6560b56` | Database-backed seven-day source stability report dan non-bypassable release gate |
 | `a93c7f5` | Bounded transient collector recovery dan immediate permanent access-policy failure |
 | `0c85b68` | Full inactive-lifecycle integration gate untuk active opportunity feed |
+| `1323806` | Auditable domain-owner classification approval metadata dan release gate |
 
 ## Aturan pembaruan task list
 

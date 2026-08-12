@@ -433,7 +433,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
-- [ ] Tujuh hari stability observation
+- [!] Tujuh hari stability observation — baseline 6–12 Agustus gagal; mulai ulang setelah DNS stabil
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
 concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,
@@ -530,6 +530,18 @@ CI memvalidasi syntax, section contract, ID unik, dan approval fields. Acceptanc
 melalui `check-uat-runbook.sh`, shell syntax, dan diff check. Item tetap parsial sampai staging nyata
 menjalankan seluruh scenario dan tiga approver mencatat keputusan GO; tidak ada approval direkayasa.
 
+Seven-day stability gate (commit `6560b56`) menghitung evidence langsung dari PostgreSQL untuk
+tepat 20 source aktif-terjadwal, 140 source-day sukses, aggregate success rate minimal 95%, nol
+dead-letter, nol consecutive failure/open circuit, dan nol audit intervensi konfigurasi. Report
+memisahkan `INCOMPLETE` dari `FAILED`, menerima credential database via file, hanya mengeluarkan
+agregat non-secret, serta divalidasi CI terhadap schema migration kosong agar durasi tidak dapat
+dipalsukan. Baseline read-only untuk 6–12 Agustus 2026 menemukan 20 source, 55/140 source-day
+tercakup, 108/139 run sukses (77,70%), 31 dead-letter, dan satu source update sehingga status benar
+`FAILED`. Seluruh dead-letter berasal dari kegagalan resolver Docker terhadap `spse.inaproc.id`;
+resolver kembali berhasil dan run sukses terakhir tercatat 12 Agustus 12:31 UTC, tetapi window
+bersih tujuh hari harus dimulai ulang setelah kegagalan terakhir 12 Agustus 01:37 UTC. Gate contract,
+shell syntax, SQL PostgreSQL 16, dan diff check lulus; status tidak dinaikkan tanpa tujuh hari nyata.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -588,6 +600,7 @@ menjalankan seluruh scenario dan tiga approver mencatat keputusan GO; tidak ada 
 | `40d0882` | File-backed production secrets, startup policy, Compose boundary, dan rotation runbook |
 | `621cd44` | Hardened TLS 1.2/1.3 staging edge, trusted-proxy policy, dan deployment overlay |
 | `20c96d8` | Executable HTTPS smoke, UAT matrix, approval gate, deployment, dan rollback runbook |
+| `6560b56` | Database-backed seven-day source stability report dan non-bypassable release gate |
 
 ## Aturan pembaruan task list
 

@@ -71,6 +71,25 @@ func TestDiscoverNormalizeClassifyScoreReviewEndToEnd(t *testing.T) {
 	client := server.Client()
 	admin := login(t, client, server.URL, "admin.e2e@example.test", password)
 
+	_, err = db.Exec(ctx, `INSERT INTO opportunities(source_id,package_identity,title,agency,
+		procurement_type,lifecycle_status,currency,canonical_url,current_fingerprint)
+		SELECT $1, 'E2E-INACTIVE-' || lifecycle, 'Inactive ' || lifecycle, 'Instansi Contoh',
+		'Jasa Lainnya', lifecycle, 'IDR', 'https://e2e-fixture.example.test/' || lifecycle,
+		'fingerprint-' || lifecycle
+		FROM unnest(ARRAY['registration_closed','evaluation','awarded','contracted','completed','cancelled']) lifecycle`, sourceID)
+	if err != nil {
+		t.Fatalf("seed inactive lifecycle fixtures: %v", err)
+	}
+	active := opportunityPage(t, client, server.URL+"/api/v1/opportunities?source_id="+sourceID+"&status=active", admin.AccessToken)
+	if active.Total != 2 || len(active.Items) != 2 {
+		t.Fatalf("active feed total=%d items=%d, want only two registration-open fixtures", active.Total, len(active.Items))
+	}
+	for _, item := range active.Items {
+		if item.LifecycleStatus != "announced" && item.LifecycleStatus != "registration_open" {
+			t.Fatalf("inactive lifecycle leaked into active feed: %s", item.LifecycleStatus)
+		}
+	}
+
 	relevant := opportunityPage(t, client, server.URL+"/api/v1/opportunities?source_id="+sourceID+"&relevance=relevant&min_score=7000", admin.AccessToken)
 	if relevant.Total != 1 || len(relevant.Items) != 1 {
 		t.Fatalf("relevant feed total=%d items=%d, want 1", relevant.Total, len(relevant.Items))

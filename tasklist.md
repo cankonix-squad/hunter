@@ -542,6 +542,16 @@ resolver kembali berhasil dan run sukses terakhir tercatat 12 Agustus 12:31 UTC,
 bersih tujuh hari harus dimulai ulang setelah kegagalan terakhir 12 Agustus 01:37 UTC. Gate contract,
 shell syntax, SQL PostgreSQL 16, dan diff check lulus; status tidak dinaikkan tanpa tujuh hari nyata.
 
+Transient collector recovery hardening (commit `a93c7f5`) menutup akar dead-letter massal saat
+resolver Docker sempat gagal. Transport/DNS/HTTP 5xx kini memperoleh enam attempt dengan exponential
+backoff 30 detik sampai 16 menit dan cap 30 menit; circuit breaker tetap membatasi outage lebih lama.
+HTTP 4xx termasuk 403/429 diberi typed permanent policy error dan langsung dead-letter agar akses
+yang dilarang tidak diulang. Unit test membuktikan backoff/cap dan error type tetap terdeteksi setelah
+wrapping; seluruh `go test -race ./...` dan `go vet ./...` lulus. Image collector dibangun ulang dan
+diterapkan; seluruh container aktif, PostgreSQL 16.10 sehat, edge health/readiness HTTP 200, resolver
+collector kembali menjawab, dan log startup bersih. Jika tidak ada failure/intervensi baru, window
+UTC bersih paling awal adalah 13–19 Agustus 2026 dan baru dapat dievaluasi setelah hari terakhir.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -601,6 +611,7 @@ shell syntax, SQL PostgreSQL 16, dan diff check lulus; status tidak dinaikkan ta
 | `621cd44` | Hardened TLS 1.2/1.3 staging edge, trusted-proxy policy, dan deployment overlay |
 | `20c96d8` | Executable HTTPS smoke, UAT matrix, approval gate, deployment, dan rollback runbook |
 | `6560b56` | Database-backed seven-day source stability report dan non-bypassable release gate |
+| `a93c7f5` | Bounded transient collector recovery dan immediate permanent access-policy failure |
 
 ## Aturan pembaruan task list
 

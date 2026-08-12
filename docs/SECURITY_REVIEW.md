@@ -41,8 +41,10 @@ such exceptions.
 
 ## Residual release blockers
 
-- Development defaults in `compose.yaml` are not production credentials. Production
-  secret injection and startup rejection of development defaults remain separate work.
+- Development defaults in `compose.yaml` are not production credentials. Production uses
+  `compose.production.yaml`: file-mounted secrets, ambiguous-source rejection, and startup
+  entropy checks prevent those defaults from crossing the production boundary. Secret-store
+  provisioning and rotation evidence remain deployment responsibilities.
 - The current edge is HTTP-only local configuration. TLS, trusted proxy policy, HSTS,
   production DNS, firewall, and rate limiting remain part of staging deployment.
 - Production backup scheduling/encryption/external retention, monitoring/alerting, UAT,

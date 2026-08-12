@@ -1,0 +1,67 @@
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+
+  api:
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ""
+      DATABASE_URL_FILE: /run/secrets/database_url
+      JWT_SECRET: ""
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ""
+      BOOTSTRAP_ADMIN_PASSWORD_FILE: ${CANKONIX_BOOTSTRAP_ADMIN_PASSWORD_SECRET_FILE:+/run/secrets/bootstrap_admin_password}
+    secrets:
+      - database_url
+      - jwt_secret
+      - source: bootstrap_admin_password
+        target: bootstrap_admin_password
+
+  collector:
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ""
+      DATABASE_URL_FILE: /run/secrets/database_url
+      JWT_SECRET: ""
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets:
+      - database_url
+      - jwt_secret
+
+  notifier:
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ""
+      DATABASE_URL_FILE: /run/secrets/database_url
+      JWT_SECRET: ""
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      SMTP_PASSWORD: ""
+      SMTP_PASSWORD_FILE: ${CANKONIX_SMTP_PASSWORD_SECRET_FILE:+/run/secrets/smtp_password}
+      WEBHOOK_SECRET: ""
+      WEBHOOK_SECRET_FILE: ${CANKONIX_WEBHOOK_SECRET_FILE:+/run/secrets/webhook_secret}
+    secrets:
+      - database_url
+      - jwt_secret
+      - source: smtp_password
+        target: smtp_password
+      - source: webhook_secret
+        target: webhook_secret
+
+secrets:
+  postgres_password:
+    file: ${CANKONIX_POSTGRES_PASSWORD_SECRET_FILE:?set CANKONIX_POSTGRES_PASSWORD_SECRET_FILE}
+  database_url:
+    file: ${CANKONIX_DATABASE_URL_SECRET_FILE:?set CANKONIX_DATABASE_URL_SECRET_FILE}
+  jwt_secret:
+    file: ${CANKONIX_JWT_SECRET_FILE:?set CANKONIX_JWT_SECRET_FILE}
+  bootstrap_admin_password:
+    file: ${CANKONIX_BOOTSTRAP_ADMIN_PASSWORD_SECRET_FILE:-/dev/null}
+  smtp_password:
+    file: ${CANKONIX_SMTP_PASSWORD_SECRET_FILE:-/dev/null}
+  webhook_secret:
+    file: ${CANKONIX_WEBHOOK_SECRET_FILE:-/dev/null}

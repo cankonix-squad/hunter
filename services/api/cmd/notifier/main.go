@@ -40,8 +40,17 @@ func main() {
 	emailDryRun, _ := strconv.ParseBool(os.Getenv("EMAIL_DRY_RUN"))
 	var sender notifications.EmailSender = notifications.DryRunSender{}
 	if emailEnabled && !emailDryRun {
+		if cfg.Environment == "production" && os.Getenv("SMTP_PASSWORD") != "" {
+			slog.Error("invalid SMTP secret configuration", "error", "SMTP_PASSWORD_FILE must be used in production")
+			os.Exit(1)
+		}
 		port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
-		smtpConfig := notifications.SMTPConfig{Host: os.Getenv("SMTP_HOST"), Port: port, Username: os.Getenv("SMTP_USERNAME"), Password: os.Getenv("SMTP_PASSWORD"), From: os.Getenv("SMTP_FROM"), Timeout: 20 * time.Second}
+		smtpPassword, secretErr := config.Secret("SMTP_PASSWORD")
+		if secretErr != nil {
+			slog.Error("invalid SMTP secret configuration", "error", secretErr)
+			os.Exit(1)
+		}
+		smtpConfig := notifications.SMTPConfig{Host: os.Getenv("SMTP_HOST"), Port: port, Username: os.Getenv("SMTP_USERNAME"), Password: smtpPassword, From: os.Getenv("SMTP_FROM"), Timeout: 20 * time.Second}
 		if err := smtpConfig.Validate(); err != nil {
 			slog.Error("invalid SMTP configuration", "error", err)
 			os.Exit(1)
@@ -56,7 +65,16 @@ func main() {
 	webhookURL := os.Getenv("WEBHOOK_URL")
 	var webhookSender notifications.WebhookSender = notifications.DryRunWebhookSender{}
 	if webhookEnabled && !webhookDryRun {
-		webhookConfig := notifications.WebhookConfig{URL: webhookURL, Secret: os.Getenv("WEBHOOK_SECRET"), Timeout: 20 * time.Second}
+		if cfg.Environment == "production" && os.Getenv("WEBHOOK_SECRET") != "" {
+			slog.Error("invalid webhook secret configuration", "error", "WEBHOOK_SECRET_FILE must be used in production")
+			os.Exit(1)
+		}
+		webhookSecret, secretErr := config.Secret("WEBHOOK_SECRET")
+		if secretErr != nil {
+			slog.Error("invalid webhook secret configuration", "error", secretErr)
+			os.Exit(1)
+		}
+		webhookConfig := notifications.WebhookConfig{URL: webhookURL, Secret: webhookSecret, Timeout: 20 * time.Second}
 		if err := webhookConfig.Validate(); err != nil {
 			slog.Error("invalid webhook configuration", "error", err)
 			os.Exit(1)

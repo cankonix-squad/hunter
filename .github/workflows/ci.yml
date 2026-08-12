@@ -108,6 +108,8 @@ jobs:
         run: ./scripts/check-production-secrets.sh
       - name: Verify staging TLS configuration
         run: ./scripts/check-staging-config.sh
+      - name: Verify UAT and deployment runbooks
+        run: ./scripts/check-uat-runbook.sh
       - name: Build application images
         run: docker compose build api collector notifier web
       - name: Scan repository vulnerabilities, misconfiguration, and secrets

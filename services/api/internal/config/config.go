@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -59,6 +60,10 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("JWT_SECRET must contain at least 32 characters")
 	}
 	if cfg.Environment == "production" {
+		origin, parseErr := url.Parse(cfg.WebOrigin)
+		if parseErr != nil || origin.Scheme != "https" || origin.Host == "" || origin.User != nil || origin.Path != "" || origin.RawQuery != "" || origin.Fragment != "" {
+			return Config{}, fmt.Errorf("WEB_ORIGIN must be an HTTPS origin without path, query, fragment, or credentials in production")
+		}
 		if !databaseFromFile {
 			return Config{}, fmt.Errorf("DATABASE_URL_FILE is required in production")
 		}

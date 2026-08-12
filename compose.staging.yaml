@@ -1,0 +1,30 @@
+services:
+  api:
+    environment:
+      WEB_ORIGIN: https://${CANKONIX_PUBLIC_HOST:?set CANKONIX_PUBLIC_HOST}
+
+  edge:
+    ports: !override
+      - "${CANKONIX_HTTP_PORT:-80}:80"
+      - "${CANKONIX_HTTPS_PORT:-443}:443"
+    volumes: !override
+      - ./nginx/staging.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+    secrets:
+      - tls_certificate
+      - tls_private_key
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-check-certificate -q -O /dev/null https://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=16m,mode=0755
+      - /var/run:size=1m,mode=0755
+
+secrets:
+  tls_certificate:
+    file: ${CANKONIX_TLS_CERTIFICATE_FILE:?set CANKONIX_TLS_CERTIFICATE_FILE}
+  tls_private_key:
+    file: ${CANKONIX_TLS_PRIVATE_KEY_FILE:?set CANKONIX_TLS_PRIVATE_KEY_FILE}

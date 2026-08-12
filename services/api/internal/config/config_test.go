@@ -67,6 +67,7 @@ func TestSecretRejectsAmbiguousSourcesWithoutLeakingValue(t *testing.T) {
 
 func TestLoadProductionRequiresFileBackedSecrets(t *testing.T) {
 	t.Setenv("APP_ENV", "production")
+	t.Setenv("WEB_ORIGIN", "https://staging.example.test")
 	t.Setenv("DATABASE_URL", "postgres://user:strong-password@postgres/db")
 	t.Setenv("DATABASE_URL_FILE", "")
 	t.Setenv("JWT_SECRET", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -83,6 +84,7 @@ func TestLoadProductionRequiresFileBackedSecrets(t *testing.T) {
 
 func TestLoadAcceptsProductionFileBackedSecrets(t *testing.T) {
 	t.Setenv("APP_ENV", "production")
+	t.Setenv("WEB_ORIGIN", "https://staging.example.test")
 	t.Setenv("DATABASE_URL", "")
 	t.Setenv("DATABASE_URL_FILE", writeSecret(t, "postgres://user:strong-password@postgres/db\n"))
 	t.Setenv("JWT_SECRET", "")
@@ -102,6 +104,7 @@ func TestLoadAcceptsProductionFileBackedSecrets(t *testing.T) {
 
 func TestLoadRejectsWeakProductionSecret(t *testing.T) {
 	t.Setenv("APP_ENV", "production")
+	t.Setenv("WEB_ORIGIN", "https://staging.example.test")
 	t.Setenv("DATABASE_URL", "")
 	t.Setenv("DATABASE_URL_FILE", writeSecret(t, "postgres://user:strong-password@postgres/db"))
 	t.Setenv("JWT_SECRET", "")
@@ -118,6 +121,7 @@ func TestLoadRejectsWeakProductionSecret(t *testing.T) {
 
 func TestLoadRejectsDevelopmentDatabaseCredentialInProduction(t *testing.T) {
 	t.Setenv("APP_ENV", "production")
+	t.Setenv("WEB_ORIGIN", "https://staging.example.test")
 	t.Setenv("DATABASE_URL", "")
 	t.Setenv("DATABASE_URL_FILE", writeSecret(t, "postgres://user:change-me-for-local-development@postgres/db"))
 	t.Setenv("JWT_SECRET", "")
@@ -129,6 +133,23 @@ func TestLoadRejectsDevelopmentDatabaseCredentialInProduction(t *testing.T) {
 	_, err := Load()
 	if err == nil || !strings.Contains(err.Error(), "forbidden development credential") {
 		t.Fatalf("expected development credential rejection, got %v", err)
+	}
+}
+
+func TestLoadRejectsHTTPOriginInProduction(t *testing.T) {
+	t.Setenv("APP_ENV", "production")
+	t.Setenv("WEB_ORIGIN", "http://staging.example.test")
+	t.Setenv("DATABASE_URL", "")
+	t.Setenv("DATABASE_URL_FILE", writeSecret(t, "postgres://user:strong-password@postgres/db"))
+	t.Setenv("JWT_SECRET", "")
+	t.Setenv("JWT_SECRET_FILE", writeSecret(t, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"))
+	t.Setenv("BOOTSTRAP_ADMIN_EMAIL", "")
+	t.Setenv("BOOTSTRAP_ADMIN_PASSWORD", "")
+	t.Setenv("BOOTSTRAP_ADMIN_PASSWORD_FILE", "")
+
+	_, err := Load()
+	if err == nil || !strings.Contains(err.Error(), "WEB_ORIGIN") {
+		t.Fatalf("expected HTTP origin rejection, got %v", err)
 	}
 }
 

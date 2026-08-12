@@ -45,8 +45,10 @@ such exceptions.
   `compose.production.yaml`: file-mounted secrets, ambiguous-source rejection, and startup
   entropy checks prevent those defaults from crossing the production boundary. Secret-store
   provisioning and rotation evidence remain deployment responsibilities.
-- The current edge is HTTP-only local configuration. TLS, trusted proxy policy, HSTS,
-  production DNS, firewall, and rate limiting remain part of staging deployment.
+- The local edge remains HTTP-only. The staging overlay enforces TLS 1.2/1.3, HSTS, forwarding
+  header overwrite, request limits, and per-address API/login throttling. Production DNS,
+  firewall enforcement, CA certificate issuance/renewal, and hosted acceptance evidence remain
+  deployment responsibilities.
 - Production backup scheduling/encryption/external retention, monitoring/alerting, UAT,
   and seven-day source stability must pass before production acceptance. The repository
   restore drill and load gate are automated and passing.

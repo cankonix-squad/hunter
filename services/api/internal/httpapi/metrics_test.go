@@ -9,7 +9,7 @@ import (
 )
 
 func TestHTTPMetricsUseBoundedRouteAndHistogramLabels(t *testing.T) {
-	metrics := newHTTPMetrics()
+	metrics := newHTTPMetrics(nil)
 	handler := metrics.middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r.Pattern = "GET /api/v1/opportunities/{id}"
 		w.WriteHeader(http.StatusCreated)
@@ -30,7 +30,7 @@ func TestHTTPMetricsUseBoundedRouteAndHistogramLabels(t *testing.T) {
 }
 
 func TestRetryDurationBucketsAreCumulative(t *testing.T) {
-	metrics := newHTTPMetrics()
+	metrics := newHTTPMetrics(nil)
 	metrics.observe(http.MethodGet, "GET /healthz", http.StatusOK, 75*time.Millisecond)
 	metric := metrics.values[metricKey{method: http.MethodGet, route: "GET /healthz", status: http.StatusOK}]
 	if metric.buckets[0] != 0 || metric.buckets[1] != 1 || metric.buckets[len(metric.buckets)-1] != 1 {

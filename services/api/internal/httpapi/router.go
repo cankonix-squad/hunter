@@ -54,7 +54,7 @@ type Server struct {
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
-	metrics := newHTTPMetrics()
+	metrics := newHTTPMetrics(db)
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
 		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), alerts: alerts.New(db), notifications: notifications.NewService(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()

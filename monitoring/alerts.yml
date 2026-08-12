@@ -29,3 +29,45 @@ groups:
           severity: warning
         annotations:
           summary: CANKONIX API p95 latency exceeds one second
+      - alert: CankonixOperationalMetricsFailed
+        expr: cankonix_operational_metrics_scrape_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: CANKONIX database-backed operational metrics failed
+      - alert: CankonixSourceLagHigh
+        expr: cankonix_source_lag_seconds > 43200
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX source has not succeeded for more than 12 hours
+      - alert: CankonixSourceQueueBacklog
+        expr: cankonix_source_pending_runs > 2
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX source queue is building up
+      - alert: CankonixSourceCircuitOpen
+        expr: cankonix_source_circuit_open == 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX source circuit breaker is open
+      - alert: CankonixSourceDeadLetters
+        expr: cankonix_source_dead_letters_recent > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX source run dead letters require triage
+      - alert: CankonixNotificationDeadLetters
+        expr: cankonix_notification_deliveries{status="dead_letter"} > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX notification dead letters require triage

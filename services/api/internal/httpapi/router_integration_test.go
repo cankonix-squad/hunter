@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -88,6 +89,21 @@ func TestAuthorizationAndAPIContracts(t *testing.T) {
 		decode(t, resp, &body)
 		if body["status"] != "ok" {
 			t.Fatalf("health status = %q", body["status"])
+		}
+	})
+
+	t.Run("internal metrics include operational database state", func(t *testing.T) {
+		resp := request(t, client, http.MethodGet, server.URL+"/metrics", "", nil)
+		assertStatus(t, resp, http.StatusOK)
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, metric := range []string{"cankonix_http_requests_total", "cankonix_source_health_score", "cankonix_source_runs", "cankonix_source_dead_letters_recent", "cankonix_notification_deliveries", "cankonix_operational_metrics_scrape_success 1"} {
+			if !strings.Contains(string(body), metric) {
+				t.Fatalf("metrics response missing %q", metric)
+			}
 		}
 	})
 

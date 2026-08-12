@@ -430,7 +430,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Security review dan dependency/container scanning
 - [x] Performance dan pagination load test
 - [x] Backup dan restore drill
-- [ ] Production secret management
+- [x] Production secret management
 - [ ] TLS/staging deployment configuration
 - [ ] UAT dan deployment runbook
 - [ ] Tujuh hari stability observation
@@ -498,6 +498,16 @@ dan audit event pulih; artefak sementara dan kedua container dibersihkan otomati
 encrypted external backup, retention 30 hari, cutover, dan escalation dicatat di
 `docs/BACKUP_RESTORE.md`; scheduling/storage production tetap bagian deployment.
 
+Production secret boundary (commit `40d0882`) menambahkan resolver file `*_FILE` untuk database,
+JWT, bootstrap administrator, SMTP, dan webhook tanpa memasukkan nilai ke error. Mode production
+mewajibkan database/JWT file-backed, menolak sumber ambigu, credential development, secret lemah,
+bootstrap parsial, serta credential notifier langsung. Overlay `compose.production.yaml` menghapus
+nilai langsung hasil merge dan memasang Docker secrets; gate CI merender Compose dengan sentinel
+host lalu memastikan nilai/fallback tidak muncul. Runbook mencatat provisioning, permission,
+bootstrap sekali pakai, dan rotasi tanpa menyimpan secret nyata. Acceptance: production boundary
+script dan Compose config lulus, `go test -race ./...`, `go vet ./...`, 8 frontend tests/build,
+shell/diff check, serta image API/collector/notifier berhasil dibangun.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -553,6 +563,7 @@ encrypted external backup, retention 30 hari, cutover, dan escalation dicatat di
 | `90b7e32` | Dependency remediation dan automated repository/container vulnerability gates |
 | `f8198f0` | Authenticated 10k-row opportunity feed pagination and concurrent load gate |
 | `797325e` | Atomic PostgreSQL backup, checksum/count manifest, dan empty-target restore drill |
+| `40d0882` | File-backed production secrets, startup policy, Compose boundary, dan rotation runbook |
 
 ## Aturan pembaruan task list
 

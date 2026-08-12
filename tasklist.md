@@ -552,13 +552,22 @@ diterapkan; seluruh container aktif, PostgreSQL 16.10 sehat, edge health/readine
 collector kembali menjawab, dan log startup bersih. Jika tidak ada failure/intervensi baru, window
 UTC bersih paling awal adalah 13–19 Agustus 2026 dan baru dapat dievaluasi setelah hari terakhir.
 
+MVP evidence reconciliation (commit `0c85b68`) memperkuat integration E2E dengan menyisipkan enam
+lifecycle nonaktif (`registration_closed`, `evaluation`, `awarded`, `contracted`, `completed`, dan
+`cancelled`) lalu mewajibkan active API tetap hanya mengembalikan dua fixture `registration_open`.
+Gate lifecycle, explainable human override, dan alert dedup kini ditandai selesai berdasarkan test,
+API/UI acceptance, audit behavior, serta unique database invariant yang sudah ada; pemetaan bukti
+dan external acceptance dicatat di `docs/MVP_GATE_EVIDENCE.md`. Integration-tag compile, seluruh Go
+race test/vet, dan diff check lulus. Gate classification tetap terbuka walaupun candidate dataset
+mencapai macro precision 100%, karena domain owner belum menyetujui label dan coverage-nya.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
-- [ ] Active feed tidak memuat paket completed/cancelled/evaluation/award/contract
+- [x] Active feed tidak memuat paket completed/cancelled/evaluation/award/contract
 - [ ] Classification precision minimal 80% pada golden dataset yang disetujui
-- [ ] Recommendation dapat dijelaskan dan di-override manusia
-- [ ] Alert terdeduplikasi
+- [x] Recommendation dapat dijelaskan dan di-override manusia
+- [x] Alert terdeduplikasi
 - [x] Security checks lulus
 - [x] Backup/restore checks lulus
 
@@ -612,6 +621,7 @@ UTC bersih paling awal adalah 13–19 Agustus 2026 dan baru dapat dievaluasi set
 | `20c96d8` | Executable HTTPS smoke, UAT matrix, approval gate, deployment, dan rollback runbook |
 | `6560b56` | Database-backed seven-day source stability report dan non-bypassable release gate |
 | `a93c7f5` | Bounded transient collector recovery dan immediate permanent access-policy failure |
+| `0c85b68` | Full inactive-lifecycle integration gate untuk active opportunity feed |
 
 ## Aturan pembaruan task list
 

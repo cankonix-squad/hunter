@@ -431,7 +431,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Performance dan pagination load test
 - [x] Backup dan restore drill
 - [x] Production secret management
-- [ ] TLS/staging deployment configuration
+- [x] TLS/staging deployment configuration
 - [ ] UAT dan deployment runbook
 - [ ] Tujuh hari stability observation
 
@@ -508,6 +508,17 @@ bootstrap sekali pakai, dan rotasi tanpa menyimpan secret nyata. Acceptance: pro
 script dan Compose config lulus, `go test -race ./...`, `go vet ./...`, 8 frontend tests/build,
 shell/diff check, serta image API/collector/notifier berhasil dibangun.
 
+TLS/staging configuration (commit `621cd44`) menambahkan overlay Compose berlapis untuk hostname
+HTTPS dan certificate/private-key Docker secrets, hanya mempublikasikan edge 80/443, serta membuat
+edge read-only dengan tmpfs terbatas. Nginx mewajibkan TLS 1.2/1.3, redirect HTTP 308, HSTS, CSP,
+security headers, request/proxy timeout, API rate limit, dan login throttling; seluruh inbound
+forwarding header ditimpa karena edge menjadi satu-satunya trusted proxy. Startup production juga
+menolak `WEB_ORIGIN` non-HTTPS atau origin dengan path/query/credential. CI membuat certificate
+sementara, merender tiga overlay tanpa development credential, lalu menjalankan `nginx -t`.
+Acceptance lokal lulus untuk gate staging TLS, `go test -race ./...`, `go vet ./...`, 8 frontend
+tests/build, shell/diff check, serta image API/collector/notifier. DNS/firewall, certificate CA,
+renewal, dan hosted smoke evidence tetap wajib saat deployment aktual sesuai runbook staging.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -564,6 +575,7 @@ shell/diff check, serta image API/collector/notifier berhasil dibangun.
 | `f8198f0` | Authenticated 10k-row opportunity feed pagination and concurrent load gate |
 | `797325e` | Atomic PostgreSQL backup, checksum/count manifest, dan empty-target restore drill |
 | `40d0882` | File-backed production secrets, startup policy, Compose boundary, dan rotation runbook |
+| `621cd44` | Hardened TLS 1.2/1.3 staging edge, trusted-proxy policy, dan deployment overlay |
 
 ## Aturan pembaruan task list
 

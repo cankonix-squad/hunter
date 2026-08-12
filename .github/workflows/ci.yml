@@ -80,6 +80,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply and verify all migrations
         run: ./scripts/check-migrations.sh
+      - name: Verify seven-day stability gate query
+        run: |
+          set +e
+          ./scripts/stability-report.sh 2026-08-12 > /tmp/stability-report.txt
+          status=$?
+          set -e
+          test "$status" -eq 2
+          grep -q 'status=INCOMPLETE' /tmp/stability-report.txt
       - uses: actions/setup-go@v5
         with:
           go-version-file: services/api/go.mod
@@ -96,7 +104,6 @@ jobs:
           RESTORE_DATABASE_URL='postgres://cankonix:migration-test-only@localhost:5432/cankonix_restore_test?sslmode=disable' \
             ./scripts/restore-drill.sh "$dump_file"
           rm -rf "$backup_dir"
-
   containers:
     name: Compose validation and image builds
     runs-on: ubuntu-latest
@@ -110,6 +117,8 @@ jobs:
         run: ./scripts/check-staging-config.sh
       - name: Verify UAT and deployment runbooks
         run: ./scripts/check-uat-runbook.sh
+      - name: Verify stability gate contract
+        run: ./scripts/check-stability-gate.sh
       - name: Build application images
         run: docker compose build api collector notifier web
       - name: Scan repository vulnerabilities, misconfiguration, and secrets

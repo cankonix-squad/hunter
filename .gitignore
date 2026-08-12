@@ -4,6 +4,7 @@ node_modules/
 dist/
 coverage/
 backups/
+stability-report-*.txt
 *.log
 *.tsbuildinfo
 vite.config.js

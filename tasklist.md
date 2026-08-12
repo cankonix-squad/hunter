@@ -592,6 +592,16 @@ race test/vet lulus, API image dibangun/diterapkan, metrics internal merespons, 
 health/readiness HTTP 200. Hosted Alertmanager routing/canary, collector/database exporter, dan
 distributed tracing tetap dicatat sebagai pekerjaan observability deployment, bukan diklaim selesai.
 
+Operational metrics extension (commit `0851627`) mengekspor health score, lag, pending runs,
+consecutive failures, dan circuit state per 20 source dengan bounded source ID/name labels, aggregate
+run status, notification channel/status, serta exporter scrape-success. Query database dibatasi dua
+detik agar scrape tidak menggantung API. Enam alert tambahan mencakup operational scrape failure,
+source lag lebih dari 12 jam, queue buildup, open circuit, source dead-letter satu jam terakhir,
+dan notification dead-letter; window recent mencegah 31 dead-letter historis membuat alarm permanen.
+Acceptance runtime membaca seluruh source aktual, `source_dead_letters_recent=0` dan
+`operational_metrics_scrape_success=1`; `promtool` memvalidasi total sembilan rule. Integration-tag
+contract compile, seluruh Go race test/vet, API rebuild/deploy, dan internal metric smoke lulus.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -656,6 +666,7 @@ distributed tracing tetap dicatat sebagai pekerjaan observability deployment, bu
 | `1323806` | Auditable domain-owner classification approval metadata dan release gate |
 | `c5587f9` | Unified fail-closed GO/NO-GO release preflight untuk seluruh local dan hosted evidence |
 | `75b06aa` | Bounded-cardinality API metrics, Prometheus staging, dan validated alert rules |
+| `0851627` | Database-backed source/queue/circuit/delivery metrics dan operational alerts |
 
 ## Aturan pembaruan task list
 

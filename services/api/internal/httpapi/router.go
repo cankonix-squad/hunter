@@ -54,11 +54,13 @@ type Server struct {
 }
 
 func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *collector.Runner) http.Handler {
+	metrics := newHTTPMetrics()
 	s := &Server{db: db, identity: identityService, sources: sources.New(db), collector: collectorRunner,
 		opportunities: opportunities.New(db), savedViews: savedviews.New(db), assignments: assignments.New(db), comments: comments.New(db), shortlist: shortlist.New(db), decisions: decisions.New(db), nextActions: nextactions.New(db), readiness: readiness.New(db), overrides: overrides.New(db), activity: activity.New(db), analytics: analytics.New(db), alerts: alerts.New(db), notifications: notifications.NewService(db), startedAt: time.Now().UTC()}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
 	mux.HandleFunc("GET /readyz", s.ready)
+	mux.Handle("GET /metrics", metrics)
 	mux.HandleFunc("GET /api/v1/system", s.system)
 	mux.HandleFunc("POST /api/v1/auth/login", s.login)
 	mux.HandleFunc("POST /api/v1/auth/refresh", s.refresh)
@@ -99,7 +101,7 @@ func New(db *pgxpool.Pool, identityService *identity.Service, collectorRunner *c
 	mux.Handle("POST /api/v1/admin/sources", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.createSource))))
 	mux.Handle("PATCH /api/v1/admin/sources/{id}", s.authenticate(requireRoles("administrator")(http.HandlerFunc(s.updateSource))))
 	mux.Handle("POST /api/v1/admin/source-runs", s.authenticate(requireRoles("administrator", "operator")(http.HandlerFunc(s.queueSourceRun))))
-	return requestID(recoverer(securityHeaders(mux)))
+	return metrics.middleware(requestID(recoverer(securityHeaders(mux))))
 }
 
 func (s *Server) listAlertRules(w http.ResponseWriter, r *http.Request) {

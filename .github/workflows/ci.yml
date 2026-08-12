@@ -123,6 +123,8 @@ jobs:
         run: ./scripts/check-stability-gate.sh
       - name: Verify release preflight contract
         run: ./scripts/check-release-preflight.sh
+      - name: Verify monitoring configuration
+        run: ./scripts/check-monitoring.sh
       - name: Build application images
         run: docker compose build api collector notifier web
       - name: Scan repository vulnerabilities, misconfiguration, and secrets

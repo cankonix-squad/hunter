@@ -23,8 +23,32 @@ services:
       - /var/cache/nginx:size=16m,mode=0755
       - /var/run:size=1m,mode=0755
 
+  prometheus:
+    image: prom/prometheus:v3.13.1-distroless
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-lifecycle=false
+    ports:
+      - "127.0.0.1:${CANKONIX_PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+
 secrets:
   tls_certificate:
     file: ${CANKONIX_TLS_CERTIFICATE_FILE:?set CANKONIX_TLS_CERTIFICATE_FILE}
   tls_private_key:
     file: ${CANKONIX_TLS_PRIVATE_KEY_FILE:?set CANKONIX_TLS_PRIVATE_KEY_FILE}
+
+volumes:
+  prometheus_data:

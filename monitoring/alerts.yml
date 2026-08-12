@@ -1,0 +1,31 @@
+groups:
+  - name: cankonix-api
+    rules:
+      - alert: CankonixAPIDown
+        expr: up{job="cankonix-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: CANKONIX API metrics target is down
+      - alert: CankonixAPIHighErrorRate
+        expr: >-
+          sum(rate(cankonix_http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(cankonix_http_requests_total[5m])), 0.001)
+          > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX API 5xx rate exceeds 5 percent
+      - alert: CankonixAPIHighP95Latency
+        expr: >-
+          histogram_quantile(0.95,
+            sum by (le) (rate(cankonix_http_request_duration_seconds_bucket{route!="GET /metrics"}[5m])))
+          > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: CANKONIX API p95 latency exceeds one second

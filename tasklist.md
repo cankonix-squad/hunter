@@ -428,7 +428,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [x] End-to-end discover → normalize → classify → score → review test
 - [x] Security review dan dependency/container scanning
-- [ ] Performance dan pagination load test
+- [x] Performance dan pagination load test
 - [ ] Backup dan restore drill
 - [ ] Production secret management
 - [ ] TLS/staging deployment configuration
@@ -476,6 +476,16 @@ exception suppression. Acceptance: govulncheck 0 reachable vulnerability, npm au
 Docker Scout 0 fixable HIGH/CRITICAL pada API/collector/notifier/web hasil rebuild, Go race/vet,
 8 frontend tests/build, Compose validation, dan runtime hardened health/readiness HTTP 200.
 Review dan residual production blocker dicatat di `docs/SECURITY_REVIEW.md`.
+
+Performance/pagination gate (commit `f8198f0`) mengisi 10.000 canonical opportunity secara
+set-based pada PostgreSQL disposable, menjalankan `ANALYZE`, dan memverifikasi first/last page,
+total pages, exact search, 20% review subset, serta cap `page_size` 100. Load API terautentikasi
+menjalankan 40 mixed-page request dengan 8 worker dan budget p95 750 ms, mencakup JWT, count,
+classification/score joins, pagination, dan JSON serialization. Race-enabled standalone run
+mencatat p50 275 ms, p95 390 ms, max 408 ms; seluruh integration job bersama E2E/RBAC mencatat
+p50 309 ms, p95 581 ms, max 637 ms dan tetap lulus. Gate masuk CI; batas interpretasi dan
+trigger evaluasi cursor pagination dicatat di `docs/PERFORMANCE.md`. Seluruh Go regression/vet
+lulus dan database/container pengujian dihapus otomatis.
 
 ## MVP completion gate
 
@@ -530,6 +540,7 @@ Review dan residual production blocker dicatat di `docs/SECURITY_REVIEW.md`.
 | `5159e0e` | PostgreSQL-backed API authorization dan response-contract integration suite |
 | `ef22ccd` | Idempotent discover-to-review collector workflow E2E pada PostgreSQL kosong |
 | `90b7e32` | Dependency remediation dan automated repository/container vulnerability gates |
+| `f8198f0` | Authenticated 10k-row opportunity feed pagination and concurrent load gate |
 
 ## Aturan pembaruan task list
 

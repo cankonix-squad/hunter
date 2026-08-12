@@ -432,7 +432,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Backup dan restore drill
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
-- [ ] UAT dan deployment runbook
+- [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
 - [ ] Tujuh hari stability observation
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
@@ -519,6 +519,17 @@ Acceptance lokal lulus untuk gate staging TLS, `go test -race ./...`, `go vet ./
 tests/build, shell/diff check, serta image API/collector/notifier. DNS/firewall, certificate CA,
 renewal, dan hosted smoke evidence tetap wajib saat deployment aktual sesuai runbook staging.
 
+UAT dan deployment release gates (commit `20c96d8`) menyediakan sembilan acceptance scenario
+ber-ID untuk role/access, discover idempoten, lifecycle, review evidence, workflow manusia, alert,
+operations recovery, audit, dan performance beserta evidence aman serta sign-off product,
+operations, dan security. Deployment runbook mengatur ownership, immutable artifact, hosted CI,
+secret/TLS/firewall preflight, verified backup, forward migration, deployment, canary, observability,
+rollback threshold, dan production promotion. `staging-smoke.sh` memverifikasi CA-trusted HTTPS,
+health/readiness, unauthenticated 401, serta enam security header tanpa menerima URL credential;
+CI memvalidasi syntax, section contract, ID unik, dan approval fields. Acceptance repository lulus
+melalui `check-uat-runbook.sh`, shell syntax, dan diff check. Item tetap parsial sampai staging nyata
+menjalankan seluruh scenario dan tiga approver mencatat keputusan GO; tidak ada approval direkayasa.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -576,6 +587,7 @@ renewal, dan hosted smoke evidence tetap wajib saat deployment aktual sesuai run
 | `797325e` | Atomic PostgreSQL backup, checksum/count manifest, dan empty-target restore drill |
 | `40d0882` | File-backed production secrets, startup policy, Compose boundary, dan rotation runbook |
 | `621cd44` | Hardened TLS 1.2/1.3 staging edge, trusted-proxy policy, dan deployment overlay |
+| `20c96d8` | Executable HTTPS smoke, UAT matrix, approval gate, deployment, dan rollback runbook |
 
 ## Aturan pembaruan task list
 

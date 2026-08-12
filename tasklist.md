@@ -602,6 +602,15 @@ Acceptance runtime membaca seluruh source aktual, `source_dead_letters_recent=0`
 `operational_metrics_scrape_success=1`; `promtool` memvalidasi total sembilan rule. Integration-tag
 contract compile, seluruh Go race test/vet, API rebuild/deploy, dan internal metric smoke lulus.
 
+Collector process monitoring (commit `500d70b`) menambahkan internal health/metrics server port
+8081 dengan graceful shutdown dan fatal bind-error behavior. Metrics bounded mencatat uptime,
+scheduler enabled, claimed/idle/error loop, scheduler ticks, queued runs, dan scheduler errors;
+Compose kini memiliki collector Docker healthcheck. Prometheus men-scrape API dan collector secara
+terpisah serta menambah alert collector-down dua menit dan scheduler error, sehingga process failure
+tidak perlu menunggu source lag 12 jam. Acceptance: unit race test monitor, seluruh Go race/vet,
+Compose config, `promtool` dua target/sebelas rule, image rebuild/deploy, internal metric smoke, dan
+collector Docker `healthy` lulus; edge health/readiness tetap HTTP 200.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -667,6 +676,7 @@ contract compile, seluruh Go race test/vet, API rebuild/deploy, dan internal met
 | `c5587f9` | Unified fail-closed GO/NO-GO release preflight untuk seluruh local dan hosted evidence |
 | `75b06aa` | Bounded-cardinality API metrics, Prometheus staging, dan validated alert rules |
 | `0851627` | Database-backed source/queue/circuit/delivery metrics dan operational alerts |
+| `500d70b` | Collector internal health/metrics server, Docker healthcheck, dan down/error alerts |
 
 ## Aturan pembaruan task list
 

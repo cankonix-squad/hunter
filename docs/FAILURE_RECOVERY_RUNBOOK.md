@@ -107,6 +107,8 @@ with structured logs and request/run IDs.
 Migrations are forward-only. Restore a previous application image/config only when it
 is compatible with the applied schema; otherwise ship a forward fix. Database restore
 belongs to the backup/restore procedure and requires incident-owner approval.
+The safe empty-target workflow is documented in
+[PostgreSQL backup and restore](BACKUP_RESTORE.md).
 
 ### Collector or source failure
 

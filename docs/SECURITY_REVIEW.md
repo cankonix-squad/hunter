@@ -45,8 +45,9 @@ such exceptions.
   secret injection and startup rejection of development defaults remain separate work.
 - The current edge is HTTP-only local configuration. TLS, trusted proxy policy, HSTS,
   production DNS, firewall, and rate limiting remain part of staging deployment.
-- Backup/restore, load testing, monitoring/alerting, UAT, and seven-day source stability
-  must pass before production acceptance.
+- Production backup scheduling/encryption/external retention, monitoring/alerting, UAT,
+  and seven-day source stability must pass before production acceptance. The repository
+  restore drill and load gate are automated and passing.
 - A qualified external penetration test is recommended before internet exposure and
   required after any material authentication or deployment-architecture change.
 

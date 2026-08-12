@@ -87,6 +87,15 @@ jobs:
       - name: Test API contracts, collector E2E, and pagination load budget
         working-directory: services/api
         run: go test -race -tags=integration ./internal/httpapi
+      - name: Drill backup and restore
+        run: |
+          backup_dir=$(mktemp -d)
+          dump_file=$(BACKUP_WRITERS_QUIESCED=true ./scripts/backup-postgres.sh "$backup_dir")
+          psql 'postgres://cankonix:migration-test-only@localhost:5432/postgres?sslmode=disable' \
+            -X -v ON_ERROR_STOP=1 -c 'CREATE DATABASE cankonix_restore_test'
+          RESTORE_DATABASE_URL='postgres://cankonix:migration-test-only@localhost:5432/cankonix_restore_test?sslmode=disable' \
+            ./scripts/restore-drill.sh "$dump_file"
+          rm -rf "$backup_dir"
 
   containers:
     name: Compose validation and image builds

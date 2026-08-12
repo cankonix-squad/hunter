@@ -429,7 +429,7 @@ health/readiness melalui edge HTTP 200.
 - [x] End-to-end discover → normalize → classify → score → review test
 - [x] Security review dan dependency/container scanning
 - [x] Performance dan pagination load test
-- [ ] Backup dan restore drill
+- [x] Backup dan restore drill
 - [ ] Production secret management
 - [ ] TLS/staging deployment configuration
 - [ ] UAT dan deployment runbook
@@ -487,6 +487,17 @@ p50 309 ms, p95 581 ms, max 637 ms dan tetap lulus. Gate masuk CI; batas interpr
 trigger evaluasi cursor pagination dicatat di `docs/PERFORMANCE.md`. Seluruh Go regression/vet
 lulus dan database/container pengujian dihapus otomatis.
 
+Backup/restore drill (commit `797325e`) menambahkan custom-format PostgreSQL backup dengan
+writer-quiesced guard, temporary-file atomic publication, SHA-256, migration state, dan manifest
+count seluruh public table. Restore menolak target yang tidak kosong, memverifikasi checksum dan
+archive list sebelum `pg_restore --exit-on-error`, lalu mewajibkan schema migration, seluruh table
+count, lifecycle, dan core foreign-key integrity cocok. Workflow CI menjalankan drill setelah
+integration suite. Acceptance pada dua PostgreSQL 16.10 disposable membuktikan backup tanpa
+acknowledgement ditolak, restore mencapai schema 29:29, semua table count cocok, serta fixture user
+dan audit event pulih; artefak sementara dan kedua container dibersihkan otomatis. Kebijakan daily
+encrypted external backup, retention 30 hari, cutover, dan escalation dicatat di
+`docs/BACKUP_RESTORE.md`; scheduling/storage production tetap bagian deployment.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -495,7 +506,7 @@ lulus dan database/container pengujian dihapus otomatis.
 - [ ] Recommendation dapat dijelaskan dan di-override manusia
 - [ ] Alert terdeduplikasi
 - [x] Security checks lulus
-- [ ] Backup/restore checks lulus
+- [x] Backup/restore checks lulus
 
 ## Riwayat commit utama
 
@@ -541,6 +552,7 @@ lulus dan database/container pengujian dihapus otomatis.
 | `ef22ccd` | Idempotent discover-to-review collector workflow E2E pada PostgreSQL kosong |
 | `90b7e32` | Dependency remediation dan automated repository/container vulnerability gates |
 | `f8198f0` | Authenticated 10k-row opportunity feed pagination and concurrent load gate |
+| `797325e` | Atomic PostgreSQL backup, checksum/count manifest, dan empty-target restore drill |
 
 ## Aturan pembaruan task list
 

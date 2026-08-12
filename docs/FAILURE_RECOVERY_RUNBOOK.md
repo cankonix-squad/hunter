@@ -114,10 +114,13 @@ The safe empty-target workflow is documented in
 
 1. Inspect source health and recent runs. `queued`/`running` are pending, `failed` is
    eligible for bounded retry, `dead_letter` is exhausted, and `succeeded` is complete.
-   Expired worker leases recover automatically.
+   Expired worker leases recover automatically. Transient transport/DNS/5xx failures use up to
+   six attempts with exponential 30-second to 16-minute delays (capped at 30 minutes); this spans
+   a short infrastructure outage instead of exhausting the run within seconds.
 2. For upstream 403/429, CAPTCHA, authentication, or a changed access boundary, do not
    evade it. An administrator must set the source to `paused` or `degraded` through
-   `PATCH /api/v1/admin/sources/{id}` and review its public-access policy/adapter.
+   `PATCH /api/v1/admin/sources/{id}` and review its public-access policy/adapter. HTTP 4xx access
+   boundaries are permanent failures and dead-letter immediately rather than repeated requests.
 3. A circuit opens after consecutive failures and blocks new work for its cooldown.
    Fix the cause and wait for `circuit_open_until`; never clear it directly in SQL.
 4. Once valid and active, queue one canary through the durable API with a unique,

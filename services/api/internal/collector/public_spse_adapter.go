@@ -249,20 +249,30 @@ func (a *PublicSPSEAdapter) requestOnce(ctx context.Context, method, target stri
 	}
 	defer response.Body.Close()
 	if response.StatusCode == 403 || response.StatusCode == 429 {
-		return nil, false, fmt.Errorf("source access stopped with HTTP %d", response.StatusCode)
+		return nil, false, permanentSourceError{fmt.Errorf("source access stopped with HTTP %d", response.StatusCode)}
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, response.StatusCode >= 500, fmt.Errorf("source returned HTTP %d", response.StatusCode)
+		err := fmt.Errorf("source returned HTTP %d", response.StatusCode)
+		if response.StatusCode < 500 {
+			return nil, false, permanentSourceError{err}
+		}
+		return nil, true, err
 	}
 	payload, err := io.ReadAll(io.LimitReader(response.Body, publicSPSEMaxResponse+1))
 	if err != nil {
 		return nil, true, err
 	}
 	if len(payload) > publicSPSEMaxResponse {
-		return nil, false, errors.New("source response exceeds 1 MiB")
+		return nil, false, permanentSourceError{errors.New("source response exceeds 1 MiB")}
 	}
 	return payload, false, nil
 }
+
+type permanentSourceError struct{ err error }
+
+func (e permanentSourceError) Error() string   { return e.err.Error() }
+func (e permanentSourceError) Unwrap() error   { return e.err }
+func (e permanentSourceError) Permanent() bool { return true }
 
 func parsePublicSPSE(payload []byte, baseURL, tenant string) ([]Candidate, error) {
 	var response struct{ Data [][]any }

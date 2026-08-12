@@ -1,7 +1,12 @@
 package collector
 
 import (
+	"context"
 	_ "embed"
+	"errors"
+	"io"
+	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -72,6 +77,25 @@ func TestPolicyKeywordsAreBoundedAndBackwardCompatible(t *testing.T) {
 	if legacy := policyKeywords(map[string]any{"search": "software"}); len(legacy) != 1 || legacy[0] != "software" {
 		t.Fatalf("unexpected legacy keywords: %#v", legacy)
 	}
+}
+
+func TestAccessBoundaryResponseIsPermanent(t *testing.T) {
+	client := &http.Client{Transport: roundTripFunc(func(*http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: http.StatusTooManyRequests, Body: io.NopCloser(strings.NewReader(""))}, nil
+	})}
+	adapter := NewPublicSPSEAdapter(client)
+
+	_, _, err := adapter.requestOnce(context.Background(), http.MethodGet, "https://spse.example.test", nil)
+	var permanent interface{ Permanent() bool }
+	if !errors.As(err, &permanent) || !permanent.Permanent() {
+		t.Fatalf("429 error must be permanent, got %v", err)
+	}
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return fn(request)
 }
 
 func TestCandidateTitleKeywordMatchUsesWordBoundaries(t *testing.T) {

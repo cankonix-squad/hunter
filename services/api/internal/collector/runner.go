@@ -319,7 +319,7 @@ func (r *Runner) fail(ctx context.Context, run Run, runErr error) error {
 	if err := r.db.QueryRow(ctx, `SELECT policy, consecutive_failures FROM sources WHERE id = $1`, run.SourceID).Scan(&raw, &failures); err != nil {
 		return fmt.Errorf("load retry policy: %w", err)
 	}
-	p := policy{MaxRetries: 2, CircuitFailureThreshold: 5}
+	p := policy{MaxRetries: 5, CircuitFailureThreshold: 5}
 	_ = json.Unmarshal(raw, &p)
 	if p.MaxRetries < 0 {
 		p.MaxRetries = 0
@@ -327,11 +327,14 @@ func (r *Runner) fail(ctx context.Context, run Run, runErr error) error {
 	if p.CircuitFailureThreshold < 1 {
 		p.CircuitFailureThreshold = 5
 	}
-	status := "failed"
-	if run.Attempts > p.MaxRetries {
+	status, errorCode := "failed", "collector_error"
+	var permanent interface{ Permanent() bool }
+	if errors.As(runErr, &permanent) && permanent.Permanent() {
+		status, errorCode = "dead_letter", "source_policy_error"
+	} else if run.Attempts > p.MaxRetries {
 		status = "dead_letter"
 	}
-	backoff := time.Duration(math.Min(math.Pow(2, float64(run.Attempts-1))*5, 900)) * time.Second
+	backoff := retryBackoff(run.Attempts)
 	safeError := runErr.Error()
 	if len(safeError) > 500 {
 		safeError = safeError[:500]
@@ -343,8 +346,8 @@ func (r *Runner) fail(ctx context.Context, run Run, runErr error) error {
 	defer tx.Rollback(ctx)
 	_, err = tx.Exec(ctx, `UPDATE source_runs SET status = $2::run_status, next_attempt_at = now() + $3::interval,
 		finished_at = CASE WHEN $2 = 'dead_letter' THEN now() ELSE NULL END, lease_owner = NULL,
-		lease_expires_at = NULL, error_code = 'collector_error', safe_error = $4 WHERE id = $1`,
-		run.ID, status, fmt.Sprintf("%f seconds", backoff.Seconds()), safeError)
+		lease_expires_at = NULL, error_code = $4, safe_error = $5 WHERE id = $1`,
+		run.ID, status, fmt.Sprintf("%f seconds", backoff.Seconds()), errorCode, safeError)
 	if err != nil {
 		return fmt.Errorf("persist run failure: %w", err)
 	}
@@ -359,4 +362,11 @@ func (r *Runner) fail(ctx context.Context, run Run, runErr error) error {
 		return fmt.Errorf("commit run failure: %w", err)
 	}
 	return nil
+}
+
+func retryBackoff(attempt int) time.Duration {
+	if attempt < 1 {
+		attempt = 1
+	}
+	return time.Duration(math.Min(math.Pow(2, float64(attempt-1))*30, 1800)) * time.Second
 }

@@ -480,10 +480,12 @@ concurrency cancellation dan empat job paralel: Go format/module verification/ra
 frontend test/build/dependency audit, migration PostgreSQL 16 kosong, serta Compose validation
 dan build image API/collector/notifier/web. Skrip reusable memverifikasi nama migration berurutan,
 menerapkan seluruh file dengan `ON_ERROR_STOP`, lalu mewajibkan count dan versi maksimum sama.
-Acceptance lokal: Go race/vet lulus, 8 frontend tests dan production build lulus, npm audit 0
+Acceptance lokal: Go race/vet lulus, 9 frontend tests dan production build lulus, npm audit 0
 vulnerability, database disposable berhasil dari v1 sampai v29 lalu dihapus, YAML/shell syntax
 dan Compose config valid, serta seluruh image berhasil dibangun. Status CI tetap parsial sampai
-repository memiliki remote GitHub dan satu hosted run terbukti hijau.
+autentikasi GitHub tersedia dan satu hosted run terbukti hijau. Remote `origin` sudah mengarah ke
+repository resmi, tetapi push pertama 13 Agustus 2026 berhenti aman sebelum upload karena mesin belum
+memiliki HTTPS credential, GitHub CLI, maupun SSH key.
 
 API authorization/contract suite (commit `5159e0e`) menjalankan handler produksi melalui
 `httptest` terhadap PostgreSQL 16 yang dimigrasikan penuh dan memakai credential test acak.
@@ -591,6 +593,8 @@ wrapping; seluruh `go test -race ./...` dan `go vet ./...` lulus. Image collecto
 diterapkan; seluruh container aktif, PostgreSQL 16.10 sehat, edge health/readiness HTTP 200, resolver
 collector kembali menjawab, dan log startup bersih. Jika tidak ada failure/intervensi baru, window
 UTC bersih paling awal adalah 13–19 Agustus 2026 dan baru dapat dievaluasi setelah hari terakhir.
+Checkpoint 13 Agustus saat hari UTC masih berjalan: 20 priority source, 20/20 source sukses,
+20/20 run sukses, nol dead-letter; status benar `PENDING` hanya karena `day_complete=0`.
 
 MVP evidence reconciliation (commit `0c85b68`) memperkuat integration E2E dengan menyisipkan enam
 lifecycle nonaktif (`registration_closed`, `evaluation`, `awarded`, `contracted`, `completed`, dan

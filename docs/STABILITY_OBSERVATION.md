@@ -48,3 +48,8 @@ Operators should review source health, scheduler/collector availability, safe er
 dead letters, host/database capacity, and clock synchronization daily without changing source
 configuration. An incident is not hidden to preserve the timer: stabilize it, record the event, and
 restart the observation. On day seven, attach the passing report to UAT and release approval.
+
+Use `scripts/stability-daily-report.sh YYYY-MM-DD` for checkpoints. It reports `PENDING` until the
+UTC date has ended and all 20 sources have at least one successful persisted run, `FAILED` for a
+wrong source count or any dead-letter on that date, and `PASSED` only for a completed clean day.
+This daily result is diagnostic; only the seven-day report satisfies the release gate.

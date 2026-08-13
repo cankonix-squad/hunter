@@ -111,6 +111,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Authenticated API search dan detail acceptance
 - [x] API/web recreate tanpa edge restart tetap HTTP 200
 - [x] Acceptance gate lokal terpadu melalui `scripts/local-acceptance.sh`
+- [x] Authenticated opportunity workflow integration: feed → detail → shortlist → decision → next action → activity
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -118,6 +119,8 @@ healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikas
 satu jam terakhir. Notifier berjalan tetapi delivery tetap disabled secara sengaja di local.
 Full local quality rerun juga lulus: Go formatting/module verification/race tests/vet, golden
 dataset 15/15, frontend 8/8 tests, production build, dan npm audit 0 vulnerability.
+Workflow integration memakai PostgreSQL disposable bermigrasi v1–v29 dan membuktikan seluruh
+mutation menghasilkan state serta audit activity yang benar tanpa mengubah database aplikasi lokal.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

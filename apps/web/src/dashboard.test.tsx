@@ -31,7 +31,7 @@ describe('Dashboard', () => {
       accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
       user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
     })
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
       const path = String(input)
       const body = path.includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 }
         : path.includes('/api/v1/notification-preferences') ? { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
@@ -51,6 +51,9 @@ describe('Dashboard', () => {
     await user.click(screen.getAllByRole('button', { name: 'Hide sidebar' })[0])
     expect(screen.getByLabelText('Sidebar').parentElement).toHaveClass('sidebar-collapsed')
     expect(screen.getAllByRole('button', { name: 'Show sidebar' }).length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('button', { name: /Assigned/ }))
+    expect(await screen.findByText('Shortcut aktif:')).toBeInTheDocument()
+    await vi.waitFor(() => expect(fetchMock.mock.calls.some(([input]) => String(input).includes('assigned=true') && String(input).includes('status=all'))).toBe(true))
   })
 
   it('renders canonical feed and opens auditable detail', async () => {

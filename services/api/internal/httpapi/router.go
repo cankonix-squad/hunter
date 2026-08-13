@@ -483,6 +483,7 @@ func (s *Server) listOpportunities(w http.ResponseWriter, r *http.Request) {
 		SourceID: r.URL.Query().Get("source_id"), Page: page, PageSize: pageSize,
 		Relevance: r.URL.Query().Get("relevance"), MinimumScoreBP: minimumScore,
 		NeedsReview: r.URL.Query().Get("needs_review"), Shortlisted: r.URL.Query().Get("shortlisted"),
+		Assigned: r.URL.Query().Get("assigned"), Decision: r.URL.Query().Get("decision"), ActionDue: r.URL.Query().Get("action_due"),
 	})
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "invalid") {

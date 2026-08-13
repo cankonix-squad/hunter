@@ -125,6 +125,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Navigasi sidebar antarseksi serta collapse/expand desktop dan mobile
 - [x] Global action acknowledgement toast dan dead-letter healthy empty-state guidance
 - [x] Data/source fixture dihapus dari runtime; fixture adapter dibatasi untuk automated tests
+- [x] Dashboard KPI shortcuts dengan filter feed workflow yang nyata
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -170,6 +171,11 @@ classification, dan score turunannya dari database aplikasi. Executable API/coll
 mendaftarkan adapter publik; fixture adapter dan file fixture tetap tersedia khusus automated tests.
 Database akhir memiliki 40 source publik, 371 opportunity publik, dan nol source/opportunity fixture;
 full Go race/vet, fresh migration v1–v31, rebuild runtime, serta local acceptance lulus.
+Kartu KPI dan seluruh angka pipeline kini berupa shortcut interaktif menuju opportunity feed.
+Backend mendukung filter assignment, pursue/pass/undecided, overdue, dan due-seven-days selain
+review queue dan shortlist yang sudah ada. UI menampilkan chip shortcut aktif dan clear action;
+regression test membuktikan Assigned mengirim `assigned=true` dengan all lifecycle. Go race/vet,
+frontend 11/11, production build, dan OpenAPI contract lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

@@ -50,15 +50,16 @@ h1 { margin: 4px 0 0; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.055em
 .status { border: 1px solid #bbb; background: #fff; padding: 9px 12px; font-size: 12px; }
 .status i { display: inline-block; width: 7px; height: 7px; background: #26824a; border-radius: 50%; margin-right: 7px; }
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #ccc; border-right: 0; margin-top: 26px; background: white; }
-.metrics article { padding: 20px; border-right: 1px solid #ccc; min-height: 142px; }
+.metrics button { margin: 0; padding: 20px; border-right: 1px solid #ccc; min-height: 142px; background: white; color: #111; text-align: left; }
+.metrics button:hover, .pipeline-analytics dl button:hover { background: #f4f4f0; filter: none; }
 .metrics p { margin: 0 0 18px; color: #666; font-size: 12px; }
 .metrics strong { display: block; font: 500 30px ui-monospace, monospace; }
-.metrics small { display: block; color: #999; margin-top: 11px; line-height: 1.35; }
+.metrics small { display: block; color: #777; margin-top: 11px; line-height: 1.35; }
 .pipeline-analytics { margin-top: 18px; padding: 20px; display: grid; grid-template-columns: minmax(180px, .7fr) 2fr; gap: 24px; border: 1px solid #ccc; background: #e9e9e5; }
 .pipeline-analytics h2 { margin: 5px 0 8px; font-size: 22px; }
 .pipeline-analytics small { color: #777; font-size: 10px; }
 .pipeline-analytics dl { margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #ccc; background: white; }
-.pipeline-analytics dl div { padding: 12px 14px; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+.pipeline-analytics dl button { margin: 0; padding: 12px 14px; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; background: white; color: #111; text-align: left; }
 .pipeline-analytics dt { color: #777; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .pipeline-analytics dd { margin: 7px 0 0; font: 500 23px ui-monospace, monospace; }
 .pipeline-analytics .risk { background: #f8e4df; color: #7e2424; }
@@ -77,6 +78,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #d08b2f; outline-offs
 .action-toast { position: fixed; right: 24px; bottom: 24px; z-index: 100; max-width: min(420px, calc(100vw - 32px)); padding: 14px 18px; background: #171717; color: white; border-left: 4px solid #55a46c; box-shadow: 0 12px 34px #0005; font-size: 12px; font-weight: 700; animation: toast-in .18s ease-out; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
 .feed { margin-top: 28px; border: 1px solid #ccc; background: white; }
+.active-kpi-filter { padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #e4eee7; border-bottom: 1px solid #b7cbbc; color: #315e3d; font-size: 12px; }
+.active-kpi-filter button { margin: 0; padding: 8px 11px; }
 .saved-views { padding: 14px 18px; display: flex; align-items: end; flex-wrap: wrap; gap: 12px; background: #e9e9e5; border-bottom: 1px solid #ccc; }
 .saved-views label { display: grid; gap: 5px; color: #777; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
 .saved-views select, .saved-views input { border: 1px solid #aaa; background: white; padding: 9px 10px; font: inherit; }

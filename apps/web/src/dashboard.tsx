@@ -82,6 +82,7 @@ export function Dashboard() {
   const [minimumScore, setMinimumScore] = useState('')
   const [reviewOnly, setReviewOnly] = useState(false)
   const [shortlistOnly, setShortlistOnly] = useState(false)
+  const [workflowFilter, setWorkflowFilter] = useState<{ assigned?: string; decision?: string; actionDue?: string; label?: string }>({})
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<Opportunity | null>(null)
   const [loading, setLoading] = useState(true)
@@ -127,13 +128,16 @@ export function Dashboard() {
     const params = new URLSearchParams({ q: search, status, relevance, page: String(page), page_size: '20' })
     if (sourceID) params.set('source_id', sourceID)
     if (shortlistOnly) params.set('shortlisted', 'true')
+    if (workflowFilter.assigned) params.set('assigned', workflowFilter.assigned)
+    if (workflowFilter.decision) params.set('decision', workflowFilter.decision)
+    if (workflowFilter.actionDue) params.set('action_due', workflowFilter.actionDue)
     if (minimumScore) params.set('min_score', String(Math.round(Number(minimumScore) * 100)))
     const path = reviewOnly ? '/api/v1/opportunities/review' : '/api/v1/opportunities'
     auth.request<OpportunityPage>(`${path}?${params}`)
       .then(setResult)
       .catch(() => setError('Feed peluang belum dapat dimuat. Coba beberapa saat lagi.'))
       .finally(() => setLoading(false))
-  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, shortlistOnly, sourceID, status])
+  }, [auth.request, minimumScore, page, relevance, reviewOnly, search, shortlistOnly, sourceID, status, workflowFilter])
 
   useEffect(load, [load])
 
@@ -196,11 +200,6 @@ export function Dashboard() {
     } catch { setViewError('Saved view gagal dihapus.') }
   }
 
-  const deadlineSoon = useMemo(() => result.items.filter(item => {
-    if (!item.registration_deadline) return false
-    const remaining = new Date(item.registration_deadline).getTime() - Date.now()
-    return remaining > 0 && remaining <= 7 * 86400000
-  }).length, [result.items])
   const needsReview = useMemo(() => result.items.filter(item => item.score?.needs_review).length, [result.items])
 
   function submitSearch(event: FormEvent) {
@@ -211,7 +210,13 @@ export function Dashboard() {
 
   function resetFeedFilters() {
     setSearchInput(''); setSearch(''); setStatus('active'); setSourceID(''); setRelevance('all')
-    setMinimumScore(''); setReviewOnly(false); setShortlistOnly(false); setPage(1)
+    setMinimumScore(''); setReviewOnly(false); setShortlistOnly(false); setWorkflowFilter({}); setPage(1)
+  }
+
+  function openKPI(label: string, changes: { status?: string; reviewOnly?: boolean; shortlistOnly?: boolean; assigned?: string; decision?: string; actionDue?: string }) {
+    setStatus(changes.status ?? 'all'); setReviewOnly(changes.reviewOnly ?? false); setShortlistOnly(changes.shortlistOnly ?? false)
+    setWorkflowFilter({ assigned: changes.assigned, decision: changes.decision, actionDue: changes.actionDue, label })
+    setPage(1); navigateTo('opportunities')
   }
 
   function navigateTo(section: string) {
@@ -305,18 +310,19 @@ export function Dashboard() {
         <button className="mobile-sidebar-toggle" aria-label={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'} aria-expanded={!sidebarCollapsed} onClick={() => setSidebarCollapsed(value => !value)}>☰</button>
         <header><div><p className="eyebrow">Decision support</p><h1>Opportunity feed</h1></div><div className="status"><i /> Collector connected</div></header>
         <section className="metrics" aria-label="Ringkasan">
-          <article><p>Matched opportunities</p><strong>{result.total}</strong><small>Current filters</small></article>
-          <article><p>Deadline &lt; 7 hari</p><strong>{deadlineSoon}</strong><small>Asia/Jakarta</small></article>
-          <article><p>Visible packages</p><strong>{result.items.length}</strong><small>Page {result.page}</small></article>
-          <article><p>Needs review</p><strong>{needsReview}</strong><small>Visible on this page</small></article>
+          <button onClick={()=>openKPI('Semua peluang sesuai filter',{status})}><p>Matched opportunities</p><strong>{result.total}</strong><small>View current results →</small></button>
+          <button onClick={()=>openKPI('Action jatuh tempo 7 hari',{status:'all',actionDue:'seven_days'})}><p>Deadline &lt; 7 hari</p><strong>{pipeline.actions_due_seven_days}</strong><small>View due actions →</small></button>
+          <button onClick={()=>navigateTo('opportunities')}><p>Visible packages</p><strong>{result.items.length}</strong><small>Open page {result.page} →</small></button>
+          <button onClick={()=>openKPI('Needs review',{status:'all',reviewOnly:true})}><p>Needs review</p><strong>{needsReview}</strong><small>Open review queue →</small></button>
         </section>
 
         <section className="pipeline-analytics" id="overview" aria-labelledby="pipeline-heading">
           <div><p className="eyebrow">Portfolio overview</p><h2 id="pipeline-heading">Pipeline analytics</h2><small>{pipeline.active} active of {pipeline.total} total opportunities</small></div>
-          <dl><div><dt>Pursue</dt><dd>{pipeline.pursue}</dd></div><div><dt>Pass</dt><dd>{pipeline.pass}</dd></div><div><dt>Undecided</dt><dd>{pipeline.undecided}</dd></div><div><dt>Shortlisted</dt><dd>{pipeline.shortlisted}</dd></div><div><dt>Assigned</dt><dd>{pipeline.assigned}</dd></div><div className={pipeline.overdue_actions > 0 ? 'risk' : ''}><dt>Overdue actions</dt><dd>{pipeline.overdue_actions}</dd><small>{pipeline.actions_due_seven_days} due in 7 days</small></div></dl>
+          <dl><button onClick={()=>openKPI('Pursue',{status:'all',decision:'pursue'})}><dt>Pursue</dt><dd>{pipeline.pursue}</dd></button><button onClick={()=>openKPI('Pass',{status:'all',decision:'pass'})}><dt>Pass</dt><dd>{pipeline.pass}</dd></button><button onClick={()=>openKPI('Undecided',{status:'all',decision:'undecided'})}><dt>Undecided</dt><dd>{pipeline.undecided}</dd></button><button onClick={()=>openKPI('Shortlisted',{status:'all',shortlistOnly:true})}><dt>Shortlisted</dt><dd>{pipeline.shortlisted}</dd></button><button onClick={()=>openKPI('Assigned',{status:'all',assigned:'true'})}><dt>Assigned</dt><dd>{pipeline.assigned}</dd></button><button className={pipeline.overdue_actions > 0 ? 'risk' : ''} onClick={()=>openKPI('Overdue actions',{status:'all',actionDue:'overdue'})}><dt>Overdue actions</dt><dd>{pipeline.overdue_actions}</dd><small>{pipeline.actions_due_seven_days} due in 7 days</small></button></dl>
         </section>
 
         <section className="feed" id="opportunities">
+          {workflowFilter.label&&<div className="active-kpi-filter"><span>Shortcut aktif: <strong>{workflowFilter.label}</strong></span><button onClick={()=>{setWorkflowFilter({});setReviewOnly(false);setShortlistOnly(false);setPage(1)}}>Clear shortcut</button></div>}
           <div className="saved-views">
             <label>Saved view<select aria-label="Apply saved view" defaultValue="" onChange={event => { applySavedView(event.target.value); event.target.value = '' }}><option value="" disabled>Choose view…</option>{savedViews.map(view => <option key={view.id} value={view.id}>{view.name}</option>)}</select></label>
             <form onSubmit={saveCurrentView}><input aria-label="Saved view name" maxLength={80} value={viewName} onChange={event => setViewName(event.target.value)} placeholder="Name current filters…" /><button type="submit">Save view</button></form>

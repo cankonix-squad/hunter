@@ -98,6 +98,9 @@ paths:
         - { in: query, name: min_score, description: Minimum total score in basis points, schema: { type: integer, minimum: 0, maximum: 10000 } }
         - { in: query, name: needs_review, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
         - { in: query, name: shortlisted, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
+        - { in: query, name: assigned, schema: { type: string, enum: [all, 'true', 'false'], default: all } }
+        - { in: query, name: decision, schema: { type: string, enum: [all, pursue, pass, undecided], default: all } }
+        - { in: query, name: action_due, schema: { type: string, enum: [all, overdue, seven_days], default: all } }
         - { in: query, name: page, schema: { type: integer, minimum: 1, default: 1 } }
         - { in: query, name: page_size, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
       responses:

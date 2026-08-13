@@ -93,6 +93,9 @@ type Query struct {
 	MinimumScoreBP int
 	NeedsReview    string
 	Shortlisted    string
+	Assigned       string
+	Decision       string
+	ActionDue      string
 }
 
 type Page struct {
@@ -123,6 +126,9 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 	query.Relevance = strings.TrimSpace(query.Relevance)
 	query.NeedsReview = strings.TrimSpace(query.NeedsReview)
 	query.Shortlisted = strings.TrimSpace(query.Shortlisted)
+	query.Assigned = strings.TrimSpace(query.Assigned)
+	query.Decision = strings.TrimSpace(query.Decision)
+	query.ActionDue = strings.TrimSpace(query.ActionDue)
 	if query.Status == "" {
 		query.Status = "active"
 	}
@@ -150,18 +156,42 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 	if query.Shortlisted != "all" && query.Shortlisted != "true" && query.Shortlisted != "false" {
 		return Page{}, errors.New("invalid shortlisted")
 	}
+	if query.Assigned == "" {
+		query.Assigned = "all"
+	}
+	if query.Assigned != "all" && query.Assigned != "true" && query.Assigned != "false" {
+		return Page{}, errors.New("invalid assigned")
+	}
+	if query.Decision == "" {
+		query.Decision = "all"
+	}
+	if query.Decision != "all" && query.Decision != "pursue" && query.Decision != "pass" && query.Decision != "undecided" {
+		return Page{}, errors.New("invalid decision")
+	}
+	if query.ActionDue == "" {
+		query.ActionDue = "all"
+	}
+	if query.ActionDue != "all" && query.ActionDue != "overdue" && query.ActionDue != "seven_days" {
+		return Page{}, errors.New("invalid action due")
+	}
 
 	statusSQL := "($2 = 'all' OR ($2 = 'active' AND o.lifecycle_status IN ('announced','registration_open')) OR o.lifecycle_status = $2)"
 	filterSQL := "($1 = '' OR (o.title || ' ' || o.agency || ' ' || o.package_identity) ILIKE '%' || $1 || '%') AND " + statusSQL +
 		" AND ($3 = '' OR o.source_id::text = $3) AND ($4 = 'all' OR c.disposition = $4)" +
 		" AND ($5 < 0 OR sc.total_score_bp >= $5) AND ($6 = 'all' OR sc.needs_review = ($6 = 'true'))" +
-		" AND ($7 = 'all' OR (sl.opportunity_id IS NOT NULL) = ($7 = 'true'))"
+		" AND ($7 = 'all' OR (sl.opportunity_id IS NOT NULL) = ($7 = 'true'))" +
+		" AND ($8 = 'all' OR (oa.opportunity_id IS NOT NULL) = ($8 = 'true'))" +
+		" AND ($9 = 'all' OR ($9 = 'undecided' AND od.opportunity_id IS NULL) OR od.decision::text = $9)" +
+		" AND ($10 = 'all' OR ($10 = 'overdue' AND na.due_at < now()) OR ($10 = 'seven_days' AND na.due_at >= now() AND na.due_at <= now()+interval '7 days'))"
 	joins := ` JOIN sources src ON src.id = o.source_id
 		LEFT JOIN LATERAL (SELECT * FROM opportunity_classifications x WHERE x.opportunity_id=o.id AND x.opportunity_fingerprint=o.current_fingerprint ORDER BY x.evaluated_at DESC LIMIT 1) c ON true
 		LEFT JOIN LATERAL (SELECT * FROM opportunity_scores x WHERE x.opportunity_id=o.id AND x.opportunity_fingerprint=o.current_fingerprint ORDER BY x.evaluated_at DESC LIMIT 1) sc ON true
-		LEFT JOIN opportunity_shortlist sl ON sl.opportunity_id=o.id `
+		LEFT JOIN opportunity_shortlist sl ON sl.opportunity_id=o.id
+		LEFT JOIN opportunity_assignments oa ON oa.opportunity_id=o.id
+		LEFT JOIN opportunity_decisions od ON od.opportunity_id=o.id
+		LEFT JOIN opportunity_next_actions na ON na.opportunity_id=o.id `
 	var total int
-	args := []any{query.Search, query.Status, query.SourceID, query.Relevance, query.MinimumScoreBP, query.NeedsReview, query.Shortlisted}
+	args := []any{query.Search, query.Status, query.SourceID, query.Relevance, query.MinimumScoreBP, query.NeedsReview, query.Shortlisted, query.Assigned, query.Decision, query.ActionDue}
 	if err := s.db.QueryRow(ctx, "SELECT count(*) FROM opportunities o "+joins+" WHERE "+filterSQL, args...).Scan(&total); err != nil {
 		return Page{}, fmt.Errorf("count opportunities: %w", err)
 	}
@@ -175,7 +205,7 @@ func (s *Service) List(ctx context.Context, query Query) (Page, error) {
 		coalesce(sc.needs_review,false), coalesce(sc.reason_code,''), coalesce(sc.explanation,'')
 		FROM opportunities o `+joins+` WHERE `+filterSQL+`
 		ORDER BY o.registration_deadline ASC NULLS LAST, o.last_seen_at DESC
-		LIMIT $8 OFFSET $9`, append(args, query.PageSize, (query.Page-1)*query.PageSize)...)
+		LIMIT $11 OFFSET $12`, append(args, query.PageSize, (query.Page-1)*query.PageSize)...)
 	if err != nil {
 		return Page{}, fmt.Errorf("list opportunities: %w", err)
 	}

@@ -16,6 +16,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
+- Target URL production: `https://hunter.cankonix.com` (belum dinyatakan live)
 - Migrasi database aktif: versi 29
 - Data acceptance: 192 opportunity canonical
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review

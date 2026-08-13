@@ -93,6 +93,10 @@ The browser-facing edge is `http://localhost:3000`; it routes `/api/*`,
 published to the host. The initial schema is applied only when a fresh local
 database volume is created.
 
+The reserved production application URL is `https://hunter.cankonix.com`.
+This is a deployment target, not a live-status claim; production availability
+still depends on the release preflight, stability gate, and hosted UAT approval.
+
 ## Current implementation
 
 - React + TypeScript login and protected dashboard

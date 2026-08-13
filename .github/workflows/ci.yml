@@ -123,6 +123,8 @@ jobs:
         run: ./scripts/check-stability-gate.sh
       - name: Verify release preflight contract
         run: ./scripts/check-release-preflight.sh
+      - name: Verify production domain gate syntax
+        run: sh -n ./scripts/check-production-domain.sh
       - name: Verify monitoring configuration
         run: ./scripts/check-monitoring.sh
       - name: Build application images

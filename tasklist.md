@@ -473,7 +473,14 @@ health/readiness melalui edge HTTP 200.
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
+- [!] Production domain routing/TLS — DNS mencapai Traefik, tetapi masih default certificate dan HTTP 404
 - [!] Tujuh hari stability observation — baseline 6–12 Agustus gagal; mulai ulang setelah DNS stabil
+
+Production domain diagnosis 13 Agustus 2026: `hunter.cankonix.com` resolve dan menerima TLS, tetapi
+menyajikan self-signed `TRAEFIK DEFAULT CERT`; request diagnostik tanpa verifikasi mendapat HTTP 404.
+Gate baru `scripts/check-production-domain.sh` tetap fail-closed dan mewajibkan CA-valid HTTPS serta
+HTTP 200 untuk root, health, dan readiness. Integrasi router/certificate resolver Traefik harus
+ditentukan pada host; nama network/resolver tidak diasumsikan di repository.
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
 concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,

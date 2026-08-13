@@ -114,6 +114,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Authenticated opportunity workflow integration: feed → detail → shortlist → decision → next action → activity
 - [x] Browser workflow component test dan live audit refresh setelah mutation
 - [x] Konsistensi live audit untuk assignment, komentar, readiness, dan human override
+- [x] Full opportunity workflow HTTP integration dengan tujuh mutation auditable
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -129,6 +130,9 @@ lulus, image web lokal direbuild, lalu full local acceptance kembali PASS.
 Seluruh mutation detail opportunity kini merefresh audit secara best-effort: kegagalan refresh tidak
 menyamarkan mutation yang telah sukses. Component acceptance diperluas untuk readiness, override,
 dan komentar; frontend 9/9, build, rebuild container, dan local acceptance tetap lulus.
+Backend workflow acceptance pada PostgreSQL disposable v1–v29 membuktikan assignment, shortlist,
+decision, next action, comment, readiness, dan override melalui production HTTP handlers, termasuk
+unified audit event masing-masing; race test lulus dan database utama tidak dimutasi.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

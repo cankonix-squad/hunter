@@ -29,3 +29,18 @@ Do not bind the repository edge directly to host ports 80/443 while Traefik owns
 the default certificate, disable certificate verification, or expose API/PostgreSQL ports as a
 workaround. After routing and certificate issuance, run the domain gate, staging smoke, UAT, and
 release preflight against the exact deployed commit.
+
+For an existing Traefik host, the repository provides `compose.traefik.yaml`. Discover the actual
+external Docker network, HTTPS entrypoint, and ACME certificate resolver from that host, then set:
+
+```text
+CANKONIX_PUBLIC_HOST=hunter.cankonix.com
+CANKONIX_TRAEFIK_NETWORK=<existing external Docker network>
+CANKONIX_TRAEFIK_ENTRYPOINT=<existing HTTPS entrypoint; defaults to websecure>
+CANKONIX_TRAEFIK_CERT_RESOLVER=<existing ACME resolver>
+```
+
+Validate with `./scripts/check-traefik-config.sh`, then merge `compose.yaml`,
+`compose.production.yaml`, and `compose.traefik.yaml`. The overlay removes the local `3000:80`
+publication, attaches only the edge to Traefik's external network, routes the production hostname,
+and asks the named resolver for TLS. PostgreSQL, API, collector, notifier, and web remain internal.

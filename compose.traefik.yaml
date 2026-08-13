@@ -1,0 +1,23 @@
+services:
+  api:
+    environment:
+      WEB_ORIGIN: https://${CANKONIX_PUBLIC_HOST:?set CANKONIX_PUBLIC_HOST}
+
+  edge:
+    ports: !reset []
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${CANKONIX_TRAEFIK_NETWORK:?set CANKONIX_TRAEFIK_NETWORK}
+      traefik.http.routers.cankonix.rule: Host(`${CANKONIX_PUBLIC_HOST:?set CANKONIX_PUBLIC_HOST}`)
+      traefik.http.routers.cankonix.entrypoints: ${CANKONIX_TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.cankonix.tls: "true"
+      traefik.http.routers.cankonix.tls.certresolver: ${CANKONIX_TRAEFIK_CERT_RESOLVER:?set CANKONIX_TRAEFIK_CERT_RESOLVER}
+      traefik.http.services.cankonix.loadbalancer.server.port: "80"
+    networks:
+      - default
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true
+    name: ${CANKONIX_TRAEFIK_NETWORK:?set CANKONIX_TRAEFIK_NETWORK}

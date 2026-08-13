@@ -42,7 +42,7 @@ func main() {
 		slog.Error("administrator bootstrap failed", "error", err)
 		os.Exit(1)
 	}
-	collectorRunner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}), "api-queue")
+	collectorRunner := collector.NewRunner(db, collector.NewRegistry(collector.NewPublicSPSEAdapter(nil)), "api-queue")
 
 	server := &http.Server{
 		Addr:              cfg.Address,

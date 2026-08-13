@@ -18,8 +18,8 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
 - Target URL production: `https://hunter.cankonix.com` (belum dinyatakan live)
-- Migrasi database aktif: versi 30
-- Data acceptance: 192 opportunity canonical
+- Migrasi database aktif: versi 31
+- Data acceptance: 371 opportunity canonical publik; nol opportunity fixture
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
 - Public crawl acceptance: 40 tenant source aktif dan terjadwal
@@ -124,6 +124,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Contextual empty-search guidance dan one-click lifecycle expansion
 - [x] Navigasi sidebar antarseksi serta collapse/expand desktop dan mobile
 - [x] Global action acknowledgement toast dan dead-letter healthy empty-state guidance
+- [x] Data/source fixture dihapus dari runtime; fixture adapter dibatasi untuk automated tests
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -164,6 +165,11 @@ acceptance kembali PASS pada migration v30 dengan 40 source aktif terjadwal sert
 Seluruh tombol dan link aksi kini memberi pressed/focus feedback serta toast acknowledgement ber-`aria-live`,
 sementara kegagalan hasil proses tetap memakai error state kontekstual. Dead-letter console menjelaskan
 fungsi retry/replay dan membedakan antrean kosong sebagai kondisi sehat. Frontend 11/11 dan build lulus.
+Migration v31 menghapus dua source fixture beserta enam run, empat snapshot, dua opportunity, dua version,
+classification, dan score turunannya dari database aplikasi. Executable API/collector kini hanya
+mendaftarkan adapter publik; fixture adapter dan file fixture tetap tersedia khusus automated tests.
+Database akhir memiliki 40 source publik, 371 opportunity publik, dan nol source/opportunity fixture;
+full Go race/vet, fresh migration v1–v31, rebuild runtime, serta local acceptance lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

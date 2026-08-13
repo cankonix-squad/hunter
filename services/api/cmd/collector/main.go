@@ -33,7 +33,7 @@ func main() {
 	if owner == "" {
 		owner = "collector-local-1"
 	}
-	runner := collector.NewRunner(db, collector.NewRegistry(collector.FixtureAdapter{}, collector.NewPublicSPSEAdapter(nil)), owner)
+	runner := collector.NewRunner(db, collector.NewRegistry(collector.NewPublicSPSEAdapter(nil)), owner)
 	schedulerEnabled, _ := strconv.ParseBool(os.Getenv("COLLECTOR_SCHEDULER_ENABLED"))
 	monitor := collector.NewMonitor(schedulerEnabled)
 	healthServer := &http.Server{Addr: value("COLLECTOR_HEALTH_ADDR", ":8081"), Handler: monitor.Handler(), ReadHeaderTimeout: 3 * time.Second, ReadTimeout: 5 * time.Second, WriteTimeout: 5 * time.Second, IdleTimeout: 30 * time.Second}

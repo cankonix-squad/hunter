@@ -121,6 +121,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Browser reversal acceptance dengan payload null, state reset, dan live audit
 - [x] Pipeline analytics live refresh setelah workflow mutation
 - [x] Pipeline analytics integration delta sebelum, sesudah, dan reversal workflow
+- [x] Contextual empty-search guidance dan one-click lifecycle expansion
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -151,6 +152,9 @@ menyamarkan mutation sukses. Component test memverifikasi seluruh delapan analyt
 HTTP integration acceptance membandingkan analytics terhadap baseline disposable: assigned,
 shortlisted, pursue, undecided, dan due-seven-days berubah tepat setelah mutation; assignment,
 shortlist, dan deadline kembali ke baseline setelah reversal sementara decision tetap persisten.
+Empty feed kini menjelaskan query/filter penyebab nol hasil, menawarkan reset seluruh filter, dan
+mempertahankan keyword saat memperluas dari active registration ke all lifecycle. Regression test
+memakai contoh `pengembangan sistem`; frontend 10/10 dan production build lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

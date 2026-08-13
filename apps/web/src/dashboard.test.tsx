@@ -99,9 +99,33 @@ describe('Dashboard', () => {
     })
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => new Response(JSON.stringify(String(input).includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 } : String(input).includes('/api/v1/notification-preferences') ? { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' } : String(input).includes('/api/v1/sources') || String(input).includes('/api/v1/saved-views') || String(input).includes('/api/v1/team') || String(input).includes('/api/v1/alert-rules') || String(input).includes('/api/v1/alerts') || String(input).includes('/api/v1/operations/dead-letters') ? { items: [] } : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
     render(<AuthProvider><Dashboard /></AuthProvider>)
-    await screen.findByText('No opportunities found.')
+    await screen.findByText('No opportunities match the current filters.')
     await userEvent.click(screen.getByLabelText('Review queue only'))
     await vi.waitFor(() => expect(fetchMock.mock.calls.some(call => String(call[0]).includes('/api/v1/opportunities/review?'))).toBe(true))
+  })
+
+  it('explains an empty active search and can broaden it to all lifecycle', async () => {
+    saveSession(window.sessionStorage, {
+      accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
+      user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
+    })
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      const path = String(input)
+      const body = path.includes('/api/v1/analytics/pipeline') ? { total: 192, active: 10, shortlisted: 0, assigned: 1, pursue: 0, pass: 0, undecided: 192, overdue_actions: 0, actions_due_seven_days: 0 }
+        : path.includes('/api/v1/notification-preferences') ? { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
+        : path.includes('/api/v1/sources') || path.includes('/api/v1/saved-views') || path.includes('/api/v1/team') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') || path.includes('/api/v1/operations/dead-letters') ? { items: [] }
+        : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    })
+    const user = userEvent.setup()
+    render(<AuthProvider><Dashboard /></AuthProvider>)
+    await screen.findByText('No opportunities match the current filters.')
+    await user.type(screen.getByLabelText('Cari peluang'), 'pengembangan sistem')
+    await user.click(screen.getByRole('button', { name: 'Search' }))
+    expect(await screen.findByText('Search “pengembangan sistem” returned no active-registration packages.')).toBeInTheDocument()
+    expect(screen.getByText('Try All lifecycle to include completed and closed packages.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Search all lifecycle' }))
+    await vi.waitFor(() => expect(fetchMock.mock.calls.some(([input]) => String(input).includes('status=all') && String(input).includes('q=pengembangan+sistem'))).toBe(true))
   })
 
   it('applies all filters from a saved view', async () => {

@@ -203,6 +203,11 @@ export function Dashboard() {
     setSearch(searchInput.trim())
   }
 
+  function resetFeedFilters() {
+    setSearchInput(''); setSearch(''); setStatus('active'); setSourceID(''); setRelevance('all')
+    setMinimumScore(''); setReviewOnly(false); setShortlistOnly(false); setPage(1)
+  }
+
   async function openDetail(id: string) {
     setError('')
     setAssignmentError('')
@@ -306,7 +311,7 @@ export function Dashboard() {
             <label className="review-toggle"><input aria-label="Shortlist only" type="checkbox" checked={shortlistOnly} onChange={event => { setShortlistOnly(event.target.checked); setPage(1) }} />Shortlist</label>
           </div>
           {error && <div className="feed-error" role="alert">{error}<button onClick={load}>Retry</button></div>}
-          {loading ? <div className="feed-state">Loading canonical opportunities…</div> : result.items.length === 0 ? <div className="feed-state"><strong>No opportunities found.</strong><span>Adjust the search or lifecycle filter.</span></div> :
+          {loading ? <div className="feed-state">Loading canonical opportunities…</div> : result.items.length === 0 ? <div className="feed-state"><strong>No opportunities match the current filters.</strong><span>{search ? `Search “${search}” returned no ${status === 'active' ? 'active-registration ' : ''}packages.` : 'There are no packages in this filtered view.'}</span><span>{status === 'active' ? 'Try All lifecycle to include completed and closed packages.' : 'Try a broader keyword or reset all filters.'}</span><div><button onClick={resetFeedFilters}>Reset filters</button>{status === 'active' && <button onClick={() => { setStatus('all'); setPage(1) }}>Search all lifecycle</button>}</div></div> :
             <div className="opportunity-list">{result.items.map(item => <button className="opportunity-row" key={item.id} onClick={() => void openDetail(item.id)}>
               <span className="opportunity-code">{item.package_identity}</span><span className="opportunity-main"><strong>{item.title}</strong><small>{item.agency} · {item.procurement_type}</small></span>
               <span className="opportunity-budget">{item.budget_minor == null ? 'Nilai belum tersedia' : money.format(item.budget_minor)}<small>{item.registration_deadline ? `Tutup ${date.format(new Date(item.registration_deadline))}` : 'Deadline belum tersedia'}</small></span>

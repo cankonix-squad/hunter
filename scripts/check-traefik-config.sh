@@ -22,6 +22,9 @@ docker compose -f "$repo_dir/compose.yaml" -f "$repo_dir/compose.production.yaml
 grep -q 'WEB_ORIGIN: https://hunter.cankonix.com' "$rendered_file"
 grep -q 'traefik.http.routers.cankonix.rule: Host(`hunter.cankonix.com`)' "$rendered_file"
 grep -q 'traefik.http.routers.cankonix.tls.certresolver: letsencrypt' "$rendered_file"
+grep -q 'traefik.http.routers.cankonix-login.priority: "100"' "$rendered_file"
+grep -q 'traefik.http.middlewares.cankonix-api-rate.ratelimit.average: "20"' "$rendered_file"
+grep -q 'source: .*nginx/traefik.conf' "$rendered_file"
 grep -q 'name: traefik-public' "$rendered_file"
 if grep -q 'published: "3000"' "$rendered_file"; then
   echo "Traefik overlay must not publish the local edge port" >&2
@@ -31,5 +34,10 @@ if grep -Eq 'change-me-for-local-development|local-development-secret-change-me-
   echo "Traefik Compose output contains a development secret" >&2
   exit 1
 fi
+
+docker run --rm \
+  -v "$repo_dir/nginx/traefik.conf:/etc/nginx/conf.d/default.conf:ro" \
+  -v "$repo_dir/nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro" \
+  nginx:1.29-alpine nginx -t
 
 echo "Traefik production configuration: ok"

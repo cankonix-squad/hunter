@@ -44,3 +44,10 @@ Validate with `./scripts/check-traefik-config.sh`, then merge `compose.yaml`,
 `compose.production.yaml`, and `compose.traefik.yaml`. The overlay removes the local `3000:80`
 publication, attaches only the edge to Traefik's external network, routes the production hostname,
 and asks the named resolver for TLS. PostgreSQL, API, collector, notifier, and web remain internal.
+
+The Traefik overlay uses a dedicated internal Nginx configuration with production CSP, HSTS,
+security headers, request-size limits, and bounded proxy timeouts. Traefik owns client-aware rate
+limits: API traffic is limited to 20 requests/second with burst 40, while the higher-priority login
+router is limited to 5 requests/minute with burst 3. The general web router is not subjected to the
+API limit. `scripts/check-traefik-config.sh` validates router priority, middleware values, port
+isolation, secret boundaries, and Nginx syntax.

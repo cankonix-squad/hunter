@@ -485,6 +485,9 @@ Overlay `compose.traefik.yaml` kini menghapus publikasi port local 3000, menghub
 external Traefik network, mengatur Host router/TLS/service port, dan mewajibkan nama network serta
 certificate resolver nyata. `scripts/check-traefik-config.sh` membuktikan merged production Compose
 tidak membawa development secret dan lulus dengan target `hunter.cankonix.com`.
+Edge khusus Traefik mempertahankan CSP/HSTS/security headers dan HTTPS proxy semantics; router API
+memakai rate limit 20/s burst 40, sedangkan login memakai priority lebih tinggi dan 5/menit burst 3.
+Merged Compose contract serta `nginx -t` lulus tanpa membuka port host.
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
 concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,

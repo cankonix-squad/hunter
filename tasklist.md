@@ -611,6 +611,16 @@ tidak perlu menunggu source lag 12 jam. Acceptance: unit race test monitor, selu
 Compose config, `promtool` dua target/sebelas rule, image rebuild/deploy, internal metric smoke, dan
 collector Docker `healthy` lulus; edge health/readiness tetap HTTP 200.
 
+Daily stability checkpoint (commit `73bca10`) memisahkan diagnosis per tanggal UTC dari rolling
+seven-day release gate. Laporan harian mewajibkan tepat 20 source, nol dead-letter, tanggal sudah
+selesai, dan minimal satu run sukses per source; hasil dibedakan `PENDING`, `FAILED`, dan `PASSED`.
+Audit timestamp mengoreksi interpretasi sebelumnya: dead-letter ke-32 terjadi 12 Agustus 18:44 UTC
+pada Kalimantan Barat setelah HTTP 403, bukan 13 Agustus. Pada 13 Agustus 00:17 UTC seluruh service
+sehat, terdapat 20 source, belum ada run/dead-letter hari itu, sehingga checkpoint benar `PENDING`
+(hari UTC belum selesai), bukan gagal. Kandidat window 13–19 Agustus masih dapat berjalan jika
+Kalimantan Barat kembali sukses dan tidak ada dead-letter/intervensi baru; seven-day gate tetap
+satu-satunya bukti final.
+
 ## MVP completion gate
 
 - [ ] Minimal 20 priority SPSE sources stabil selama tujuh hari
@@ -677,6 +687,7 @@ collector Docker `healthy` lulus; edge health/readiness tetap HTTP 200.
 | `75b06aa` | Bounded-cardinality API metrics, Prometheus staging, dan validated alert rules |
 | `0851627` | Database-backed source/queue/circuit/delivery metrics dan operational alerts |
 | `500d70b` | Collector internal health/metrics server, Docker healthcheck, dan down/error alerts |
+| `73bca10` | UTC daily stability checkpoint dengan explicit pending/failed/passed semantics |
 
 ## Aturan pembaruan task list
 

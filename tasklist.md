@@ -474,6 +474,7 @@ health/readiness melalui edge HTTP 200.
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
 - [~] Production domain routing/TLS — overlay Traefik tervalidasi; menunggu parameter dan deployment host
+- [x] Traefik deployment-host preflight dan environment template non-secret
 - [!] Tujuh hari stability observation — baseline 6–12 Agustus gagal; mulai ulang setelah DNS stabil
 
 Production domain diagnosis 13 Agustus 2026: `hunter.cankonix.com` resolve dan menerima TLS, tetapi
@@ -488,6 +489,11 @@ tidak membawa development secret dan lulus dengan target `hunter.cankonix.com`.
 Edge khusus Traefik mempertahankan CSP/HSTS/security headers dan HTTPS proxy semantics; router API
 memakai rate limit 20/s burst 40, sedangkan login memakai priority lebih tinggi dan 5/menit burst 3.
 Merged Compose contract serta `nginx -t` lulus tanpa membuka port host.
+Template `.env.traefik.example` hanya menyimpan hostname, identifier infra, dan path secret. Host
+preflight mewajibkan hostname production tepat, secret file non-empty dengan mode 0400/0600,
+external Docker network nyata, Compose tanpa published port/development credential, dan tidak
+melakukan deployment. Acceptance lokal membuktikan network inspect dan merged render secara terpisah
+dengan secret dummy sementara yang kemudian dihapus.
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
 concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,

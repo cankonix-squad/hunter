@@ -127,6 +127,8 @@ jobs:
         run: sh -n ./scripts/check-production-domain.sh
       - name: Verify Traefik production overlay
         run: ./scripts/check-traefik-config.sh
+      - name: Verify Traefik host preflight syntax
+        run: sh -n ./scripts/traefik-host-preflight.sh
       - name: Verify monitoring configuration
         run: ./scripts/check-monitoring.sh
       - name: Build application images

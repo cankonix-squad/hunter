@@ -51,3 +51,10 @@ limits: API traffic is limited to 20 requests/second with burst 40, while the hi
 router is limited to 5 requests/minute with burst 3. The general web router is not subjected to the
 API limit. `scripts/check-traefik-config.sh` validates router priority, middleware values, port
 isolation, secret boundaries, and Nginx syntax.
+
+On the deployment host, copy `.env.traefik.example` outside the repository or export the same
+variables from the platform environment. Never put secret values in it. After creating secret files
+with mode `0400` or `0600`, run `./scripts/traefik-host-preflight.sh`. It verifies the exact production
+hostname, required non-empty secret files and permissions, existence of the external Docker network,
+the merged Compose output, absence of host-published ports, and absence of development credentials.
+Only a passing host preflight authorizes `docker compose ... up -d`; it does not perform deployment.

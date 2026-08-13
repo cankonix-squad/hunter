@@ -114,6 +114,8 @@ export function Dashboard() {
   const [alertRules,setAlertRules]=useState<AlertRule[]>([]);const [alertEvents,setAlertEvents]=useState<AlertEvent[]>([]);const [alertName,setAlertName]=useState('');const [alertSource,setAlertSource]=useState('');const [alertRelevance,setAlertRelevance]=useState('all');const [alertMinScore,setAlertMinScore]=useState('');const [alertNew,setAlertNew]=useState(true);const [alertChanges,setAlertChanges]=useState(true);const [alertError,setAlertError]=useState('')
   const [quietHours,setQuietHours]=useState<NotificationPreferences>({quiet_hours_enabled:false,quiet_hours_start:'22:00',quiet_hours_end:'07:00',timezone:'Asia/Jakarta'})
   const [deadLetters,setDeadLetters]=useState<DeadLetter[]>([]);const [deadLetterError,setDeadLetterError]=useState('')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [activeSection, setActiveSection] = useState('opportunities')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -208,6 +210,11 @@ export function Dashboard() {
     setMinimumScore(''); setReviewOnly(false); setShortlistOnly(false); setPage(1)
   }
 
+  function navigateTo(section: string) {
+    setActiveSection(section)
+    document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   async function openDetail(id: string) {
     setError('')
     setAssignmentError('')
@@ -273,14 +280,15 @@ export function Dashboard() {
   async function clearOverride(){if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:null,score_bp:null,reason:'',clear:true})});setHumanOverride(null);setOverrideRecommendation('');setOverrideScore('');setOverrideReason('');setOverrideError('');await refreshActivity(selected.id)}catch{setOverrideError('Override gagal dihapus.')}}
 
   return (
-    <div className="shell">
-      <aside>
-        <div className="brand"><img className="brand-logo" src={logoWhite} alt="CANKONIX" /></div>
-        <nav aria-label="Navigasi utama"><a href="#overview">Overview</a><a className="active" href="#opportunities">Opportunities</a><a href="#sources">Sources</a><a href="#operations">Operations</a></nav>
+    <div className={`shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <aside aria-label="Sidebar">
+        <div className="sidebar-head"><div className="brand"><img className="brand-logo" src={logoWhite} alt="CANKONIX" /></div><button className="sidebar-toggle" aria-label={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'} aria-expanded={!sidebarCollapsed} onClick={() => setSidebarCollapsed(value => !value)}>{sidebarCollapsed ? '›' : '‹'}</button></div>
+        <nav aria-label="Navigasi utama">{[['overview','Overview'],['opportunities','Opportunities'],['sources','Sources'],['operations','Operations']].map(([id,label])=><a key={id} className={activeSection===id?'active':''} aria-current={activeSection===id?'page':undefined} href={`#${id}`} onClick={event=>{event.preventDefault();navigateTo(id)}}><span>{label}</span></a>)}</nav>
         <div className="profile"><strong>{auth.session?.user.name}</strong><span>{auth.session?.user.roles.join(' · ')}</span><button className="text-button" onClick={() => void auth.logout()}>Sign out</button></div>
         <p className="build">Opportunity Intelligence<br />Canonical feed · v0.3.0</p>
       </aside>
       <main>
+        <button className="mobile-sidebar-toggle" aria-label={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'} aria-expanded={!sidebarCollapsed} onClick={() => setSidebarCollapsed(value => !value)}>☰</button>
         <header><div><p className="eyebrow">Decision support</p><h1>Opportunity feed</h1></div><div className="status"><i /> Collector connected</div></header>
         <section className="metrics" aria-label="Ringkasan">
           <article><p>Matched opportunities</p><strong>{result.total}</strong><small>Current filters</small></article>
@@ -324,7 +332,7 @@ export function Dashboard() {
           <form className="quiet-hours" onSubmit={saveQuietHours}><p className="eyebrow">Delivery schedule</p><label><input aria-label="Enable quiet hours" type="checkbox" checked={quietHours.quiet_hours_enabled} onChange={e=>setQuietHours({...quietHours,quiet_hours_enabled:e.target.checked})}/>Quiet hours</label><label>Start<input aria-label="Quiet hours start" type="time" value={quietHours.quiet_hours_start} onChange={e=>setQuietHours({...quietHours,quiet_hours_start:e.target.value})}/></label><label>End<input aria-label="Quiet hours end" type="time" value={quietHours.quiet_hours_end} onChange={e=>setQuietHours({...quietHours,quiet_hours_end:e.target.value})}/></label><select aria-label="Quiet hours timezone" value={quietHours.timezone} onChange={e=>setQuietHours({...quietHours,timezone:e.target.value})}><option value="Asia/Jakarta">Asia/Jakarta</option><option value="Asia/Makassar">Asia/Makassar</option><option value="Asia/Jayapura">Asia/Jayapura</option></select><button type="submit">Save quiet hours</button></form>
           <div className="alert-console"><div className="section-heading"><div><p className="eyebrow">Notifications</p><h2>Alert rules</h2></div><button onClick={loadAlerts}>Refresh</button></div><form onSubmit={createAlertRule}><input aria-label="Alert rule name" maxLength={80} value={alertName} onChange={e=>setAlertName(e.target.value)} placeholder="Rule name…"/><select aria-label="Alert source" value={alertSource} onChange={e=>setAlertSource(e.target.value)}><option value="">All sources</option>{sources.map(source=><option key={source.id} value={source.id}>{source.name}</option>)}</select><select aria-label="Alert relevance" value={alertRelevance} onChange={e=>setAlertRelevance(e.target.value)}><option value="all">All relevance</option><option value="relevant">Relevant</option><option value="needs_review">Needs review</option><option value="excluded">Excluded</option></select><input aria-label="Alert minimum score" type="number" min="0" max="100" value={alertMinScore} onChange={e=>setAlertMinScore(e.target.value)} placeholder="Min score"/><label><input type="checkbox" checked={alertNew} onChange={e=>setAlertNew(e.target.checked)}/>New</label><label><input type="checkbox" checked={alertChanges} onChange={e=>setAlertChanges(e.target.checked)}/>Material changes</label><button type="submit">Add rule</button></form>{alertError&&<small role="alert">{alertError}</small>}<div className="alert-layout"><div>{alertRules.length===0?<p>No alert rules yet.</p>:alertRules.map(rule=><article key={rule.id}><strong>{rule.name}</strong><span>{rule.event_types.map(type=>type.replace('opportunity.','').replaceAll('_',' ')).join(' · ')} · {rule.filters.relevance}</span><button aria-label={`Delete alert rule ${rule.name}`} onClick={()=>void deleteAlertRule(rule.id)}>Delete</button></article>)}</div><div><h3>Recent alert events</h3>{alertEvents.length===0?<p>No matched events yet.</p>:alertEvents.map(event=><article key={event.id}><strong>{event.title}</strong><span>{event.event_type.replace('opportunity.','').replaceAll('_',' ')} · {event.rule_name}</span><small>{event.changed_fields.join(' · ')||'Initial observation'} · {date.format(new Date(event.created_at))}</small></article>)}</div></div></div>
           {auth.session?.user.roles.some(role=>['administrator','operator'].includes(role))&&<div className="dead-letter-console"><div className="section-heading"><div><p className="eyebrow">Failure recovery</p><h2>Dead-letter queue</h2></div><button onClick={loadDeadLetters}>Refresh</button></div>{deadLetterError&&<small role="alert">{deadLetterError}</small>}{deadLetters.length===0?<p>No dead-letter deliveries.</p>:deadLetters.map(item=><article key={item.id}><div><strong>{item.title}</strong><span>{item.channel} · {item.destination} · {item.attempts} attempts · replayed {item.replay_count}×</span><small>{item.safe_error||'No safe error recorded'}</small></div><button onClick={()=>void replayDeadLetter(item.id)}>Replay</button></article>)}</div>}
-          <div className="section-heading"><div><p className="eyebrow">Operations</p><h2>Source health</h2></div><button onClick={loadSources}>Refresh</button></div>
+          <div className="section-heading" id="sources"><div><p className="eyebrow">Operations</p><h2>Source health</h2></div><button onClick={loadSources}>Refresh</button></div>
           {sourceError ? <div className="feed-error" role="alert">{sourceError}</div> :
             <div className="source-grid">{sources.map(source => <article key={source.id}>
               <div className="source-title"><strong>{source.name}</strong><span className={`health health-${source.status}`}>{source.status}</span></div>

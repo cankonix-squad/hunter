@@ -26,6 +26,32 @@ const opportunity: Opportunity = {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); window.sessionStorage.clear() })
 
 describe('Dashboard', () => {
+  it('navigates dashboard sections and collapses the sidebar', async () => {
+    saveSession(window.sessionStorage, {
+      accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
+      user: { user_id: 'user-1', email: 'admin@example.test', name: 'Administrator', roles: ['administrator'] },
+    })
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      const path = String(input)
+      const body = path.includes('/api/v1/analytics/pipeline') ? { total: 0, active: 0, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 0, overdue_actions: 0, actions_due_seven_days: 0 }
+        : path.includes('/api/v1/notification-preferences') ? { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
+        : path.includes('/api/v1/sources') || path.includes('/api/v1/saved-views') || path.includes('/api/v1/team') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') || path.includes('/api/v1/operations/dead-letters') ? { items: [] }
+        : { items: [], page: 1, page_size: 20, total: 0, total_pages: 0 }
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    })
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const user = userEvent.setup()
+    render(<AuthProvider><Dashboard /></AuthProvider>)
+
+    await user.click(screen.getByRole('link', { name: 'Sources' }))
+    expect(scrollIntoView).toHaveBeenCalled()
+    expect(screen.getByRole('link', { name: 'Sources' })).toHaveAttribute('aria-current', 'page')
+    await user.click(screen.getAllByRole('button', { name: 'Hide sidebar' })[0])
+    expect(screen.getByLabelText('Sidebar').parentElement).toHaveClass('sidebar-collapsed')
+    expect(screen.getAllByRole('button', { name: 'Show sidebar' }).length).toBeGreaterThan(0)
+  })
+
   it('renders canonical feed and opens auditable detail', async () => {
     saveSession(window.sessionStorage, {
       accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),

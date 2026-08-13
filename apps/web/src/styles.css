@@ -21,13 +21,22 @@ body { margin: 0; min-width: 320px; }
 .login-panel button:disabled { opacity: .55; cursor: wait; }
 .login-panel small { display: block; color: #999; text-align: center; margin-top: 18px; line-height: 1.5; }
 .form-error { margin-top: 18px; border-left: 3px solid #a73737; background: #f2dddd; color: #7e2424; padding: 11px 12px; font-size: 12px; }
-.shell { min-height: 100vh; display: grid; grid-template-columns: 232px 1fr; }
-aside { color: #eee; background: #0b0b0b; padding: 28px 20px; display: flex; flex-direction: column; }
+.shell { min-height: 100vh; display: grid; grid-template-columns: 232px minmax(0, 1fr); transition: grid-template-columns .2s ease; }
+.shell.sidebar-collapsed { grid-template-columns: 72px minmax(0, 1fr); }
+aside { color: #eee; background: #0b0b0b; padding: 28px 20px; display: flex; flex-direction: column; min-width: 0; position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.sidebar-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sidebar-toggle, .mobile-sidebar-toggle { margin: 0; border: 1px solid #333; background: #171717; color: #eee; padding: 7px 10px; font-size: 18px; line-height: 1; }
+.mobile-sidebar-toggle { display: none; }
 .brand { display: flex; gap: 12px; align-items: center; letter-spacing: .12em; font-size: 12px; }
 .brand-logo { display: block; width: 180px; height: 58px; object-fit: cover; object-position: center; }
 nav { display: grid; gap: 6px; margin-top: 64px; }
 nav a { color: #888; text-decoration: none; padding: 11px 12px; border-left: 2px solid transparent; font-size: 14px; }
+nav a:hover, nav a:focus-visible { color: white; background: #141414; }
 nav a.active { color: white; border-left-color: white; background: #171717; }
+.sidebar-collapsed aside { padding-inline: 12px; }
+.sidebar-collapsed .brand-logo, .sidebar-collapsed nav a span, .sidebar-collapsed .profile, .sidebar-collapsed .build { display: none; }
+.sidebar-collapsed .sidebar-head { justify-content: center; }
+.sidebar-collapsed nav a { height: 42px; padding: 0; border-left-width: 3px; }
 .build { margin-top: auto; color: #666; line-height: 1.6; font-size: 11px; }
 .profile { margin-top: auto; border-top: 1px solid #292929; padding: 20px 10px 16px; display: grid; gap: 5px; }
 .profile strong { font-size: 12px; color: #eee; }
@@ -228,4 +237,4 @@ button { margin-top: 22px; background: #111; color: #fff; border: 0; padding: 13
 .dead-letter-console article span, .dead-letter-console article small { color: #777; font-size: 10px; }
 .dead-letter-console article button { margin: 0; padding: 9px 12px; }
 @media (max-width: 1100px) { .opportunity-row { grid-template-columns: 110px 1fr 160px 80px; } .opportunity-row .lifecycle { display: none; } }
-@media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell { grid-template-columns: 1fr; } aside { display: none; } main { padding: 24px 18px; } .metrics { grid-template-columns: 1fr 1fr; } .pipeline-analytics { grid-template-columns: 1fr; } .pipeline-analytics dl { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }
+@media (max-width: 800px) { .login-page { grid-template-columns: 1fr; } .login-intro { min-height: 34vh; padding: 28px; } .login-intro h1 { font-size: 48px; } .login-note { display: none; } .login-panel { min-height: 66vh; padding: 34px 24px; } .shell, .shell.sidebar-collapsed { display: block; } aside { position: fixed; inset: 0 auto 0 0; width: min(280px, 84vw); height: 100vh; z-index: 20; box-shadow: 12px 0 30px #0005; transition: transform .2s ease; } .sidebar-collapsed aside { transform: translateX(-100%); } .sidebar-collapsed .brand-logo, .sidebar-collapsed nav a span, .sidebar-collapsed .profile, .sidebar-collapsed .build { display: initial; } .sidebar-collapsed nav a { height: auto; padding: 11px 12px; } .mobile-sidebar-toggle { display: block; position: sticky; top: 12px; z-index: 19; margin: 0 0 14px; } main { padding: 18px; } .metrics { grid-template-columns: 1fr 1fr; } .pipeline-analytics { grid-template-columns: 1fr; } .pipeline-analytics dl { grid-template-columns: 1fr 1fr; } header { align-items: start; gap: 18px; } .empty { padding: 42px 26px; } .feed-toolbar { display: grid; } .opportunity-row { grid-template-columns: 1fr; gap: 9px; } .opportunity-budget { margin-top: 5px; } .detail-panel { padding: 42px 24px; } }

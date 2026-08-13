@@ -122,6 +122,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Pipeline analytics live refresh setelah workflow mutation
 - [x] Pipeline analytics integration delta sebelum, sesudah, dan reversal workflow
 - [x] Contextual empty-search guidance dan one-click lifecycle expansion
+- [x] Navigasi sidebar antarseksi serta collapse/expand desktop dan mobile
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -155,6 +156,10 @@ shortlist, dan deadline kembali ke baseline setelah reversal sementara decision 
 Empty feed kini menjelaskan query/filter penyebab nol hasil, menawarkan reset seluruh filter, dan
 mempertahankan keyword saat memperluas dari active registration ke all lifecycle. Regression test
 memakai contoh `pengembangan sistem`; frontend 10/10 dan production build lulus.
+Sidebar kini menavigasi Overview, Opportunities, Sources, dan Operations dengan active state serta
+smooth section focus. Kontrol hide/show menghasilkan compact rail di desktop dan drawer di mobile;
+regression test navigasi/collapse membuat frontend 11/11 lulus. Web lokal direbuild dan full local
+acceptance kembali PASS pada migration v30 dengan 40 source aktif terjadwal serta nol recent dead-letter.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

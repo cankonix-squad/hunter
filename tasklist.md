@@ -14,6 +14,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 
 - Terakhir diperbarui: 13 Agustus 2026
 - Branch: `main`
+- Repository: `https://github.com/cankonix-squad/hunter`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
 - Target URL production: `https://hunter.cankonix.com` (belum dinyatakan live)
@@ -462,7 +463,7 @@ health/readiness melalui edge HTTP 200.
 ### Hardening dan release
 
 - [~] Structured logs, health/readiness, HTTP metrics, dan staging alerts tersedia; traces/exporter lanjutan
-- [~] CI pipeline tersedia dan lulus lokal; menunggu remote GitHub serta hosted run pertama
+- [~] CI pipeline tersedia dan lulus lokal; remote GitHub tercatat, menunggu hosted run pertama
 - [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [x] End-to-end discover → normalize → classify → score → review test

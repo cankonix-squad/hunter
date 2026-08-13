@@ -2,6 +2,8 @@
 
 Internal opportunity intelligence platform for discovering, normalizing, classifying, scoring, and monitoring public procurement packages from SPSE/LPSE sources.
 
+Repository: https://github.com/cankonix-squad/hunter
+
 > Build. Integrate. Automate.
 
 ## Product boundary

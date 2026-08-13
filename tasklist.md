@@ -12,19 +12,18 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 
 ## Kondisi terakhir
 
-- Terakhir diperbarui: 10 Agustus 2026
+- Terakhir diperbarui: 13 Agustus 2026
 - Branch: `main`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
-- Migrasi database aktif: versi 20
-- Data acceptance: 173 opportunity canonical dan 173 version history
+- Migrasi database aktif: versi 29
+- Data acceptance: 192 opportunity canonical
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
-- Public crawl acceptance: 5 source aktif; batch Komdigi, Jakarta, Jawa Barat, dan
-  Jawa Timur menghasilkan 171 paket publik nyata, 70 terklasifikasi relevant
-- Runtime lokal aktif: PostgreSQL, API, collector, web, dan edge
-- Smoke test lokal: web, health, dan readiness HTTP 200
-- Worktree bersih setelah commit `45a8568`
+- Public crawl acceptance: 20 source aktif dan terjadwal
+- Runtime lokal aktif: PostgreSQL, API, collector, notifier, web, dan edge
+- Local acceptance: 6/6 service berjalan; health, readiness, auth boundary, metrics,
+  migrasi, source schedule, lifecycle, dan recent dead-letter gate lulus
 
 ## Selesai
 
@@ -111,6 +110,12 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Collector end-to-end: snapshot → normalize → opportunity → version
 - [x] Authenticated API search dan detail acceptance
 - [x] API/web recreate tanpa edge restart tetap HTTP 200
+- [x] Acceptance gate lokal terpadu melalui `scripts/local-acceptance.sh`
+
+Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
+healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
+20 source aktif terjadwal; metrik internal sehat; lifecycle valid; nol source dead-letter dalam
+satu jam terakhir. Notifier berjalan tetapi delivery tetap disabled secara sengaja di local.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

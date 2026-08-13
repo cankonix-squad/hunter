@@ -113,6 +113,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Acceptance gate lokal terpadu melalui `scripts/local-acceptance.sh`
 - [x] Authenticated opportunity workflow integration: feed → detail → shortlist → decision → next action → activity
 - [x] Browser workflow component test dan live audit refresh setelah mutation
+- [x] Konsistensi live audit untuk assignment, komentar, readiness, dan human override
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -125,6 +126,9 @@ mutation menghasilkan state serta audit activity yang benar tanpa mengubah datab
 React acceptance membuktikan payload shortlist/decision/next-action, konversi deadline Jakarta ke
 UTC, state UI, dan audit activity yang langsung diperbarui; frontend 9/9 tests dan production build
 lulus, image web lokal direbuild, lalu full local acceptance kembali PASS.
+Seluruh mutation detail opportunity kini merefresh audit secara best-effort: kegagalan refresh tidak
+menyamarkan mutation yang telah sukses. Component acceptance diperluas untuk readiness, override,
+dan komentar; frontend 9/9, build, rebuild container, dan local acceptance tetap lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

@@ -142,9 +142,18 @@ describe('Dashboard', () => {
       else if (path.includes('/api/v1/analytics/pipeline')) body = { total: 1, active: 1, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 1, overdue_actions: 0, actions_due_seven_days: 0 }
       else if (path.includes('/api/v1/notification-preferences')) body = { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
       else if (path.includes('/assignment')) body = { assignment: null }
-      else if (path.includes('/comments')) body = { items: [] }
-      else if (path.includes('/readiness')) body = { opportunity_id: opportunity.id, version: 'readiness-v1', completed: 0, total: 0, items: [] }
-      else if (path.includes('/override')) body = { override: null }
+      else if (path.includes('/comments')) {
+        if (method === 'POST') actions.push('opportunity.comment_added')
+        body = method === 'POST' ? { id: 'comment-1', opportunity_id: opportunity.id, author_user_id: 'user-1', author_name: 'Operator', body: 'Validate delivery capacity', created_at: '2026-08-13T00:00:00Z' } : { items: [] }
+      }
+      else if (path.includes('/readiness')) {
+        if (method === 'PATCH') actions.push('opportunity.readiness_updated')
+        body = { opportunity_id: opportunity.id, version: 'readiness-v1', completed: method === 'PATCH' ? 1 : 0, total: 1, items: [{ code: 'scope_validated', label: 'Scope and deliverables validated', completed: method === 'PATCH', note: '' }] }
+      }
+      else if (path.includes('/override')) {
+        if (method === 'PATCH') actions.push('opportunity.override_updated')
+        body = method === 'PATCH' ? { override: { opportunity_id: opportunity.id, recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', overridden_by: 'user-1', overrider_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { override: null }
+      }
       else if (path.includes('/activity')) body = { items: actions.map((action, id) => ({ id: id + 1, action, actor_name: 'Operator', metadata: {}, occurred_at: '2026-08-13T00:00:00Z' })) }
       else if (path.includes('/shortlist')) {
         if (method === 'PATCH') actions.push('opportunity.shortlisted')
@@ -177,12 +186,22 @@ describe('Dashboard', () => {
     await user.type(screen.getByLabelText('Next action deadline'), '2026-08-20T10:00')
     await user.click(screen.getByRole('button', { name: 'Save action' }))
     expect(await screen.findByText('Validate technical scope')).toBeInTheDocument()
-    await vi.waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · next action updated'))
+
+    await user.click(screen.getByLabelText('Scope and deliverables validated'))
+    await user.selectOptions(screen.getByLabelText('Recommendation override'), 'relevant')
+    await user.type(screen.getByLabelText('Override reason'), 'Reviewed by operator')
+    await user.click(screen.getByRole('button', { name: 'Save override' }))
+    await user.type(screen.getByLabelText('Internal comment'), 'Validate delivery capacity')
+    await user.click(screen.getByRole('button', { name: 'Add comment' }))
+    expect(await screen.findByText('Validate delivery capacity')).toBeInTheDocument()
+    await vi.waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · comment added'))
 
     const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')
-    expect(patches).toHaveLength(3)
+    expect(patches).toHaveLength(5)
     expect(JSON.parse(String(patches[0][1]?.body))).toEqual({ shortlisted: true })
     expect(JSON.parse(String(patches[1][1]?.body))).toEqual({ decision: 'pursue', reason: 'Strong capability fit' })
     expect(JSON.parse(String(patches[2][1]?.body))).toEqual({ action: 'Validate technical scope', due_at: '2026-08-20T03:00:00.000Z' })
+    expect(JSON.parse(String(patches[3][1]?.body))).toEqual({ code: 'scope_validated', completed: true, note: '' })
+    expect(JSON.parse(String(patches[4][1]?.body))).toEqual({ recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', clear: false })
   })
 })

@@ -213,7 +213,7 @@ export function Dashboard() {
     if (!selected) return
     try {
       const body = await auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${selected.id}/assignment`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee_user_id: userID || null }) })
-      setAssignment(body.assignment); setAssignmentError('')
+      setAssignment(body.assignment); setAssignmentError(''); await refreshActivity(selected.id)
     } catch { setAssignmentError('Assignment gagal diperbarui.') }
   }
 
@@ -222,13 +222,17 @@ export function Dashboard() {
     if (!selected || !commentInput.trim()) { setCommentError('Komentar wajib diisi.'); return }
     try {
       const item = await auth.request<OpportunityComment>(`/api/v1/opportunities/${selected.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: commentInput.trim() }) })
-      setComments(items => [...items,item]); setCommentInput(''); setCommentError('')
+      setComments(items => [...items,item]); setCommentInput(''); setCommentError(''); await refreshActivity(selected.id)
     } catch { setCommentError('Komentar gagal disimpan.') }
   }
 
   async function refreshActivity(opportunityID: string) {
-    const events = await auth.request<{items: ActivityEvent[]}>(`/api/v1/opportunities/${opportunityID}/activity`)
-    setActivity(events.items)
+    try {
+      const events = await auth.request<{items: ActivityEvent[]}>(`/api/v1/opportunities/${opportunityID}/activity`)
+      setActivity(events.items)
+    } catch {
+      // The primary mutation already succeeded; retain the previous audit list until detail reload.
+    }
   }
 
   async function toggleShortlist() {
@@ -250,10 +254,10 @@ export function Dashboard() {
     event.preventDefault(); if (!selected || nextActionInput.trim().length < 3 || !nextActionDue) { setNextActionError('Action dan deadline wajib diisi.'); return }
     try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('');await refreshActivity(selected.id) } catch { setNextActionError('Next action gagal disimpan.') }
   }
-  async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('')}catch{setNextActionError('Next action gagal dihapus.')} }
-  async function updateReadiness(code:string,completed:boolean,note:string){if(!selected)return;try{setReadiness(await auth.request<ReadinessChecklist>(`/api/v1/opportunities/${selected.id}/readiness`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,completed,note})}));setReadinessError('')}catch{setReadinessError('Readiness checklist gagal diperbarui.')}}
-  async function submitOverride(event:FormEvent){event.preventDefault();if(!selected||(!overrideRecommendation&&!overrideScore)||overrideReason.trim().length<3){setOverrideError('Isi recommendation atau score dan alasan minimal 3 karakter.');return}try{const body=await auth.request<{override:HumanOverride}>(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:overrideRecommendation||null,score_bp:overrideScore?Math.round(Number(overrideScore)*100):null,reason:overrideReason.trim(),clear:false})});setHumanOverride(body.override);setOverrideError('')}catch{setOverrideError('Override gagal disimpan.')}}
-  async function clearOverride(){if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:null,score_bp:null,reason:'',clear:true})});setHumanOverride(null);setOverrideRecommendation('');setOverrideScore('');setOverrideReason('');setOverrideError('')}catch{setOverrideError('Override gagal dihapus.')}}
+  async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('');await refreshActivity(selected.id)}catch{setNextActionError('Next action gagal dihapus.')} }
+  async function updateReadiness(code:string,completed:boolean,note:string){if(!selected)return;try{setReadiness(await auth.request<ReadinessChecklist>(`/api/v1/opportunities/${selected.id}/readiness`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,completed,note})}));setReadinessError('');await refreshActivity(selected.id)}catch{setReadinessError('Readiness checklist gagal diperbarui.')}}
+  async function submitOverride(event:FormEvent){event.preventDefault();if(!selected||(!overrideRecommendation&&!overrideScore)||overrideReason.trim().length<3){setOverrideError('Isi recommendation atau score dan alasan minimal 3 karakter.');return}try{const body=await auth.request<{override:HumanOverride}>(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:overrideRecommendation||null,score_bp:overrideScore?Math.round(Number(overrideScore)*100):null,reason:overrideReason.trim(),clear:false})});setHumanOverride(body.override);setOverrideError('');await refreshActivity(selected.id)}catch{setOverrideError('Override gagal disimpan.')}}
+  async function clearOverride(){if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:null,score_bp:null,reason:'',clear:true})});setHumanOverride(null);setOverrideRecommendation('');setOverrideScore('');setOverrideReason('');setOverrideError('');await refreshActivity(selected.id)}catch{setOverrideError('Override gagal dihapus.')}}
 
   return (
     <div className="shell">

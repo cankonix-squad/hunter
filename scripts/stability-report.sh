@@ -35,6 +35,7 @@ WITH bounds AS (
   FROM sources
   WHERE status = 'active'
     AND coalesce((policy->>'schedule_enabled')::boolean, false)
+    AND coalesce((policy->>'priority_source')::boolean, false)
 ), days AS (
   SELECT generate_series(b.start_date, b.end_date, interval '1 day')::date AS day
   FROM bounds b

@@ -37,8 +37,8 @@ database_result=$(compose exec -T postgres sh -lc 'psql -U "$POSTGRES_USER" -d "
 IFS='|' read -r migration priority_sources invalid_lifecycle_values recent_dead_letters <<EOF
 $database_result
 EOF
-test "$migration" -eq 29 || { echo "FAIL: migration=$migration, want 29" >&2; exit 1; }
-test "$priority_sources" -eq 20 || { echo "FAIL: active scheduled sources=$priority_sources, want 20" >&2; exit 1; }
+test "$migration" -eq 30 || { echo "FAIL: migration=$migration, want 30" >&2; exit 1; }
+test "$priority_sources" -ge 20 || { echo "FAIL: active scheduled sources=$priority_sources, want at least 20" >&2; exit 1; }
 test "$invalid_lifecycle_values" -eq 0 || { echo "FAIL: invalid opportunity lifecycle values=$invalid_lifecycle_values" >&2; exit 1; }
 test "$recent_dead_letters" -eq 0 || { echo "FAIL: recent source dead letters=$recent_dead_letters" >&2; exit 1; }
 

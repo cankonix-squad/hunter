@@ -18,11 +18,11 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
 - Aplikasi lokal: `http://localhost:3000`
 - Target URL production: `https://hunter.cankonix.com` (belum dinyatakan live)
-- Migrasi database aktif: versi 29
+- Migrasi database aktif: versi 30
 - Data acceptance: 192 opportunity canonical
 - Classification acceptance: 1 relevant dengan evidence dan 1 needs-review
 - Scoring acceptance: 2 score dengan masing-masing 5 dimension breakdown
-- Public crawl acceptance: 20 source aktif dan terjadwal
+- Public crawl acceptance: 40 tenant source aktif dan terjadwal
 - Runtime lokal aktif: PostgreSQL, API, collector, notifier, web, dan edge
 - Local acceptance: 6/6 service berjalan; health, readiness, auth boundary, metrics,
   migrasi, source schedule, lifecycle, dan recent dead-letter gate lulus
@@ -336,6 +336,8 @@ container build, dan health check lulus.
   Sumatera Barat, Sumatera Selatan, Kalimantan Barat, Kalimantan Timur, Bali,
   NTB, NTT, Sulawesi Utara, Sulawesi Tengah, Sulawesi Tenggara); target coverage
   tercapai, menunggu stability observation tujuh hari
+- [x] Dua puluh tenant LPSE kementerian/pusat unik dari direktori resmi LKPP ditambahkan
+  tanpa menduplikasi tenant bersama; total registry publik menjadi 40 tenant
 
 Target pertama dibatasi ke listing dan DataTables route yang dideklarasikan halaman
 publik Maluku. Detail HTTP 403 tidak diakses ulang atau diakali; canonical URL tetap
@@ -387,6 +389,15 @@ akhir pagination yang dapat diobservasi. HTTP 404 pada halaman pertama tetap men
 source failure. Regression test kedua jalur, full Go race test, vet, serta collector image build
 lulus; collector lokal hasil rebuild healthy. Canary Jakarta berikutnya menunggu scheduler atau
 credential operator lokal untuk antrean melalui API resmi; dead-letter tidak diubah langsung.
+
+Ekspansi kementerian migration v30 menambahkan 20 tenant unik yang tercantum pada kategori kementerian
+direktori resmi LKPP. Seluruh tenant eksplisit diizinkan robots.txt INAPROC dan listing `/lelang`
+merespons HTTP 200 pada 13 Agustus 2026. Direktori memuat entri warisan/duplikat dan beberapa
+kementerian berbagi tenant `nasional`, `lkpp`, atau provider lain, sehingga registry menyimpan satu
+source per tenant, bukan satu source duplikat per nama kementerian. Total menjadi 40 tenant publik
+aktif dan terjadwal; 20 source lama tetap ditandai sebagai baseline priority untuk stability gate.
+Scheduler mengantrekan 20 canary tenant baru dan seluruhnya sukses tanpa dead-letter; hasil valid
+bervariasi dari nol kandidat hingga 60 kandidat dan snapshot baru tersimpan secara idempoten.
 
 Increment operasi (commit `62946b7`) pada 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
 jam untuk lima source publik aktif, serta source health console dengan health score,

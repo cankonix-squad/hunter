@@ -19,6 +19,7 @@ result=$(psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -v observation_date="$observ
 WITH priority AS (
   SELECT id FROM sources WHERE status='active'
     AND coalesce((policy->>'schedule_enabled')::boolean,false)
+    AND coalesce((policy->>'priority_source')::boolean,false)
 ), daily AS (
   SELECT p.id,
     count(r.id) AS runs,

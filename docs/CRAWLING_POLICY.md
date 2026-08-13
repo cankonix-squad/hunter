@@ -100,6 +100,16 @@ explicitly allowed all five paths and each public `/lelang` page returned HTTP
 200. This batch reaches the 20-source coverage target without changing adapter
 scope, concurrency, pagination, or request-rate limits.
 
+The ministry expansion adds the 20 unique centralized tenants listed by the official
+LKPP ministry directory: `kemenkeu`, `kemendikdasmen`, `kemkes`, `polkam`, `nasional`,
+`pu`, `atrbpn`, `kemenkopukm`, `kp2mi`, `kehutanan`, `bkpm`, `kemendagri`, `esdm`,
+`dephub`, `lkpp`, `kemenperin`, `kemendukbangga`, `kemlu`, `kemenag`, and `kemnaker`.
+On 13 August 2026, every tenant was explicitly allowed by the official INAPROC
+robots policy and every public `/lelang` page returned HTTP 200. One source is stored
+per tenant because several ministries share centralized tenants and the LKPP directory
+also retains legacy or duplicate LPSE records. These sources retain the listing-only
+scope and conservative limits; they do not authorize detail-page access.
+
 ## 8. Change management
 
 - Parser changes require fixture tests for the previous and new structure.

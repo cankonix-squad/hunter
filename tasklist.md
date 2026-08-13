@@ -118,6 +118,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Workflow reversal integration untuk unassign, unshortlist, dan clear state
 - [x] Browser reversal acceptance dengan payload null, state reset, dan live audit
 - [x] Pipeline analytics live refresh setelah workflow mutation
+- [x] Pipeline analytics integration delta sebelum, sesudah, dan reversal workflow
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -145,6 +146,9 @@ menampilkan audit reversal; full frontend 9/9 dan production build lulus.
 Pipeline analytics kini direfresh best-effort setelah assignment, shortlist, decision, dan next-action
 mutation termasuk reversal; kegagalan background refresh mempertahankan ringkasan terakhir dan tidak
 menyamarkan mutation sukses. Component test memverifikasi seluruh delapan analytics request lifecycle.
+HTTP integration acceptance membandingkan analytics terhadap baseline disposable: assigned,
+shortlisted, pursue, undecided, dan due-seven-days berubah tepat setelah mutation; assignment,
+shortlist, dan deadline kembali ke baseline setelah reversal sementara decision tetap persisten.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

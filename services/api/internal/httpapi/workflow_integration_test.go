@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cankonix/cankonix-oi/services/api/internal/analytics"
 	"github.com/cankonix/cankonix-oi/services/api/internal/collector"
 	"github.com/cankonix/cankonix-oi/services/api/internal/httpapi"
 	"github.com/cankonix/cankonix-oi/services/api/internal/identity"
@@ -60,6 +61,7 @@ func TestAuthenticatedOpportunityWorkflowEndToEnd(t *testing.T) {
 	t.Cleanup(server.Close)
 	client := server.Client()
 	operator := login(t, client, server.URL, email, password)
+	baselinePipeline := workflowPipeline(t, client, server.URL, operator.AccessToken)
 
 	resp := request(t, client, http.MethodGet, server.URL+"/api/v1/opportunities?status=active&q=Workflow+Acceptance", operator.AccessToken, nil)
 	assertStatus(t, resp, http.StatusOK)
@@ -132,6 +134,13 @@ func TestAuthenticatedOpportunityWorkflowEndToEnd(t *testing.T) {
 	})
 	assertStatus(t, resp, http.StatusOK)
 	resp.Body.Close()
+	mutatedPipeline := workflowPipeline(t, client, server.URL, operator.AccessToken)
+	if mutatedPipeline.Total != baselinePipeline.Total || mutatedPipeline.Active != baselinePipeline.Active ||
+		mutatedPipeline.Assigned != baselinePipeline.Assigned+1 || mutatedPipeline.Shortlisted != baselinePipeline.Shortlisted+1 ||
+		mutatedPipeline.Pursue != baselinePipeline.Pursue+1 || mutatedPipeline.Undecided != baselinePipeline.Undecided-1 ||
+		mutatedPipeline.ActionsDueSevenDays != baselinePipeline.ActionsDueSevenDays+1 {
+		t.Fatalf("mutated pipeline = %+v, baseline = %+v", mutatedPipeline, baselinePipeline)
+	}
 
 	resp = request(t, client, http.MethodGet, server.URL+"/api/v1/opportunities/"+opportunityID+"/activity", operator.AccessToken, nil)
 	assertStatus(t, resp, http.StatusOK)
@@ -208,6 +217,13 @@ func TestAuthenticatedOpportunityWorkflowEndToEnd(t *testing.T) {
 			t.Fatalf("workflow state %s count=%d, want %d", table, count, expected)
 		}
 	}
+	reversedPipeline := workflowPipeline(t, client, server.URL, operator.AccessToken)
+	if reversedPipeline.Total != baselinePipeline.Total || reversedPipeline.Active != baselinePipeline.Active ||
+		reversedPipeline.Assigned != baselinePipeline.Assigned || reversedPipeline.Shortlisted != baselinePipeline.Shortlisted ||
+		reversedPipeline.Pursue != baselinePipeline.Pursue+1 || reversedPipeline.Undecided != baselinePipeline.Undecided-1 ||
+		reversedPipeline.ActionsDueSevenDays != baselinePipeline.ActionsDueSevenDays {
+		t.Fatalf("reversed pipeline = %+v, baseline = %+v", reversedPipeline, baselinePipeline)
+	}
 
 	resp = request(t, client, http.MethodGet, server.URL+"/api/v1/opportunities/"+opportunityID+"/activity", operator.AccessToken, nil)
 	assertStatus(t, resp, http.StatusOK)
@@ -230,4 +246,14 @@ func TestAuthenticatedOpportunityWorkflowEndToEnd(t *testing.T) {
 			t.Fatalf("activity missing reversal %q: %+v", expected, activity.Items)
 		}
 	}
+}
+
+func workflowPipeline(t *testing.T, client *http.Client, baseURL, token string) analytics.Pipeline {
+	t.Helper()
+	resp := request(t, client, http.MethodGet, baseURL+"/api/v1/analytics/pipeline", token, nil)
+	assertStatus(t, resp, http.StatusOK)
+	defer resp.Body.Close()
+	var pipeline analytics.Pipeline
+	decode(t, resp, &pipeline)
+	return pipeline
 }

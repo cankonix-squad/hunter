@@ -47,6 +47,7 @@ describe('Dashboard', () => {
     await user.click(screen.getByRole('link', { name: 'Sources' }))
     expect(scrollIntoView).toHaveBeenCalled()
     expect(screen.getByRole('link', { name: 'Sources' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('status')).toHaveTextContent('Perintah diterima: Sources')
     await user.click(screen.getAllByRole('button', { name: 'Hide sidebar' })[0])
     expect(screen.getByLabelText('Sidebar').parentElement).toHaveClass('sidebar-collapsed')
     expect(screen.getAllByRole('button', { name: 'Show sidebar' }).length).toBeGreaterThan(0)

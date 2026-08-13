@@ -127,4 +127,62 @@ describe('Dashboard', () => {
       return path.includes('/api/v1/opportunities/review?') && path.includes('q=data') && path.includes('status=completed') && path.includes('relevance=relevant') && path.includes('min_score=7500')
     })).toBe(true))
   })
+
+  it('completes the decision workflow and refreshes audit activity', async () => {
+    saveSession(window.sessionStorage, {
+      accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(Date.now() + 600_000).toISOString(),
+      user: { user_id: 'user-1', email: 'operator@example.test', name: 'Operator', roles: ['operator'] },
+    })
+    const actions: string[] = []
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const path = String(input)
+      const method = init?.method ?? 'GET'
+      let body: unknown
+      if (path.includes('/api/v1/sources') || path.includes('/api/v1/saved-views') || path.includes('/api/v1/team') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') || path.includes('/api/v1/operations/dead-letters')) body = { items: [] }
+      else if (path.includes('/api/v1/analytics/pipeline')) body = { total: 1, active: 1, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 1, overdue_actions: 0, actions_due_seven_days: 0 }
+      else if (path.includes('/api/v1/notification-preferences')) body = { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
+      else if (path.includes('/assignment')) body = { assignment: null }
+      else if (path.includes('/comments')) body = { items: [] }
+      else if (path.includes('/readiness')) body = { opportunity_id: opportunity.id, version: 'readiness-v1', completed: 0, total: 0, items: [] }
+      else if (path.includes('/override')) body = { override: null }
+      else if (path.includes('/activity')) body = { items: actions.map((action, id) => ({ id: id + 1, action, actor_name: 'Operator', metadata: {}, occurred_at: '2026-08-13T00:00:00Z' })) }
+      else if (path.includes('/shortlist')) {
+        if (method === 'PATCH') actions.push('opportunity.shortlisted')
+        body = { opportunity_id: opportunity.id, shortlisted: method === 'PATCH' }
+      } else if (path.includes('/decision')) {
+        if (method === 'PATCH') actions.push('opportunity.decision_changed')
+        body = method === 'PATCH' ? { decision: { opportunity_id: opportunity.id, decision: 'pursue', reason: 'Strong capability fit', decided_by: 'user-1', decider_name: 'Operator', decided_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { decision: null }
+      } else if (path.includes('/next-action')) {
+        if (method === 'PATCH') actions.push('opportunity.next_action_updated')
+        body = method === 'PATCH' ? { next_action: { opportunity_id: opportunity.id, action: 'Validate technical scope', due_at: '2026-08-20T03:00:00Z', updated_by: 'user-1', updater_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { next_action: null }
+      } else if (path.includes(opportunity.id)) body = opportunity
+      else body = { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    })
+
+    const user = userEvent.setup()
+    render(<AuthProvider><Dashboard /></AuthProvider>)
+    await user.click(await screen.findByText(opportunity.title))
+    await screen.findByRole('dialog')
+
+    await user.click(screen.getByRole('button', { name: '☆ Add to shortlist' }))
+    expect(await screen.findByRole('button', { name: '★ Shortlisted' })).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Pursue or pass decision'), 'pursue')
+    await user.type(screen.getByLabelText('Decision reason'), 'Strong capability fit')
+    await user.click(screen.getByRole('button', { name: 'Save decision' }))
+    expect(await screen.findByRole('heading', { name: 'pursue' })).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Next action'), 'Validate technical scope')
+    await user.type(screen.getByLabelText('Next action deadline'), '2026-08-20T10:00')
+    await user.click(screen.getByRole('button', { name: 'Save action' }))
+    expect(await screen.findByText('Validate technical scope')).toBeInTheDocument()
+    await vi.waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · next action updated'))
+
+    const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')
+    expect(patches).toHaveLength(3)
+    expect(JSON.parse(String(patches[0][1]?.body))).toEqual({ shortlisted: true })
+    expect(JSON.parse(String(patches[1][1]?.body))).toEqual({ decision: 'pursue', reason: 'Strong capability fit' })
+    expect(JSON.parse(String(patches[2][1]?.body))).toEqual({ action: 'Validate technical scope', due_at: '2026-08-20T03:00:00.000Z' })
+  })
 })

@@ -112,6 +112,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] API/web recreate tanpa edge restart tetap HTTP 200
 - [x] Acceptance gate lokal terpadu melalui `scripts/local-acceptance.sh`
 - [x] Authenticated opportunity workflow integration: feed → detail → shortlist → decision → next action → activity
+- [x] Browser workflow component test dan live audit refresh setelah mutation
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -121,6 +122,9 @@ Full local quality rerun juga lulus: Go formatting/module verification/race test
 dataset 15/15, frontend 8/8 tests, production build, dan npm audit 0 vulnerability.
 Workflow integration memakai PostgreSQL disposable bermigrasi v1–v29 dan membuktikan seluruh
 mutation menghasilkan state serta audit activity yang benar tanpa mengubah database aplikasi lokal.
+React acceptance membuktikan payload shortlist/decision/next-action, konversi deadline Jakarta ke
+UTC, state UI, dan audit activity yang langsung diperbarui; frontend 9/9 tests dan production build
+lulus, image web lokal direbuild, lalu full local acceptance kembali PASS.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

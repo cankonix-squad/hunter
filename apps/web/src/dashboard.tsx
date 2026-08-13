@@ -226,9 +226,14 @@ export function Dashboard() {
     } catch { setCommentError('Komentar gagal disimpan.') }
   }
 
+  async function refreshActivity(opportunityID: string) {
+    const events = await auth.request<{items: ActivityEvent[]}>(`/api/v1/opportunities/${opportunityID}/activity`)
+    setActivity(events.items)
+  }
+
   async function toggleShortlist() {
     if (!selected || !shortlistState) return
-    try { setShortlistState(await auth.request<ShortlistState>(`/api/v1/opportunities/${selected.id}/shortlist`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shortlisted: !shortlistState.shortlisted }) })) }
+    try { setShortlistState(await auth.request<ShortlistState>(`/api/v1/opportunities/${selected.id}/shortlist`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shortlisted: !shortlistState.shortlisted }) })); await refreshActivity(selected.id) }
     catch { setError('Shortlist gagal diperbarui.') }
   }
 
@@ -237,13 +242,13 @@ export function Dashboard() {
     if (!selected || !decisionChoice || decisionReason.trim().length < 3) { setDecisionError('Pilih keputusan dan isi alasan minimal 3 karakter.'); return }
     try {
       const body = await auth.request<{ decision: HumanDecision }>(`/api/v1/opportunities/${selected.id}/decision`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: decisionChoice, reason: decisionReason.trim() }) })
-      setDecision(body.decision); setDecisionReason(body.decision.reason); setDecisionError('')
+      setDecision(body.decision); setDecisionReason(body.decision.reason); setDecisionError(''); await refreshActivity(selected.id)
     } catch { setDecisionError('Keputusan gagal disimpan.') }
   }
 
   async function submitNextAction(event: FormEvent) {
     event.preventDefault(); if (!selected || nextActionInput.trim().length < 3 || !nextActionDue) { setNextActionError('Action dan deadline wajib diisi.'); return }
-    try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('') } catch { setNextActionError('Next action gagal disimpan.') }
+    try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('');await refreshActivity(selected.id) } catch { setNextActionError('Next action gagal disimpan.') }
   }
   async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('')}catch{setNextActionError('Next action gagal dihapus.')} }
   async function updateReadiness(code:string,completed:boolean,note:string){if(!selected)return;try{setReadiness(await auth.request<ReadinessChecklist>(`/api/v1/opportunities/${selected.id}/readiness`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,completed,note})}));setReadinessError('')}catch{setReadinessError('Readiness checklist gagal diperbarui.')}}

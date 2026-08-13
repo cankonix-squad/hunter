@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -89,6 +90,61 @@ func TestAccessBoundaryResponseIsPermanent(t *testing.T) {
 	var permanent interface{ Permanent() bool }
 	if !errors.As(err, &permanent) || !permanent.Permanent() {
 		t.Fatalf("429 error must be permanent, got %v", err)
+	}
+}
+
+func TestDiscoverTreatsNotFoundAfterFirstPageAsPaginationEnd(t *testing.T) {
+	var mu sync.Mutex
+	starts := make([]string, 0, 2)
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		response := `<html><script>d.authenticityToken = 'token'</script></html>`
+		status := http.StatusOK
+		if request.Method == http.MethodPost {
+			body, err := io.ReadAll(request.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			form := string(body)
+			mu.Lock()
+			starts = append(starts, form)
+			mu.Unlock()
+			if strings.Contains(form, "start=1") {
+				status = http.StatusNotFound
+				response = ""
+			} else {
+				response = `{"data":[["123","Pengembangan Sistem","Jakarta","Pengumuman Pascakualifikasi","","","Tender","","Jasa Lainnya - TA 2026","","Rp. 1.000,00"]]}`
+			}
+		}
+		return &http.Response{StatusCode: status, Body: io.NopCloser(strings.NewReader(response))}, nil
+	})}
+	adapter := NewPublicSPSEAdapter(client)
+	source := Source{BaseURL: "https://spse.example.test", Policy: []byte(`{"public_collection_approved":true,"tenant":"jakarta","keywords":["sistem"],"page_size":1,"max_pages_per_keyword":3,"min_interval_ms":2000}`)}
+
+	items, err := adapter.Discover(context.Background(), source)
+	if err != nil {
+		t.Fatalf("discover: %v", err)
+	}
+	if len(items) != 1 || items[0].PackageIdentity != "123" {
+		t.Fatalf("unexpected items: %#v", items)
+	}
+	if len(starts) != 2 || adapter.DiscoveryMetrics()["pagination_end_404"] != 1 {
+		t.Fatalf("starts=%#v metrics=%#v", starts, adapter.DiscoveryMetrics())
+	}
+}
+
+func TestDiscoverKeepsNotFoundOnFirstPageAsFailure(t *testing.T) {
+	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		if request.Method == http.MethodGet {
+			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(`<script>d.authenticityToken = 'token'</script>`))}, nil
+		}
+		return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(strings.NewReader(""))}, nil
+	})}
+	adapter := NewPublicSPSEAdapter(client)
+	source := Source{BaseURL: "https://spse.example.test", Policy: []byte(`{"public_collection_approved":true,"tenant":"jakarta","keywords":["sistem"],"page_size":1,"min_interval_ms":2000}`)}
+
+	_, err := adapter.Discover(context.Background(), source)
+	if err == nil || !isHTTPStatus(err, http.StatusNotFound) {
+		t.Fatalf("first-page 404 must fail with its status preserved, got %v", err)
 	}
 }
 

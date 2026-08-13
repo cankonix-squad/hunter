@@ -381,6 +381,13 @@ source lainnya valid dengan hasil nol. Registry mencapai tepat 20 source SPSE ak
 seluruh enam paket nonaktif tetap tidak masuk active feed. Completion gate tetap menunggu
 observasi stabilitas tujuh hari.
 
+Pagination hardening 13 Agustus 2026 mempertahankan kandidat halaman sebelumnya ketika endpoint
+DataTables mengembalikan HTTP 404 pada halaman lanjutan dan mencatat `pagination_end_404` sebagai
+akhir pagination yang dapat diobservasi. HTTP 404 pada halaman pertama tetap menjadi permanent
+source failure. Regression test kedua jalur, full Go race test, vet, serta collector image build
+lulus; collector lokal hasil rebuild healthy. Canary Jakarta berikutnya menunggu scheduler atau
+credential operator lokal untuk antrean melalui API resmi; dead-letter tidak diubah langsung.
+
 Increment operasi (commit `62946b7`) pada 10 Agustus 2026 menambahkan migration v12, scheduler idempoten enam
 jam untuk lima source publik aktif, serta source health console dengan health score,
 status dan metrik run terakhir, crawl lag, queue depth, dan safe error. Acceptance
@@ -487,6 +494,9 @@ menyajikan self-signed `TRAEFIK DEFAULT CERT`; request diagnostik tanpa verifika
 Gate baru `scripts/check-production-domain.sh` tetap fail-closed dan mewajibkan CA-valid HTTPS serta
 HTTP 200 untuk root, health, dan readiness. Integrasi router/certificate resolver Traefik harus
 ditentukan pada host; nama network/resolver tidak diasumsikan di repository.
+Stability checkpoint 13 Agustus juga gagal setelah Jakarta menerima HTTP 404 pada page 2 keyword
+`sistem`; adapter telah di-hardening, tetapi hari tersebut tetap tidak dapat dihitung sebagai hari
+bersih dan window tujuh hari harus dimulai ulang setelah canary sukses.
 Overlay `compose.traefik.yaml` kini menghapus publikasi port local 3000, menghubungkan hanya edge ke
 external Traefik network, mengatur Host router/TLS/service port, dan mewajibkan nama network serta
 certificate resolver nyata. `scripts/check-traefik-config.sh` membuktikan merged production Compose

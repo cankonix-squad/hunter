@@ -118,6 +118,10 @@ func (a *PublicSPSEAdapter) Discover(ctx context.Context, source Source) ([]Cand
 			form := dataTablesForm(string(match[1]), keyword, keywordIndex*maxPages+page+1, page*pageSize, pageSize)
 			body, err = a.request(ctx, http.MethodPost, endpoint, []byte(form.Encode()))
 			if err != nil {
+				if page > 0 && isHTTPStatus(err, http.StatusNotFound) {
+					metrics["pagination_end_404"]++
+					break
+				}
 				return nil, fmt.Errorf("load public package metadata for keyword %q page %d: %w", keyword, page+1, err)
 			}
 			items, err := parsePublicSPSE(body, source.BaseURL, tenant)
@@ -252,7 +256,7 @@ func (a *PublicSPSEAdapter) requestOnce(ctx context.Context, method, target stri
 		return nil, false, permanentSourceError{fmt.Errorf("source access stopped with HTTP %d", response.StatusCode)}
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		err := fmt.Errorf("source returned HTTP %d", response.StatusCode)
+		err := sourceHTTPStatusError{statusCode: response.StatusCode}
 		if response.StatusCode < 500 {
 			return nil, false, permanentSourceError{err}
 		}
@@ -273,6 +277,17 @@ type permanentSourceError struct{ err error }
 func (e permanentSourceError) Error() string   { return e.err.Error() }
 func (e permanentSourceError) Unwrap() error   { return e.err }
 func (e permanentSourceError) Permanent() bool { return true }
+
+type sourceHTTPStatusError struct{ statusCode int }
+
+func (e sourceHTTPStatusError) Error() string {
+	return fmt.Sprintf("source returned HTTP %d", e.statusCode)
+}
+
+func isHTTPStatus(err error, statusCode int) bool {
+	var statusErr sourceHTTPStatusError
+	return errors.As(err, &statusErr) && statusErr.statusCode == statusCode
+}
 
 func parsePublicSPSE(payload []byte, baseURL, tenant string) ([]Candidate, error) {
 	var response struct{ Data [][]any }

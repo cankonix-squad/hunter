@@ -41,9 +41,10 @@ CANKONIX_TRAEFIK_CERT_RESOLVER=<existing ACME resolver>
 ```
 
 Validate with `./scripts/check-traefik-config.sh`, then merge `compose.yaml`,
-`compose.production.yaml`, and `compose.traefik.yaml`. The overlay removes the local `3000:80`
+`compose.production.yaml`, `compose.traefik.yaml`, and `compose.release.yaml`. The overlays remove the local `3000:80`
 publication, attaches only the edge to Traefik's external network, routes the production hostname,
-and asks the named resolver for TLS. PostgreSQL, API, collector, notifier, and web remain internal.
+ask the named resolver for TLS, disable host-side application builds, and require immutable image
+references. PostgreSQL, API, collector, notifier, and web remain internal.
 
 The Traefik overlay uses a dedicated internal Nginx configuration with production CSP, HSTS,
 security headers, request-size limits, and bounded proxy timeouts. Traefik owns client-aware rate
@@ -56,5 +57,6 @@ On the deployment host, copy `.env.traefik.example` outside the repository or ex
 variables from the platform environment. Never put secret values in it. After creating secret files
 with mode `0400` or `0600`, run `./scripts/traefik-host-preflight.sh`. It verifies the exact production
 hostname, required non-empty secret files and permissions, existence of the external Docker network,
-the merged Compose output, absence of host-published ports, and absence of development credentials.
+immutable `image@sha256` references, the merged Compose output, absence of build directives and
+host-published ports, and absence of development credentials.
 Only a passing host preflight authorizes `docker compose ... up -d`; it does not perform deployment.

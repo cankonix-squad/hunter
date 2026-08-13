@@ -14,6 +14,8 @@ Provide these non-secret environment values:
 - `BACKUP_RESTORE_EVIDENCE_REF`, `ONCALL_OWNER`, and a tested `ROLLBACK_COMMIT`;
 - immutable `API_IMAGE_DIGEST`, `COLLECTOR_IMAGE_DIGEST`, `NOTIFIER_IMAGE_DIGEST`, and
   `WEB_IMAGE_DIGEST` in `sha256:<64 lowercase hex>` form;
+- corresponding `API_IMAGE_REF`, `COLLECTOR_IMAGE_REF`, `NOTIFIER_IMAGE_REF`, and `WEB_IMAGE_REF`
+  in `registry/name@sha256:<digest>` form, each ending in its declared digest;
 - `STABILITY_END_DATE` when evaluating a date other than the current UTC date;
 - secret file path variables required by the production/staging overlays and read-only
   `DATABASE_URL_FILE`. Their values must never appear in approval references or command output.

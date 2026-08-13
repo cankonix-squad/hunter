@@ -475,6 +475,7 @@ health/readiness melalui edge HTTP 200.
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
 - [~] Production domain routing/TLS — overlay Traefik tervalidasi; menunggu parameter dan deployment host
 - [x] Traefik deployment-host preflight dan environment template non-secret
+- [x] Immutable release image overlay terikat ke digest preflight
 - [!] Tujuh hari stability observation — baseline 6–12 Agustus gagal; mulai ulang setelah DNS stabil
 
 Production domain diagnosis 13 Agustus 2026: `hunter.cankonix.com` resolve dan menerima TLS, tetapi
@@ -494,6 +495,10 @@ preflight mewajibkan hostname production tepat, secret file non-empty dengan mod
 external Docker network nyata, Compose tanpa published port/development credential, dan tidak
 melakukan deployment. Acceptance lokal membuktikan network inspect dan merged render secara terpisah
 dengan secret dummy sementara yang kemudian dihapus.
+Overlay `compose.release.yaml` menonaktifkan seluruh application `build:`, mewajibkan empat
+`registry/image@sha256` reference, dan selalu menarik artifact immutable. Release preflight memastikan
+setiap ref berakhir pada digest evidence pasangannya; host-preflight menolak ref/tag mutable dan build
+directive. Contract render serta full host-preflight dengan dummy digest lulus.
 
 CI release checks (commit `8d395f2`) menambahkan workflow GitHub Actions least-privilege dengan
 concurrency cancellation dan empat job paralel: Go format/module verification/race test/vet,

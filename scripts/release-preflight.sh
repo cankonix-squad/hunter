@@ -20,8 +20,22 @@ require_value() {
 for key in RELEASE_COMMIT HOSTED_CI_URL HOSTED_CI_COMMIT STAGING_URL \
   UAT_PRODUCT_APPROVAL_REF UAT_OPERATIONS_APPROVAL_REF UAT_SECURITY_APPROVAL_REF \
   BACKUP_RESTORE_EVIDENCE_REF ONCALL_OWNER ROLLBACK_COMMIT \
-  API_IMAGE_DIGEST COLLECTOR_IMAGE_DIGEST NOTIFIER_IMAGE_DIGEST WEB_IMAGE_DIGEST; do
+  API_IMAGE_DIGEST COLLECTOR_IMAGE_DIGEST NOTIFIER_IMAGE_DIGEST WEB_IMAGE_DIGEST \
+  API_IMAGE_REF COLLECTOR_IMAGE_REF NOTIFIER_IMAGE_REF WEB_IMAGE_REF; do
   require_value "$key"
+done
+for pair in "API_IMAGE_REF:API_IMAGE_DIGEST" "COLLECTOR_IMAGE_REF:COLLECTOR_IMAGE_DIGEST" \
+  "NOTIFIER_IMAGE_REF:NOTIFIER_IMAGE_DIGEST" "WEB_IMAGE_REF:WEB_IMAGE_DIGEST"; do
+  ref_key=${pair%%:*}
+  digest_key=${pair#*:}
+  eval "ref=\${$ref_key:-}"
+  eval "digest=\${$digest_key:-}"
+  if [ -n "$ref" ] && [ -n "$digest" ]; then
+    case "$ref" in
+      *@"$digest") ;;
+      *) block "$ref_key must end with @$digest_key" ;;
+    esac
+  fi
 done
 
 cd "$repo_dir"
@@ -65,6 +79,7 @@ evidence_tmp=$(mktemp -d)
 trap 'rm -r "$evidence_tmp"' EXIT INT TERM
 
 ./scripts/check-production-secrets.sh
+./scripts/check-release-images.sh
 ./scripts/check-staging-config.sh
 ./scripts/check-uat-runbook.sh
 ./scripts/check-stability-gate.sh

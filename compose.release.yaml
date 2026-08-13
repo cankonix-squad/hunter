@@ -1,0 +1,20 @@
+services:
+  api:
+    build: !reset null
+    image: ${API_IMAGE_REF:?set API_IMAGE_REF to an immutable image@sha256 digest}
+    pull_policy: always
+
+  collector:
+    build: !reset null
+    image: ${COLLECTOR_IMAGE_REF:?set COLLECTOR_IMAGE_REF to an immutable image@sha256 digest}
+    pull_policy: always
+
+  notifier:
+    build: !reset null
+    image: ${NOTIFIER_IMAGE_REF:?set NOTIFIER_IMAGE_REF to an immutable image@sha256 digest}
+    pull_policy: always
+
+  web:
+    build: !reset null
+    image: ${WEB_IMAGE_REF:?set WEB_IMAGE_REF to an immutable image@sha256 digest}
+    pull_policy: always

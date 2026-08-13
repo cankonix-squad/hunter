@@ -115,6 +115,8 @@ jobs:
         run: docker compose config --quiet
       - name: Verify production secret boundary
         run: ./scripts/check-production-secrets.sh
+      - name: Verify immutable release images
+        run: ./scripts/check-release-images.sh
       - name: Verify staging TLS configuration
         run: ./scripts/check-staging-config.sh
       - name: Verify UAT and deployment runbooks

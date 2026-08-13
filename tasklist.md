@@ -116,6 +116,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Konsistensi live audit untuk assignment, komentar, readiness, dan human override
 - [x] Full opportunity workflow HTTP integration dengan tujuh mutation auditable
 - [x] Workflow reversal integration untuk unassign, unshortlist, dan clear state
+- [x] Browser reversal acceptance dengan payload null, state reset, dan live audit
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -137,6 +138,9 @@ unified audit event masing-masing; race test lulus dan database utama tidak dimu
 Reversal acceptance membuktikan unassign, unshortlist, clear next action, dan clear override benar-benar
 menghapus state target serta mencatat empat audit event, tanpa menghapus decision, comment, atau
 readiness yang tidak termasuk aksi pembatalan.
+React acceptance membuktikan assign/unassign, shortlist/unshortlist, next-action save/clear, dan
+override save/clear memakai payload yang tepat, mengembalikan UI ke state kosong, dan langsung
+menampilkan audit reversal; full frontend 9/9 dan production build lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

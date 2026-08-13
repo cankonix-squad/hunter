@@ -138,10 +138,15 @@ describe('Dashboard', () => {
       const path = String(input)
       const method = init?.method ?? 'GET'
       let body: unknown
-      if (path.includes('/api/v1/sources') || path.includes('/api/v1/saved-views') || path.includes('/api/v1/team') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') || path.includes('/api/v1/operations/dead-letters')) body = { items: [] }
+      if (path.includes('/api/v1/team')) body = { items: [{ user_id: 'user-1', email: 'operator@example.test', name: 'Operator', roles: ['operator'] }] }
+      else if (path.includes('/api/v1/sources') || path.includes('/api/v1/saved-views') || path.includes('/api/v1/alert-rules') || path.includes('/api/v1/alerts') || path.includes('/api/v1/operations/dead-letters')) body = { items: [] }
       else if (path.includes('/api/v1/analytics/pipeline')) body = { total: 1, active: 1, shortlisted: 0, assigned: 0, pursue: 0, pass: 0, undecided: 1, overdue_actions: 0, actions_due_seven_days: 0 }
       else if (path.includes('/api/v1/notification-preferences')) body = { quiet_hours_enabled: false, quiet_hours_start: '22:00:00', quiet_hours_end: '07:00:00', timezone: 'Asia/Jakarta' }
-      else if (path.includes('/assignment')) body = { assignment: null }
+      else if (path.includes('/assignment')) {
+        const payload = method === 'PATCH' ? JSON.parse(String(init?.body)) : null
+        if (method === 'PATCH') actions.push(payload.assignee_user_id ? 'opportunity.assigned' : 'opportunity.unassigned')
+        body = { assignment: payload?.assignee_user_id ? { opportunity_id: opportunity.id, assignee_user_id: 'user-1', assignee_name: 'Operator', assignee_email: 'operator@example.test', assigned_by: 'user-1', assigned_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } : null }
+      }
       else if (path.includes('/comments')) {
         if (method === 'POST') actions.push('opportunity.comment_added')
         body = method === 'POST' ? { id: 'comment-1', opportunity_id: opportunity.id, author_user_id: 'user-1', author_name: 'Operator', body: 'Validate delivery capacity', created_at: '2026-08-13T00:00:00Z' } : { items: [] }
@@ -151,19 +156,22 @@ describe('Dashboard', () => {
         body = { opportunity_id: opportunity.id, version: 'readiness-v1', completed: method === 'PATCH' ? 1 : 0, total: 1, items: [{ code: 'scope_validated', label: 'Scope and deliverables validated', completed: method === 'PATCH', note: '' }] }
       }
       else if (path.includes('/override')) {
-        if (method === 'PATCH') actions.push('opportunity.override_updated')
-        body = method === 'PATCH' ? { override: { opportunity_id: opportunity.id, recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', overridden_by: 'user-1', overrider_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { override: null }
+        const payload = method === 'PATCH' ? JSON.parse(String(init?.body)) : null
+        if (method === 'PATCH') actions.push(payload.clear ? 'opportunity.override_cleared' : 'opportunity.override_updated')
+        body = method === 'PATCH' && !payload.clear ? { override: { opportunity_id: opportunity.id, recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', overridden_by: 'user-1', overrider_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { override: null }
       }
       else if (path.includes('/activity')) body = { items: actions.map((action, id) => ({ id: id + 1, action, actor_name: 'Operator', metadata: {}, occurred_at: '2026-08-13T00:00:00Z' })) }
       else if (path.includes('/shortlist')) {
-        if (method === 'PATCH') actions.push('opportunity.shortlisted')
-        body = { opportunity_id: opportunity.id, shortlisted: method === 'PATCH' }
+        const payload = method === 'PATCH' ? JSON.parse(String(init?.body)) : null
+        if (method === 'PATCH') actions.push(payload.shortlisted ? 'opportunity.shortlisted' : 'opportunity.unshortlisted')
+        body = { opportunity_id: opportunity.id, shortlisted: payload?.shortlisted ?? false }
       } else if (path.includes('/decision')) {
         if (method === 'PATCH') actions.push('opportunity.decision_changed')
         body = method === 'PATCH' ? { decision: { opportunity_id: opportunity.id, decision: 'pursue', reason: 'Strong capability fit', decided_by: 'user-1', decider_name: 'Operator', decided_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { decision: null }
       } else if (path.includes('/next-action')) {
-        if (method === 'PATCH') actions.push('opportunity.next_action_updated')
-        body = method === 'PATCH' ? { next_action: { opportunity_id: opportunity.id, action: 'Validate technical scope', due_at: '2026-08-20T03:00:00Z', updated_by: 'user-1', updater_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { next_action: null }
+        const payload = method === 'PATCH' ? JSON.parse(String(init?.body)) : null
+        if (method === 'PATCH') actions.push(payload.action ? 'opportunity.next_action_updated' : 'opportunity.next_action_cleared')
+        body = method === 'PATCH' && payload.action ? { next_action: { opportunity_id: opportunity.id, action: 'Validate technical scope', due_at: '2026-08-20T03:00:00Z', updated_by: 'user-1', updater_name: 'Operator', created_at: '2026-08-13T00:00:00Z', updated_at: '2026-08-13T00:00:00Z' } } : { next_action: null }
       } else if (path.includes(opportunity.id)) body = opportunity
       else body = { items: [opportunity], page: 1, page_size: 20, total: 1, total_pages: 1 }
       return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -173,6 +181,9 @@ describe('Dashboard', () => {
     render(<AuthProvider><Dashboard /></AuthProvider>)
     await user.click(await screen.findByText(opportunity.title))
     await screen.findByRole('dialog')
+
+    await user.selectOptions(screen.getByLabelText('Assign opportunity owner'), 'user-1')
+    expect(await screen.findByText('Operator', { selector: '.assignment-card strong' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '☆ Add to shortlist' }))
     expect(await screen.findByRole('button', { name: '★ Shortlisted' })).toBeInTheDocument()
@@ -196,12 +207,28 @@ describe('Dashboard', () => {
     expect(await screen.findByText('Validate delivery capacity')).toBeInTheDocument()
     await vi.waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · comment added'))
 
+    await user.selectOptions(screen.getByLabelText('Assign opportunity owner'), '')
+    expect(await screen.findByText('Unassigned', { selector: '.assignment-card strong' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '★ Shortlisted' }))
+    expect(await screen.findByRole('button', { name: '☆ Add to shortlist' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Clear' }))
+    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Clear override' }))
+    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Clear override' })).not.toBeInTheDocument())
+    await vi.waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('opportunity · override cleared'))
+
     const patches = fetchMock.mock.calls.filter(([, init]) => init?.method === 'PATCH')
-    expect(patches).toHaveLength(5)
-    expect(JSON.parse(String(patches[0][1]?.body))).toEqual({ shortlisted: true })
-    expect(JSON.parse(String(patches[1][1]?.body))).toEqual({ decision: 'pursue', reason: 'Strong capability fit' })
-    expect(JSON.parse(String(patches[2][1]?.body))).toEqual({ action: 'Validate technical scope', due_at: '2026-08-20T03:00:00.000Z' })
-    expect(JSON.parse(String(patches[3][1]?.body))).toEqual({ code: 'scope_validated', completed: true, note: '' })
-    expect(JSON.parse(String(patches[4][1]?.body))).toEqual({ recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', clear: false })
+    expect(patches.map(([, init]) => JSON.parse(String(init?.body)))).toEqual([
+      { assignee_user_id: 'user-1' },
+      { shortlisted: true },
+      { decision: 'pursue', reason: 'Strong capability fit' },
+      { action: 'Validate technical scope', due_at: '2026-08-20T03:00:00.000Z' },
+      { code: 'scope_validated', completed: true, note: '' },
+      { recommendation: 'relevant', score_bp: null, reason: 'Reviewed by operator', clear: false },
+      { assignee_user_id: null },
+      { shortlisted: false },
+      { action: null, due_at: null },
+      { recommendation: null, score_bp: null, reason: '', clear: true },
+    ])
   })
 })

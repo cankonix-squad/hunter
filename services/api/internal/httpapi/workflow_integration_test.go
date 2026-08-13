@@ -162,4 +162,72 @@ func TestAuthenticatedOpportunityWorkflowEndToEnd(t *testing.T) {
 			t.Fatalf("activity missing %q: %+v", expected, activity.Items)
 		}
 	}
+
+	resp = request(t, client, http.MethodPatch, server.URL+"/api/v1/opportunities/"+opportunityID+"/assignment", operator.AccessToken, map[string]any{"assignee_user_id": nil})
+	assertStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	resp = request(t, client, http.MethodPatch, server.URL+"/api/v1/opportunities/"+opportunityID+"/shortlist", operator.AccessToken, map[string]any{"shortlisted": false})
+	assertStatus(t, resp, http.StatusOK)
+	decode(t, resp, &shortlistState)
+	resp.Body.Close()
+	if shortlistState.Shortlisted {
+		t.Fatal("opportunity remained shortlisted after removal")
+	}
+
+	resp = request(t, client, http.MethodPatch, server.URL+"/api/v1/opportunities/"+opportunityID+"/next-action", operator.AccessToken, map[string]any{"action": nil, "due_at": nil})
+	assertStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	resp = request(t, client, http.MethodPatch, server.URL+"/api/v1/opportunities/"+opportunityID+"/override", operator.AccessToken, map[string]any{
+		"recommendation": nil, "score_bp": nil, "reason": "", "clear": true,
+	})
+	assertStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	for _, endpoint := range []string{"assignment", "decision", "next-action", "override"} {
+		resp = request(t, client, http.MethodGet, server.URL+"/api/v1/opportunities/"+opportunityID+"/"+endpoint, operator.AccessToken, nil)
+		assertStatus(t, resp, http.StatusOK)
+		resp.Body.Close()
+	}
+	for table, expected := range map[string]int{
+		"opportunity_assignments":     0,
+		"opportunity_shortlist":       0,
+		"opportunity_next_actions":    0,
+		"opportunity_overrides":       0,
+		"opportunity_decisions":       1,
+		"opportunity_comments":        1,
+		"opportunity_readiness_items": 1,
+	} {
+		var count int
+		query := "SELECT count(*) FROM " + table + " WHERE opportunity_id=$1"
+		if err := db.QueryRow(ctx, query, opportunityID).Scan(&count); err != nil {
+			t.Fatalf("count workflow state in %s: %v", table, err)
+		}
+		if count != expected {
+			t.Fatalf("workflow state %s count=%d, want %d", table, count, expected)
+		}
+	}
+
+	resp = request(t, client, http.MethodGet, server.URL+"/api/v1/opportunities/"+opportunityID+"/activity", operator.AccessToken, nil)
+	assertStatus(t, resp, http.StatusOK)
+	decode(t, resp, &activity)
+	resp.Body.Close()
+	for _, expected := range []string{
+		"opportunity.unassigned",
+		"opportunity.unshortlisted",
+		"opportunity.next_action_cleared",
+		"opportunity.override_cleared",
+	} {
+		found := false
+		for _, item := range activity.Items {
+			if item.Action == expected {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("activity missing reversal %q: %+v", expected, activity.Items)
+		}
+	}
 }

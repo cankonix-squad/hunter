@@ -209,6 +209,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid #d08b2f; outline-offs
 .section-heading h2 { margin: 7px 0 0; font-size: 28px; letter-spacing: -.035em; }
 .section-heading button { margin: 0; padding: 9px 13px; }
 .source-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.scheduler-summary { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding: 16px; border: 1px solid #ccc; background: white; }
+.scheduler-summary h3 { margin: 6px 0; }
+.scheduler-summary span { color: #777; font-size: 10px; }
+.scheduler-summary > div:last-child { text-align: right; }
+.scheduler-summary > div:last-child strong { display: block; font: 600 28px ui-monospace,monospace; }
+.scheduler-table-wrap { margin-bottom: 18px; overflow-x: auto; border: 1px solid #ccc; border-top: 0; background: white; }
+.scheduler-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.scheduler-table th, .scheduler-table td { padding: 11px 12px; border-bottom: 1px solid #ddd; text-align: left; white-space: nowrap; }
+.scheduler-table th { color: #777; background: #f3f3f0; text-transform: uppercase; letter-spacing: .07em; font-size: 9px; }
+.scheduler-table td:first-child { white-space: normal; min-width: 230px; }
+.scheduler-table td:first-child small { display: block; margin-top: 4px; color: #888; }
+.schedule-state { display: inline-block; padding: 4px 7px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.schedule-state.enabled { background: #e6eee8; color: #27613b; }
+.schedule-state.disabled { background: #ececea; color: #666; }
 .source-grid article { padding: 17px; background: white; border: 1px solid #d2d2cf; }
 .source-title { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
 .source-title strong { font-size: 13px; }

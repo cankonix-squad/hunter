@@ -126,6 +126,7 @@ Bukti: commit `44c8139`; API acceptance menemukan feed dan detail fixture canoni
 - [x] Global action acknowledgement toast dan dead-letter healthy empty-state guidance
 - [x] Data/source fixture dihapus dari runtime; fixture adapter dibatasi untuk automated tests
 - [x] Dashboard KPI shortcuts dengan filter feed workflow yang nyata
+- [x] Scheduler visibility table per source dengan interval dan next eligibility
 
 Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, dan collector
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
@@ -176,6 +177,9 @@ Backend mendukung filter assignment, pursue/pass/undecided, overdue, dan due-sev
 review queue dan shortlist yang sudah ada. UI menampilkan chip shortcut aktif dan clear action;
 regression test membuktikan Assigned mengirim `assigned=true` dengan all lifecycle. Go race/vet,
 frontend 11/11, production build, dan OpenAPI contract lulus.
+Source console kini memiliki tabel scheduler eksplisit yang menampilkan enabled state, policy version,
+interval minimum, last run, estimasi next eligible/due now, serta queued/running count untuk seluruh
+source. Ringkasan menunjukkan total scheduler enabled dan queue aktif; frontend 11/11 dan build lulus.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

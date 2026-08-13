@@ -64,7 +64,7 @@ describe('Dashboard', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
       const path = String(input)
       const body = path.includes('/api/v1/sources')
-        ? { items: [{ id: 'source-1', name: 'LPSE Contoh', status: 'active', health_score: 100, policy_version: 'v1', latest_run_status: 'succeeded', latest_run_metrics: { candidates: 1, new_snapshots: 1 }, lag_seconds: 60, pending_runs: 0 }] }
+        ? { items: [{ id: 'source-1', name: 'LPSE Contoh', status: 'active', health_score: 100, policy_version: 'v1', policy: { schedule_enabled: true, schedule_interval_minutes: 360 }, latest_run_status: 'succeeded', latest_run_at: '2026-08-13T00:00:00Z', latest_run_metrics: { candidates: 1, new_snapshots: 1 }, lag_seconds: 60, pending_runs: 0 }] }
         : path.includes('/api/v1/saved-views')
         ? { items: [] }
         : path.includes('/api/v1/team')
@@ -100,6 +100,8 @@ describe('Dashboard', () => {
     })
     render(<AuthProvider><Dashboard /></AuthProvider>)
     expect(await screen.findByText('Pengadaan Integrasi Data')).toBeInTheDocument()
+    expect(screen.getByRole('table')).toHaveTextContent('Every 6h')
+    expect(screen.getByRole('table')).toHaveTextContent('Enabled')
     expect(fetchMock.mock.calls[0][0]).toContain('/api/v1/opportunities?')
     await userEvent.click(screen.getByText('Pengadaan Integrasi Data'))
     expect(await screen.findByRole('dialog')).toHaveTextContent('LPSE Contoh')

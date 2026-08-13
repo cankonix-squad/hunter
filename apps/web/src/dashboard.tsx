@@ -44,8 +44,9 @@ interface OpportunityPage { items: Opportunity[]; page: number; page_size: numbe
 
 interface SourceHealth {
   id: string; name: string; status: string; health_score: number; policy_version: string
+  policy: { schedule_enabled?: boolean; schedule_interval_minutes?: number }
   last_success_at?: string; latest_run_status?: string; latest_run_error?: string
-  latest_run_metrics: Record<string, number>; lag_seconds?: number; pending_runs: number
+  latest_run_at?: string; latest_run_metrics: Record<string, number>; lag_seconds?: number; pending_runs: number
 }
 
 interface SavedView {
@@ -354,13 +355,13 @@ export function Dashboard() {
           {auth.session?.user.roles.some(role=>['administrator','operator'].includes(role))&&<div className="dead-letter-console"><div className="section-heading"><div><p className="eyebrow">Failure recovery</p><h2>Dead-letter queue</h2></div><button onClick={loadDeadLetters}>Refresh</button></div><p className="dead-letter-help">Notifikasi email atau webhook yang tetap gagal setelah seluruh retry akan muncul di sini untuk diperiksa dan diantrikan ulang.</p>{deadLetterError&&<small role="alert">{deadLetterError}</small>}{deadLetters.length===0?<p className="healthy-empty"><strong>✓ Antrean bersih</strong><span>Tidak ada pengiriman notifikasi yang gagal permanen.</span></p>:deadLetters.map(item=><article key={item.id}><div><strong>{item.title}</strong><span>{item.channel} · {item.destination} · {item.attempts} attempts · replayed {item.replay_count}×</span><small>{item.safe_error||'No safe error recorded'}</small></div><button onClick={()=>void replayDeadLetter(item.id)}>Replay</button></article>)}</div>}
           <div className="section-heading" id="sources"><div><p className="eyebrow">Operations</p><h2>Source health</h2></div><button onClick={loadSources}>Refresh</button></div>
           {sourceError ? <div className="feed-error" role="alert">{sourceError}</div> :
-            <div className="source-grid">{sources.map(source => <article key={source.id}>
+            <><div className="scheduler-summary"><div><p className="eyebrow">Scheduler visibility</p><h3>{sources.filter(source=>source.policy?.schedule_enabled).length} enabled sources</h3><span>Scheduler mengecek antrean setiap menit; interval berikut adalah jarak minimum antar-run per source.</span></div><div><strong>{sources.reduce((total,source)=>total+source.pending_runs,0)}</strong><span>queued / running</span></div></div><div className="scheduler-table-wrap"><table className="scheduler-table"><thead><tr><th>Source</th><th>Scheduler</th><th>Interval</th><th>Last run</th><th>Next eligible</th><th>Queue</th></tr></thead><tbody>{sources.map(source=>{const interval=source.policy?.schedule_interval_minutes??360;const next=source.latest_run_at?new Date(new Date(source.latest_run_at).getTime()+interval*60000):null;return <tr key={source.id}><td><strong>{source.name}</strong><small>{source.policy_version}</small></td><td><span className={`schedule-state ${source.policy?.schedule_enabled?'enabled':'disabled'}`}>{source.policy?.schedule_enabled?'Enabled':'Disabled'}</span></td><td>Every {interval>=60?`${interval/60}h`:`${interval}m`}</td><td>{source.latest_run_at?date.format(new Date(source.latest_run_at)):'Never'}</td><td>{!source.policy?.schedule_enabled?'—':source.pending_runs>0?'Queued / running':next&&next.getTime()>Date.now()?date.format(next):'Due now'}</td><td>{source.pending_runs}</td></tr>})}</tbody></table></div><div className="source-grid">{sources.map(source => <article key={source.id}>
               <div className="source-title"><strong>{source.name}</strong><span className={`health health-${source.status}`}>{source.status}</span></div>
               <dl><div><dt>Health</dt><dd>{source.health_score}/100</dd></div><div><dt>Latest run</dt><dd>{source.latest_run_status || 'never'}</dd></div><div><dt>Pending</dt><dd>{source.pending_runs}</dd></div><div><dt>Lag</dt><dd>{source.lag_seconds == null ? 'never' : `${Math.floor(source.lag_seconds / 60)} min`}</dd></div></dl>
               <small>{source.last_success_at ? `Last success ${date.format(new Date(source.last_success_at))}` : 'No successful run yet'}</small>
               {source.latest_run_error && <p className="source-error">{source.latest_run_error}</p>}
               <p className="source-metrics">{source.latest_run_metrics?.unique_candidates ?? source.latest_run_metrics?.candidates ?? 0} candidates · {source.latest_run_metrics?.new_snapshots ?? 0} new</p>
-            </article>)}</div>}
+            </article>)}</div></>}
         </section>
       </main>
       {actionToast && <div className="action-toast" role="status" aria-live="polite">✓ {actionToast}</div>}

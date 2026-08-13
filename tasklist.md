@@ -116,6 +116,8 @@ Bukti local acceptance 13 Agustus 2026: 6/6 service berjalan; PostgreSQL, API, d
 healthy; root/health/readiness HTTP 200; protected API HTTP 401 tanpa autentikasi; migrasi v29;
 20 source aktif terjadwal; metrik internal sehat; lifecycle valid; nol source dead-letter dalam
 satu jam terakhir. Notifier berjalan tetapi delivery tetap disabled secara sengaja di local.
+Full local quality rerun juga lulus: Go formatting/module verification/race tests/vet, golden
+dataset 15/15, frontend 8/8 tests, production build, dan npm audit 0 vulnerability.
 
 ## Task berikutnya — Rules, classification, dan scoring
 

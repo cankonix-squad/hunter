@@ -55,6 +55,7 @@ COI is a decision-support system. It collects only publicly available informatio
 - [Security release review](docs/SECURITY_REVIEW.md)
 - [Performance and pagination gate](docs/PERFORMANCE.md)
 - [PostgreSQL backup and restore](docs/BACKUP_RESTORE.md)
+- [Local acceptance](docs/LOCAL_ACCEPTANCE.md)
 - [Codex execution rules](AGENTS.md)
 
 ## MVP completion signal
@@ -77,6 +78,16 @@ Expected endpoints:
 - Health: `http://localhost:8080/healthz`
 - Readiness: `http://localhost:8080/readyz`
 
+After the stack becomes healthy, verify the complete local runtime contract:
+
+```bash
+./scripts/local-acceptance.sh
+```
+
+The gate checks all six services, Docker health, public and protected HTTP behavior,
+internal metrics, the current migration, 20 scheduled sources, lifecycle validity, and
+the absence of recent collector dead letters.
+
 The browser-facing edge is `http://localhost:3000`; it routes `/api/*`,
 `/healthz`, and `/readyz` to the Go API. PostgreSQL is intentionally not
 published to the host. The initial schema is applied only when a fresh local
@@ -95,7 +106,7 @@ database volume is created.
 - Independent collector worker with lease recovery, bounded retry, dead-letter,
   health degradation, and circuit breaker state
 - Versioned fixture adapter with stable fingerprints and idempotent snapshots
-- Policy-gated public SPSE listing adapter covering five controlled tenants with conservative request limits
+- Policy-gated public SPSE listing adapter covering 20 controlled tenants with conservative request limits
 - Canonical opportunity normalization with lifecycle-safe active feed and version history
 - Versioned deterministic IT taxonomy with auditable include/exclude evidence
 - Versioned five-dimension scoring with integer weights and reviewable breakdown
@@ -109,14 +120,16 @@ database volume is created.
 - Docker Compose health checks and service dependency ordering
 - OpenAPI contract for the implemented endpoints
 
-Next vertical slice: connect the AI classification foundation to a disabled-by-default
-worker and a configured provider, then build the versioned golden-set evaluation runner.
+The local runtime and automated quality suites are operational. Remaining MVP release
+gates are the approved classification golden dataset and seven consecutive stable days
+for the 20 priority sources; hosted UAT and production deployment are tracked separately.
 
 ## Useful commands
 
 ```bash
 docker compose config
 docker compose up --build
+./scripts/local-acceptance.sh
 curl http://localhost:3000/healthz
 curl http://localhost:3000/readyz
 curl http://localhost:3000/api/v1/system

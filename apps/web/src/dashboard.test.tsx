@@ -230,5 +230,6 @@ describe('Dashboard', () => {
       { action: null, due_at: null },
       { recommendation: null, score_bp: null, reason: '', clear: true },
     ])
+    expect(fetchMock.mock.calls.filter(([input]) => String(input).includes('/api/v1/analytics/pipeline'))).toHaveLength(8)
   })
 })

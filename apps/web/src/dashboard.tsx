@@ -149,7 +149,11 @@ export function Dashboard() {
   useEffect(loadSavedViews, [loadSavedViews])
 
   useEffect(() => { auth.request<{ items: TeamMember[] }>('/api/v1/team').then(body => setTeam(body.items)).catch(() => setTeam([])) }, [auth.request])
-  useEffect(() => { auth.request<PipelineAnalytics>('/api/v1/analytics/pipeline').then(setPipeline).catch(() => setPipeline({total:0,active:0,shortlisted:0,assigned:0,pursue:0,pass:0,undecided:0,overdue_actions:0,actions_due_seven_days:0})) }, [auth.request])
+  const loadPipeline = useCallback(async () => {
+    try { setPipeline(await auth.request<PipelineAnalytics>('/api/v1/analytics/pipeline')) }
+    catch { /* Retain the last known summary when a background refresh fails. */ }
+  }, [auth.request])
+  useEffect(() => { void loadPipeline() }, [loadPipeline])
   const loadAlerts=useCallback(()=>{Promise.all([auth.request<{items:AlertRule[]}>('/api/v1/alert-rules'),auth.request<{items:AlertEvent[]}>('/api/v1/alerts'),auth.request<NotificationPreferences>('/api/v1/notification-preferences')]).then(([rules,events,preferences])=>{setAlertRules(rules.items);setAlertEvents(events.items);setQuietHours({...preferences,quiet_hours_start:preferences.quiet_hours_start.slice(0,5),quiet_hours_end:preferences.quiet_hours_end.slice(0,5)});setAlertError('')}).catch(()=>setAlertError('Alert rules belum dapat dimuat.'))},[auth.request]);useEffect(loadAlerts,[loadAlerts])
 
   async function createAlertRule(event:FormEvent){event.preventDefault();const eventTypes=[...(alertNew?['opportunity.new']:[]),...(alertChanges?['opportunity.material_change']:[])];if(!alertName.trim()||eventTypes.length===0){setAlertError('Nama dan minimal satu event wajib dipilih.');return}try{const item=await auth.request<AlertRule>('/api/v1/alert-rules',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:alertName.trim(),event_types:eventTypes,filters:{source_id:alertSource||undefined,relevance:alertRelevance,min_score_bp:alertMinScore?Math.round(Number(alertMinScore)*100):undefined}})});setAlertRules(items=>[...items,item].sort((a,b)=>a.name.localeCompare(b.name)));setAlertName('');setAlertError('')}catch{setAlertError('Alert rule gagal disimpan. Gunakan nama unik dan filter valid.')}}
@@ -213,7 +217,7 @@ export function Dashboard() {
     if (!selected) return
     try {
       const body = await auth.request<{ assignment: Assignment | null }>(`/api/v1/opportunities/${selected.id}/assignment`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee_user_id: userID || null }) })
-      setAssignment(body.assignment); setAssignmentError(''); await refreshActivity(selected.id)
+      setAssignment(body.assignment); setAssignmentError(''); await refreshWorkflowSummary(selected.id)
     } catch { setAssignmentError('Assignment gagal diperbarui.') }
   }
 
@@ -235,9 +239,13 @@ export function Dashboard() {
     }
   }
 
+  async function refreshWorkflowSummary(opportunityID: string) {
+    await Promise.all([refreshActivity(opportunityID), loadPipeline()])
+  }
+
   async function toggleShortlist() {
     if (!selected || !shortlistState) return
-    try { setShortlistState(await auth.request<ShortlistState>(`/api/v1/opportunities/${selected.id}/shortlist`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shortlisted: !shortlistState.shortlisted }) })); await refreshActivity(selected.id) }
+    try { setShortlistState(await auth.request<ShortlistState>(`/api/v1/opportunities/${selected.id}/shortlist`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shortlisted: !shortlistState.shortlisted }) })); await refreshWorkflowSummary(selected.id) }
     catch { setError('Shortlist gagal diperbarui.') }
   }
 
@@ -246,15 +254,15 @@ export function Dashboard() {
     if (!selected || !decisionChoice || decisionReason.trim().length < 3) { setDecisionError('Pilih keputusan dan isi alasan minimal 3 karakter.'); return }
     try {
       const body = await auth.request<{ decision: HumanDecision }>(`/api/v1/opportunities/${selected.id}/decision`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: decisionChoice, reason: decisionReason.trim() }) })
-      setDecision(body.decision); setDecisionReason(body.decision.reason); setDecisionError(''); await refreshActivity(selected.id)
+      setDecision(body.decision); setDecisionReason(body.decision.reason); setDecisionError(''); await refreshWorkflowSummary(selected.id)
     } catch { setDecisionError('Keputusan gagal disimpan.') }
   }
 
   async function submitNextAction(event: FormEvent) {
     event.preventDefault(); if (!selected || nextActionInput.trim().length < 3 || !nextActionDue) { setNextActionError('Action dan deadline wajib diisi.'); return }
-    try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('');await refreshActivity(selected.id) } catch { setNextActionError('Next action gagal disimpan.') }
+    try { const body=await auth.request<{next_action:NextAction}>(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:nextActionInput.trim(),due_at:new Date(`${nextActionDue}:00+07:00`).toISOString()})});setNextAction(body.next_action);setNextActionError('');await refreshWorkflowSummary(selected.id) } catch { setNextActionError('Next action gagal disimpan.') }
   }
-  async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('');await refreshActivity(selected.id)}catch{setNextActionError('Next action gagal dihapus.')} }
+  async function clearNextAction() { if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/next-action`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:null,due_at:null})});setNextAction(null);setNextActionInput('');setNextActionDue('');setNextActionError('');await refreshWorkflowSummary(selected.id)}catch{setNextActionError('Next action gagal dihapus.')} }
   async function updateReadiness(code:string,completed:boolean,note:string){if(!selected)return;try{setReadiness(await auth.request<ReadinessChecklist>(`/api/v1/opportunities/${selected.id}/readiness`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,completed,note})}));setReadinessError('');await refreshActivity(selected.id)}catch{setReadinessError('Readiness checklist gagal diperbarui.')}}
   async function submitOverride(event:FormEvent){event.preventDefault();if(!selected||(!overrideRecommendation&&!overrideScore)||overrideReason.trim().length<3){setOverrideError('Isi recommendation atau score dan alasan minimal 3 karakter.');return}try{const body=await auth.request<{override:HumanOverride}>(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:overrideRecommendation||null,score_bp:overrideScore?Math.round(Number(overrideScore)*100):null,reason:overrideReason.trim(),clear:false})});setHumanOverride(body.override);setOverrideError('');await refreshActivity(selected.id)}catch{setOverrideError('Override gagal disimpan.')}}
   async function clearOverride(){if(!selected)return;try{await auth.request(`/api/v1/opportunities/${selected.id}/override`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({recommendation:null,score_bp:null,reason:'',clear:true})});setHumanOverride(null);setOverrideRecommendation('');setOverrideScore('');setOverrideReason('');setOverrideError('');await refreshActivity(selected.id)}catch{setOverrideError('Override gagal dihapus.')}}

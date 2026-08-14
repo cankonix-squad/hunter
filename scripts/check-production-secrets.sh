@@ -11,6 +11,7 @@ touch "$secret_dir/postgres_password" "$secret_dir/database_url" "$secret_dir/jw
 DATABASE_URL=must-not-appear-database \
 JWT_SECRET=must-not-appear-jwt \
 POSTGRES_PASSWORD=must-not-appear-postgres \
+CANKONIX_PUBLIC_HOST=hunter.cankonix.com \
 CANKONIX_POSTGRES_PASSWORD_SECRET_FILE="$secret_dir/postgres_password" \
 CANKONIX_DATABASE_URL_SECRET_FILE="$secret_dir/database_url" \
 CANKONIX_JWT_SECRET_FILE="$secret_dir/jwt_secret" \
@@ -24,4 +25,5 @@ fi
 grep -q 'DATABASE_URL_FILE: /run/secrets/database_url' "$rendered_file"
 grep -q 'JWT_SECRET_FILE: /run/secrets/jwt_secret' "$rendered_file"
 grep -q 'POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password' "$rendered_file"
+test "$(grep -c 'WEB_ORIGIN: https://hunter.cankonix.com' "$rendered_file")" -eq 3
 echo "production secret boundary: ok"

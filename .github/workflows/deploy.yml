@@ -1,0 +1,202 @@
+name: Deploy production
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_commit:
+        description: Full 40-character commit SHA already passing CI
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify release commit and hosted CI
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
+      ci_url: ${{ steps.release.outputs.ci_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_commit }}
+          fetch-depth: 0
+      - id: release
+        name: Require a successful CI run for the exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_COMMIT: ${{ inputs.release_commit }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "release_commit must be a full lowercase commit SHA" >&2
+            exit 1
+          }
+          test "$(git rev-parse HEAD)" = "$RELEASE_COMMIT"
+          ci_url=$(gh run list --workflow CI --commit "$RELEASE_COMMIT" \
+            --json conclusion,url,headSha --limit 20 \
+            --jq '.[] | select(.headSha == env.RELEASE_COMMIT and .conclusion == "success") | .url' \
+            | head -n 1)
+          test -n "$ci_url" || {
+            echo "No successful CI run exists for $RELEASE_COMMIT" >&2
+            exit 1
+          }
+          echo "commit=$RELEASE_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "ci_url=$ci_url" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Build and publish immutable images
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      api_ref: ${{ steps.images.outputs.api_ref }}
+      collector_ref: ${{ steps.images.outputs.collector_ref }}
+      notifier_ref: ${{ steps.images.outputs.notifier_ref }}
+      web_ref: ${{ steps.images.outputs.web_ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify.outputs.commit }}
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Enable Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+      - id: images
+        name: Build, push, and record digests
+        env:
+          RELEASE_COMMIT: ${{ needs.verify.outputs.commit }}
+          IMAGE_ROOT: ghcr.io/${{ github.repository_owner }}/hunter
+        run: |
+          set -euo pipefail
+          build_image() {
+            service=$1
+            context=$2
+            dockerfile=$3
+            tag="${IMAGE_ROOT}-${service}:${RELEASE_COMMIT}"
+            metadata=$(mktemp)
+            build_args=()
+            if [ "$service" != "web" ]; then
+              build_args+=(--build-arg "TARGET=$service")
+            fi
+            docker buildx build --platform linux/amd64 "${build_args[@]}" \
+              --file "$dockerfile" --tag "$tag" --push \
+              --metadata-file "$metadata" "$context"
+            digest=$(jq -r '."containerimage.digest"' "$metadata")
+            [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+            echo "${service}_ref=${tag%@*}@${digest}" >> "$GITHUB_OUTPUT"
+          }
+          build_image api services/api services/api/Dockerfile
+          build_image collector services/api services/api/Dockerfile
+          build_image notifier services/api services/api/Dockerfile
+          build_image web apps/web apps/web/Dockerfile
+
+  deploy:
+    name: Preflight and deploy on production host
+    needs: [verify, publish]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://hunter.cankonix.com
+    steps:
+      - name: Validate deployment connection configuration
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$DEPLOY_PATH" = /* && "$DEPLOY_PATH" != "/" ]]
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          test -n "$DEPLOY_SSH_PRIVATE_KEY"
+      - name: Configure pinned SSH host identity
+        env:
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 0700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 0600 "$HOME/.ssh/known_hosts" "$HOME/.ssh/deploy_key"
+      - name: Run fail-closed preflight and deploy immutable release
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          RELEASE_COMMIT: ${{ needs.verify.outputs.commit }}
+          HOSTED_CI_URL: ${{ needs.verify.outputs.ci_url }}
+          API_IMAGE_REF: ${{ needs.publish.outputs.api_ref }}
+          COLLECTOR_IMAGE_REF: ${{ needs.publish.outputs.collector_ref }}
+          NOTIFIER_IMAGE_REF: ${{ needs.publish.outputs.notifier_ref }}
+          WEB_IMAGE_REF: ${{ needs.publish.outputs.web_ref }}
+        run: |
+          set -euo pipefail
+          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- \
+            "$DEPLOY_PATH" "$RELEASE_COMMIT" "$HOSTED_CI_URL" \
+            "$API_IMAGE_REF" "$COLLECTOR_IMAGE_REF" "$NOTIFIER_IMAGE_REF" "$WEB_IMAGE_REF" <<'REMOTE'
+          set -euo pipefail
+          deploy_path=$1
+          release_commit=$2
+          hosted_ci_url=$3
+          api_image_ref=$4
+          collector_image_ref=$5
+          notifier_image_ref=$6
+          web_image_ref=$7
+
+          cd "$deploy_path"
+          test -z "$(git status --porcelain)" || {
+            echo "Deployment host worktree is not clean" >&2
+            exit 1
+          }
+          git fetch --prune origin main
+          git cat-file -e "$release_commit^{commit}"
+          git checkout --detach "$release_commit"
+
+          test -f .env.traefik && test -f .env.release || {
+            echo ".env.traefik and .env.release are required on the host" >&2
+            exit 1
+          }
+          set -a
+          . ./.env.traefik
+          . ./.env.release
+          set +a
+
+          export RELEASE_COMMIT="$release_commit"
+          export HOSTED_CI_COMMIT="$release_commit"
+          export HOSTED_CI_URL="$hosted_ci_url"
+          export API_IMAGE_REF="$api_image_ref"
+          export COLLECTOR_IMAGE_REF="$collector_image_ref"
+          export NOTIFIER_IMAGE_REF="$notifier_image_ref"
+          export WEB_IMAGE_REF="$web_image_ref"
+          export API_IMAGE_DIGEST="${api_image_ref##*@}"
+          export COLLECTOR_IMAGE_DIGEST="${collector_image_ref##*@}"
+          export NOTIFIER_IMAGE_DIGEST="${notifier_image_ref##*@}"
+          export WEB_IMAGE_DIGEST="${web_image_ref##*@}"
+
+          ./scripts/release-preflight.sh
+          ./scripts/traefik-host-preflight.sh
+          docker compose -f compose.yaml -f compose.production.yaml \
+            -f compose.traefik.yaml -f compose.release.yaml pull
+          docker compose -f compose.yaml -f compose.production.yaml \
+            -f compose.traefik.yaml -f compose.release.yaml up -d --remove-orphans
+          docker compose -f compose.yaml -f compose.production.yaml \
+            -f compose.traefik.yaml -f compose.release.yaml ps
+          ./scripts/staging-smoke.sh "https://$CANKONIX_PUBLIC_HOST"
+          REMOTE

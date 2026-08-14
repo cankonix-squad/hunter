@@ -59,6 +59,7 @@ COI is a decision-support system. It collects only publicly available informatio
 - [PostgreSQL backup and restore](docs/BACKUP_RESTORE.md)
 - [Local acceptance](docs/LOCAL_ACCEPTANCE.md)
 - [Production domain](docs/PRODUCTION_DOMAIN.md)
+- [CI/CD operations](docs/CICD.md)
 - [Codex execution rules](AGENTS.md)
 
 ## MVP completion signal

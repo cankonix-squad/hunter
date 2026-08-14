@@ -132,11 +132,13 @@ func TestDiscoverTreatsNotFoundAfterFirstPageAsPaginationEnd(t *testing.T) {
 	}
 }
 
-func TestDiscoverKeepsNotFoundOnFirstPageAsFailure(t *testing.T) {
+func TestDiscoverRetriesNotFoundOnFirstPageAsTransientFailure(t *testing.T) {
+	requests := 0
 	client := &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
 		if request.Method == http.MethodGet {
 			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(`<script>d.authenticityToken = 'token'</script>`))}, nil
 		}
+		requests++
 		return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(strings.NewReader(""))}, nil
 	})}
 	adapter := NewPublicSPSEAdapter(client)
@@ -145,6 +147,13 @@ func TestDiscoverKeepsNotFoundOnFirstPageAsFailure(t *testing.T) {
 	_, err := adapter.Discover(context.Background(), source)
 	if err == nil || !isHTTPStatus(err, http.StatusNotFound) {
 		t.Fatalf("first-page 404 must fail with its status preserved, got %v", err)
+	}
+	var permanent interface{ Permanent() bool }
+	if errors.As(err, &permanent) {
+		t.Fatalf("first-page 404 must remain retriable, got permanent error %v", err)
+	}
+	if requests != 1 {
+		t.Fatalf("first-page 404 requests = %d, want durable runner to schedule the retry", requests)
 	}
 }
 

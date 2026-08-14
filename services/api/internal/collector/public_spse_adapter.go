@@ -257,6 +257,9 @@ func (a *PublicSPSEAdapter) requestOnce(ctx context.Context, method, target stri
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		err := sourceHTTPStatusError{statusCode: response.StatusCode}
+		if response.StatusCode == http.StatusNotFound {
+			return nil, false, err
+		}
 		if response.StatusCode < 500 {
 			return nil, false, permanentSourceError{err}
 		}

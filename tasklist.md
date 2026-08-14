@@ -510,7 +510,7 @@ health/readiness melalui edge HTTP 200.
 ### Hardening dan release
 
 - [~] Structured logs, health/readiness, HTTP metrics, dan staging alerts tersedia; traces/exporter lanjutan
-- [~] CI pipeline tersedia dan lulus lokal; remote GitHub tercatat, menunggu hosted run pertama
+- [x] CI pipeline GitHub tersedia dan hosted run hijau
 - [x] API authorization/contract integration suite
 - [x] Fresh-database migration test dari v1 sampai versi terbaru
 - [x] End-to-end discover → normalize → classify → score → review test
@@ -520,10 +520,10 @@ health/readiness melalui edge HTTP 200.
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
-- [~] Production domain routing/TLS — overlay Traefik tervalidasi; menunggu parameter dan deployment host
+- [~] Production domain routing/TLS — host, network, resolver, dan secret boundary tervalidasi; menunggu release gate dan deployment
 - [x] Traefik deployment-host preflight dan environment template non-secret
 - [x] Immutable release image overlay terikat ke digest preflight
-- [!] Tujuh hari stability observation — 13 Agustus gagal karena satu dead-letter; kandidat window baru 14–20 Agustus sedang berjalan
+- [!] Tujuh hari stability observation — 14 Agustus gagal karena tiga first-page HTTP 404; kandidat paling awal 15–21 Agustus
 
 Production domain diagnosis 13 Agustus 2026: `hunter.cankonix.com` resolve dan menerima TLS, tetapi
 menyajikan self-signed `TRAEFIK DEFAULT CERT`; request diagnostik tanpa verifikasi mendapat HTTP 404.
@@ -746,7 +746,13 @@ sehingga checkpoint 13 Agustus `FAILED` dan window 13–19 Agustus gugur. Stack 
 dan local acceptance kembali `PASS` pada migration v31 dengan 6/6 service, 40 source aktif
 terjadwal, serta nol recent dead-letter. Scheduler kemudian mengantrekan 40 source; checkpoint
 14 Agustus masih `PENDING` selama hari UTC dan antrean berjalan. Jika seluruh 20 priority source
-sukses tanpa dead-letter atau intervensi, kandidat clean window berikutnya adalah 14–20 Agustus.
+sukses tanpa dead-letter atau intervensi, kandidat clean window berikutnya semula 14–20 Agustus.
+Run berikutnya pada 14 Agustus menghasilkan tiga dead-letter first-page HTTP 404 untuk Jawa Timur,
+DI Yogyakarta, dan Sumatera Barat. Akar masalahnya adalah 404 diklasifikasikan permanen sehingga
+durable runner tidak menggunakan retry policy. Adapter kini mempertahankan status 404 sebagai error
+non-permanen agar runner melakukan bounded retry/backoff; 404 halaman lanjutan tetap menjadi akhir
+pagination. Regression collector, seluruh Go race test, dan vet lulus. Karena evidence 14 Agustus
+tetap tidak boleh diubah, kandidat clean window paling awal bergeser ke 15–21 Agustus 2026.
 
 ## MVP completion gate
 

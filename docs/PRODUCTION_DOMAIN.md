@@ -55,7 +55,8 @@ isolation, secret boundaries, and Nginx syntax.
 
 On the deployment host, copy `.env.traefik.example` outside the repository or export the same
 variables from the platform environment. Never put secret values in it. After creating secret files
-with mode `0400` or `0600`, run `./scripts/traefik-host-preflight.sh`. It verifies the exact production
+with owner/group read-only mode (`0400`, `0440`, `0600`, or `0640`), run
+`./scripts/traefik-host-preflight.sh`. It verifies the exact production
 hostname, required non-empty secret files and permissions, existence of the external Docker network,
 immutable `image@sha256` references, the merged Compose output, absence of build directives and
 host-published ports, and absence of development credentials.

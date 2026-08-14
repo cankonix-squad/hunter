@@ -36,8 +36,8 @@ for key in CANKONIX_POSTGRES_PASSWORD_SECRET_FILE CANKONIX_DATABASE_URL_SECRET_F
   }
   mode=$(stat -f '%Lp' "$secret_file" 2>/dev/null || stat -c '%a' "$secret_file")
   case "$mode" in
-    400|600) ;;
-    *) echo "FAIL: $key permissions must be 0400 or 0600 (found $mode)" >&2; exit 1 ;;
+    400|440|600|640) ;;
+    *) echo "FAIL: $key permissions must be owner/group read-only (found $mode)" >&2; exit 1 ;;
   esac
 done
 

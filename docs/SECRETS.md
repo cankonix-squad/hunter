@@ -7,7 +7,8 @@ configuration when both the direct variable and its `_FILE` counterpart are set.
 
 ## Required files
 
-Create these files outside the repository with mode `0600` and ownership limited to the
+Create these files outside the repository with mode `0600`, or `0640` when a dedicated runtime
+group must read bind-mounted Compose secrets. Ownership must remain limited to the
 deployment operator:
 
 - PostgreSQL password: at least 32 random bytes;

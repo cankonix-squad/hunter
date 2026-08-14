@@ -2,6 +2,7 @@
 set -eu
 
 repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+router_prefix=${CANKONIX_TRAEFIK_ROUTER_PREFIX:-cankonix}
 test_dir=$(mktemp -d)
 rendered_file="$test_dir/rendered.yaml"
 trap 'rm -r "$test_dir"' EXIT INT TERM
@@ -13,6 +14,7 @@ printf '%s\n' 'test-only-JWT-abcdefghijklmnopqrstuvwxyz-ABCDEFGHIJKLMNOPQRSTUVWX
 CANKONIX_PUBLIC_HOST=hunter.cankonix.com \
 CANKONIX_TRAEFIK_NETWORK=traefik-public \
 CANKONIX_TRAEFIK_CERT_RESOLVER=letsencrypt \
+CANKONIX_TRAEFIK_ROUTER_PREFIX="$router_prefix" \
 CANKONIX_POSTGRES_PASSWORD_SECRET_FILE="$test_dir/postgres_password" \
 CANKONIX_DATABASE_URL_SECRET_FILE="$test_dir/database_url" \
 CANKONIX_JWT_SECRET_FILE="$test_dir/jwt_secret" \
@@ -20,10 +22,10 @@ docker compose -f "$repo_dir/compose.yaml" -f "$repo_dir/compose.production.yaml
   -f "$repo_dir/compose.traefik.yaml" config >"$rendered_file"
 
 grep -q 'WEB_ORIGIN: https://hunter.cankonix.com' "$rendered_file"
-grep -q 'traefik.http.routers.cankonix.rule: Host(`hunter.cankonix.com`)' "$rendered_file"
-grep -q 'traefik.http.routers.cankonix.tls.certresolver: letsencrypt' "$rendered_file"
-grep -q 'traefik.http.routers.cankonix-login.priority: "100"' "$rendered_file"
-grep -q 'traefik.http.middlewares.cankonix-api-rate.ratelimit.average: "20"' "$rendered_file"
+grep -q "traefik.http.routers.$router_prefix.rule: Host(\`hunter.cankonix.com\`)" "$rendered_file"
+grep -q "traefik.http.routers.$router_prefix.tls.certresolver: letsencrypt" "$rendered_file"
+grep -q "traefik.http.routers.$router_prefix-login.priority: \"100\"" "$rendered_file"
+grep -q "traefik.http.middlewares.$router_prefix-api-rate.ratelimit.average: \"20\"" "$rendered_file"
 grep -q 'source: .*nginx/traefik.conf' "$rendered_file"
 grep -q 'name: traefik-public' "$rendered_file"
 if grep -q 'published: "3000"' "$rendered_file"; then

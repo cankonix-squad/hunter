@@ -105,13 +105,13 @@ if [ "$dead_letters" -ne 0 ] || [ "$sources_with_failures" -ne 0 ] || \
   echo "status=FAILED reason=operational_instability"
   exit 1
 fi
-if ! awk -v rate="$success_rate" 'BEGIN { exit !(rate >= 95) }'; then
-  echo "status=FAILED reason=success_rate_below_95_percent"
-  exit 1
-fi
 if [ "$missing_source_days" -ne 0 ]; then
   echo "status=INCOMPLETE reason=seven_calendar_days_not_complete"
   exit 2
+fi
+if ! awk -v rate="$success_rate" 'BEGIN { exit !(rate >= 95) }'; then
+  echo "status=FAILED reason=success_rate_below_95_percent"
+  exit 1
 fi
 
 echo "status=PASSED"

@@ -516,10 +516,11 @@ health/readiness melalui edge HTTP 200.
 - [x] End-to-end discover → normalize → classify → score → review test
 - [x] Security review dan dependency/container scanning
 - [x] Performance dan pagination load test
-- [x] Backup dan restore drill
+- [x] Backup dan restore drill lokal dan staging
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
+- [x] Staging HTTPS `staging-hunter.cankonix.com` berjalan melalui Traefik dengan stack terisolasi
 - [~] Production domain routing/TLS — host, network, resolver, dan secret boundary tervalidasi; menunggu release gate dan deployment
 - [x] Traefik deployment-host preflight dan environment template non-secret
 - [x] Immutable release image overlay terikat ke digest preflight
@@ -540,6 +541,14 @@ tidak membawa development secret dan lulus dengan target `hunter.cankonix.com`.
 Edge khusus Traefik mempertahankan CSP/HSTS/security headers dan HTTPS proxy semantics; router API
 memakai rate limit 20/s burst 40, sedangkan login memakai priority lebih tinggi dan 5/menit burst 3.
 Merged Compose contract serta `nginx -t` lulus tanpa membuka port host.
+Staging deployment 14 Agustus 2026 menjalankan project Docker terisolasi
+`cankonix-hunter-staging` pada host production melalui network eksternal `cankonix-proxy`, router
+prefix `cankonix-staging`, dan sertifikat Let’s Encrypt untuk `staging-hunter.cankonix.com`.
+Root, health, readiness, security-header, dan unauthenticated authorization-boundary smoke lulus.
+Secret staging tetap di luar repository dengan group read-only untuk UID/GID runtime non-root.
+Backup konsisten saat writer dihentikan sementara berhasil direstore ke database disposable:
+schema `31:31` dan seluruh public table count cocok; dump, manifest, checksum, dan hasil drill
+disimpan mode terbatas di evidence store server. Database restore disposable kemudian dihapus.
 Template `.env.traefik.example` hanya menyimpan hostname, identifier infra, dan path secret. Host
 preflight mewajibkan hostname production tepat, secret file non-empty dengan mode 0400/0600,
 external Docker network nyata, Compose tanpa published port/development credential, dan tidak

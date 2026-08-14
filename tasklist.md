@@ -12,7 +12,7 @@ verifikasi, dan commit terkait setiap kali satu perubahan selesai.
 
 ## Kondisi terakhir
 
-- Terakhir diperbarui: 13 Agustus 2026
+- Terakhir diperbarui: 14 Agustus 2026
 - Branch: `main`
 - Repository: `https://github.com/cankonix-squad/hunter`
 - Stack lokal: React + TypeScript, Go, PostgreSQL, Docker Compose, Nginx
@@ -523,7 +523,7 @@ health/readiness melalui edge HTTP 200.
 - [~] Production domain routing/TLS — overlay Traefik tervalidasi; menunggu parameter dan deployment host
 - [x] Traefik deployment-host preflight dan environment template non-secret
 - [x] Immutable release image overlay terikat ke digest preflight
-- [!] Tujuh hari stability observation — baseline 6–12 Agustus gagal; mulai ulang setelah DNS stabil
+- [!] Tujuh hari stability observation — 13 Agustus gagal karena satu dead-letter; kandidat window baru 14–20 Agustus sedang berjalan
 
 Production domain diagnosis 13 Agustus 2026: `hunter.cankonix.com` resolve dan menerima TLS, tetapi
 menyajikan self-signed `TRAEFIK DEFAULT CERT`; request diagnostik tanpa verifikasi mendapat HTTP 404.
@@ -739,6 +739,14 @@ sehat, terdapat 20 source, belum ada run/dead-letter hari itu, sehingga checkpoi
 (hari UTC belum selesai), bukan gagal. Kandidat window 13–19 Agustus masih dapat berjalan jika
 Kalimantan Barat kembali sukses dan tidak ada dead-letter/intervensi baru; seven-day gate tetap
 satu-satunya bukti final.
+
+Audit runtime 14 Agustus 2026 mengoreksi kandidat tersebut berdasarkan evidence database yang sudah
+final untuk 13 Agustus UTC: 20 priority source menghasilkan 40 run, 39 sukses, dan satu dead-letter,
+sehingga checkpoint 13 Agustus `FAILED` dan window 13–19 Agustus gugur. Stack lokal dibangun ulang
+dan local acceptance kembali `PASS` pada migration v31 dengan 6/6 service, 40 source aktif
+terjadwal, serta nol recent dead-letter. Scheduler kemudian mengantrekan 40 source; checkpoint
+14 Agustus masih `PENDING` selama hari UTC dan antrean berjalan. Jika seluruh 20 priority source
+sukses tanpa dead-letter atau intervensi, kandidat clean window berikutnya adalah 14–20 Agustus.
 
 ## MVP completion gate
 

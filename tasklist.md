@@ -557,6 +557,13 @@ mencatat p95 36,737 ms. Evidence teredaksi disimpan di evidence store server; to
 tidak disimpan. Entry criteria role matrix belum lengkap, sehingga provisioning resmi ditambahkan
 ke binary API: password hanya dari file, role allowlist, viewer tanpa privileged role, transaksi
 create-only, dan audit `identity.user_provisioned` tanpa material password.
+Staging kemudian memiliki tujuh akun UAT aktif dengan password acak terpisah: administrator,
+operator, business development, bid manager, technical lead, executive, dan viewer tanpa role
+privileged. Enam akun tambahan menghasilkan enam audit provisioning. UAT-ACCESS black-box lulus
+untuk seluruh akun: login/read 200, operations console hanya admin/operator 200 dan role lain 403,
+admin source creation ditolak 403 bagi seluruh non-admin, logout 204, serta refresh token yang sudah
+dicabut ditolak 401. Batch mengikuti login rate limit Traefik dengan jarak 13 detik; percobaan burst
+sebelumnya memang dibatasi. Evidence teredaksi disimpan di evidence store server.
 Template `.env.traefik.example` hanya menyimpan hostname, identifier infra, dan path secret. Host
 preflight mewajibkan hostname production tepat, secret file non-empty dengan mode 0400/0600,
 external Docker network nyata, Compose tanpa published port/development credential, dan tidak

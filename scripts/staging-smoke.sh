@@ -31,8 +31,8 @@ request() {
   echo "$name: HTTP $code"
 }
 
-request health healthz 200
-request readiness readyz 200
+request health /healthz 200
+request readiness /readyz 200
 
 code=$(curl --silent --show-error --max-time 15 --output "$test_dir/auth.body" \
   --write-out '%{http_code}' "$base_url/api/v1/opportunities" || true)

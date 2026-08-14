@@ -520,6 +520,7 @@ health/readiness melalui edge HTTP 200.
 - [x] Production secret management
 - [x] TLS/staging deployment configuration
 - [~] UAT/deployment runbook dan automated preflight tersedia; menunggu hosted UAT + approval
+- [x] CLI provisioning akun UAT create-only, password-file, role allowlist, dan audit event
 - [x] Staging HTTPS `staging-hunter.cankonix.com` berjalan melalui Traefik dengan stack terisolasi
 - [~] Production domain routing/TLS — host, network, resolver, dan secret boundary tervalidasi; menunggu release gate dan deployment
 - [x] Traefik deployment-host preflight dan environment template non-secret
@@ -549,6 +550,13 @@ Secret staging tetap di luar repository dengan group read-only untuk UID/GID run
 Backup konsisten saat writer dihentikan sementara berhasil direstore ke database disposable:
 schema `31:31` dan seluruh public table count cocok; dump, manifest, checksum, dan hasil drill
 disimpan mode terbatas di evidence store server. Database restore disposable kemudian dihapus.
+Black-box UAT read-only administrator lulus untuk invalid login 401, protected feed 401 tanpa token,
+source/feed/review/analytics/dead-letter/detail HTTP 200 dengan request ID, kontrak detail
+classification/score/canonical URL, logout 204, dan reuse refresh setelah logout 401. Feed 30 sampel
+mencatat p95 36,737 ms. Evidence teredaksi disimpan di evidence store server; token dan password
+tidak disimpan. Entry criteria role matrix belum lengkap, sehingga provisioning resmi ditambahkan
+ke binary API: password hanya dari file, role allowlist, viewer tanpa privileged role, transaksi
+create-only, dan audit `identity.user_provisioned` tanpa material password.
 Template `.env.traefik.example` hanya menyimpan hostname, identifier infra, dan path secret. Host
 preflight mewajibkan hostname production tepat, secret file non-empty dengan mode 0400/0600,
 external Docker network nyata, Compose tanpa published port/development credential, dan tidak

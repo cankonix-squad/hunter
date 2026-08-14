@@ -13,6 +13,20 @@ tokens, private source bodies, or notification secrets into evidence.
   and viewer test accounts exist with isolated credentials.
 - A rollback owner and decision deadline are assigned; no unresolved SEV-1/SEV-2 issue exists.
 
+Provision isolated role accounts through the API image CLI, using a password file mounted as a
+Compose secret. Never pass a password as an argument or environment value:
+
+```sh
+docker compose run --rm api provision-user \
+  --email operator-uat@example.com --name "UAT Operator" \
+  --roles operator --password-file /run/secrets/bootstrap_admin_password
+```
+
+Supported roles are `administrator`, `operator`, `business_development`, `bid_manager`,
+`technical_lead`, and `executive`. Omit `--roles` for the viewer account. Provisioning is
+create-only, rejects duplicate emails and unknown roles, and records `identity.user_provisioned`
+in the audit log without password material.
+
 ## Acceptance scenarios
 
 | ID | Tester | Scenario and expected result | Required evidence |

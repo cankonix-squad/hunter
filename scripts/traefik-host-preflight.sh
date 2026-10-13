@@ -34,7 +34,7 @@ for key in CANKONIX_POSTGRES_PASSWORD_SECRET_FILE CANKONIX_DATABASE_URL_SECRET_F
     echo "FAIL: $key must reference a non-empty regular file" >&2
     exit 1
   }
-  mode=$(stat -f '%Lp' "$secret_file" 2>/dev/null || stat -c '%a' "$secret_file")
+  mode=$(stat -c '%a' "$secret_file" 2>/dev/null || stat -f '%Lp' "$secret_file")
   case "$mode" in
     400|440|600|640) ;;
     *) echo "FAIL: $key permissions must be owner/group read-only (found $mode)" >&2; exit 1 ;;

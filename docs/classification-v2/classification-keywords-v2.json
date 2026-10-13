@@ -1,0 +1,876 @@
+{
+  "version": "cankonix-business-v2-candidate",
+  "categories": [
+    {
+      "category_id": "software-engineering",
+      "name": "Rekayasa Perangkat Lunak",
+      "business_description": "Rancang bangun, pengembangan, modernisasi, dan pemeliharaan aplikasi khusus.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "pengembangan aplikasi",
+        "pembangunan aplikasi",
+        "pembuatan aplikasi",
+        "sistem informasi",
+        "pengembangan website",
+        "pemeliharaan aplikasi",
+        "penyempurnaan aplikasi",
+        "upgrade aplikasi",
+        "rekayasa perangkat lunak",
+        "aplikasi berbasis web",
+        "mobile application"
+      ],
+      "positive_keywords": [
+        "aplikasi",
+        "perangkat lunak",
+        "software"
+      ],
+      "strong_phrases": [
+        "pengembangan aplikasi",
+        "pembangunan sistem informasi",
+        "modernisasi aplikasi",
+        "pemeliharaan aplikasi",
+        "pembangunan aplikasi",
+        "pembuatan aplikasi",
+        "pengembangan website",
+        "penyempurnaan aplikasi",
+        "upgrade aplikasi",
+        "rekayasa perangkat lunak"
+      ],
+      "synonyms": {
+        "aplikasi": [
+          "app",
+          "apliksi"
+        ],
+        "sistem informasi": [
+          "sisfo",
+          "sistem infrormasi"
+        ]
+      },
+      "context_keywords": [
+        "pengembangan",
+        "pembangunan",
+        "implementasi",
+        "kustomisasi",
+        "pemeliharaan"
+      ],
+      "negative_keywords": [
+        "aplikasi perkantoran berlisensi tanpa jasa"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "jual putus aplikasi umum tanpa layanan",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "cybersecurity",
+      "name": "Keamanan Siber",
+      "business_description": "Asesmen, pengujian, respons, dan peningkatan keamanan sistem digital.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "keamanan informasi",
+        "keamanan siber",
+        "penetration test",
+        "pentest",
+        "vulnerability assessment",
+        "security assessment",
+        "SOC",
+        "SIEM",
+        "vulnerability scanning",
+        "incident response",
+        "digital forensic",
+        "security monitoring"
+      ],
+      "positive_keywords": [
+        "keamanan siber",
+        "keamanan informasi",
+        "penetration test",
+        "vulnerability assessment",
+        "soc",
+        "siem"
+      ],
+      "strong_phrases": [
+        "penetration test aplikasi",
+        "audit keamanan siber",
+        "implementasi keamanan siber",
+        "pengujian keamanan aplikasi",
+        "pelatihan keamanan informasi",
+        "security assessment",
+        "vulnerability scanning",
+        "incident response",
+        "digital forensic",
+        "security monitoring"
+      ],
+      "synonyms": {
+        "penetration test": [
+          "pentest",
+          "pen test"
+        ],
+        "keamanan siber": [
+          "cyber security",
+          "siber sekuriti"
+        ]
+      },
+      "context_keywords": [
+        "audit",
+        "asesmen",
+        "pengujian",
+        "implementasi",
+        "monitoring",
+        "aplikasi",
+        "pelatihan",
+        "operasional",
+        "pengelolaan"
+      ],
+      "negative_keywords": [
+        "keamanan fisik gedung"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "satpam dan keamanan fisik",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "it-grc",
+      "name": "Tata Kelola, Risiko, dan Kepatuhan TI",
+      "business_description": "Kebijakan, audit, manajemen risiko, SPBE, dan kepatuhan tata kelola TI.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "ISO 27001",
+        "SMKI",
+        "audit keamanan informasi",
+        "IT governance",
+        "IT risk assessment",
+        "manajemen risiko TI",
+        "compliance",
+        "tata kelola SPBE",
+        "evaluasi SPBE",
+        "indeks KAMI",
+        "IT audit",
+        "BCP",
+        "DRP"
+      ],
+      "positive_keywords": [
+        "tata kelola ti",
+        "spbe",
+        "risiko teknologi informasi",
+        "iso 27001",
+        "smki",
+        "it governance",
+        "compliance",
+        "indeks kami",
+        "bcp",
+        "drp"
+      ],
+      "strong_phrases": [
+        "audit tata kelola ti",
+        "penyusunan tata kelola ti",
+        "asesmen spbe",
+        "manajemen risiko ti",
+        "pelatihan tata kelola ti",
+        "audit keamanan informasi",
+        "it risk assessment",
+        "evaluasi spbe",
+        "tata kelola spbe",
+        "it audit"
+      ],
+      "synonyms": {
+        "spbe": [
+          "s p b e",
+          "sistem pemerintahan berbasis elektronik"
+        ],
+        "tata kelola ti": [
+          "it governance",
+          "tatakelola ti"
+        ]
+      },
+      "context_keywords": [
+        "audit",
+        "asesmen",
+        "kebijakan",
+        "risiko",
+        "kepatuhan",
+        "penyusunan",
+        "pelatihan",
+        "implementasi",
+        "evaluasi"
+      ],
+      "negative_keywords": [
+        "tata kelola organisasi non digital"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "audit keuangan tanpa lingkup TI",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "data-ai",
+      "name": "Data dan Kecerdasan Buatan",
+      "business_description": "Integrasi data, platform analitik, pembelajaran mesin, dan solusi AI terukur.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "integrasi data",
+        "analitik data",
+        "data warehouse",
+        "data lake",
+        "business intelligence",
+        "dashboard analitik",
+        "dashboard eksekutif",
+        "kecerdasan buatan",
+        "machine learning",
+        "artificial intelligence",
+        "big data",
+        "data governance"
+      ],
+      "positive_keywords": [
+        "data warehouse",
+        "analitik data",
+        "integrasi data",
+        "machine learning",
+        "kecerdasan buatan",
+        "data lake",
+        "business intelligence",
+        "dashboard analitik",
+        "dashboard eksekutif",
+        "big data",
+        "data governance"
+      ],
+      "strong_phrases": [
+        "pembangunan data warehouse",
+        "pengembangan analitik data",
+        "pembangunan analitik data",
+        "layanan integrasi data",
+        "implementasi machine learning",
+        "pengembangan kecerdasan buatan",
+        "pembangunan data lake",
+        "pengembangan business intelligence",
+        "pengembangan dashboard analitik",
+        "pengembangan dashboard eksekutif"
+      ],
+      "synonyms": {
+        "machine learning": [
+          "ml",
+          "machne learning"
+        ],
+        "kecerdasan buatan": [
+          "ai",
+          "artificial intelligence"
+        ],
+        "data warehouse": [
+          "dwh",
+          "dataware house"
+        ]
+      },
+      "context_keywords": [
+        "pembangunan",
+        "pengembangan",
+        "implementasi",
+        "model",
+        "analitik"
+      ],
+      "negative_keywords": [
+        "entri data manual tanpa sistem"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "jasa input data manual tanpa pengembangan",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "cloud-infrastructure",
+      "name": "Infrastruktur Cloud",
+      "business_description": "Arsitektur, migrasi, operasi, dan keamanan platform cloud atau container.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "cloud computing",
+        "cloud server",
+        "cloud hosting",
+        "virtual private server",
+        "VPS",
+        "data center",
+        "disaster recovery center",
+        "virtualisasi server",
+        "containerization",
+        "Kubernetes",
+        "DevOps",
+        "infrastruktur TI"
+      ],
+      "positive_keywords": [
+        "cloud",
+        "komputasi awan",
+        "container platform",
+        "cloud computing",
+        "cloud server",
+        "cloud hosting",
+        "virtual private server",
+        "vps",
+        "data center",
+        "disaster recovery center",
+        "virtualisasi server",
+        "containerization",
+        "kubernetes",
+        "infrastruktur ti"
+      ],
+      "strong_phrases": [
+        "migrasi cloud",
+        "implementasi cloud",
+        "pembangunan platform cloud",
+        "implementasi container platform",
+        "implementasi cloud server",
+        "migrasi data center",
+        "virtualisasi server",
+        "implementasi kubernetes"
+      ],
+      "synonyms": {
+        "cloud": [
+          "komputasi awan",
+          "clod"
+        ],
+        "container platform": [
+          "kubernetes",
+          "k8s"
+        ]
+      },
+      "context_keywords": [
+        "migrasi",
+        "implementasi",
+        "arsitektur",
+        "operasi",
+        "platform",
+        "konfigurasi",
+        "pengelolaan",
+        "pemeliharaan"
+      ],
+      "negative_keywords": [
+        "penyimpanan fisik tanpa integrasi"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "sewa gudang penyimpanan barang fisik",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "system-integration",
+      "name": "Integrasi Sistem",
+      "business_description": "Integrasi aplikasi, API, interoperabilitas, dan pertukaran data antar sistem.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "integrasi sistem",
+        "integrasi aplikasi",
+        "API gateway",
+        "interoperabilitas",
+        "pertukaran data",
+        "bridging data",
+        "web service",
+        "middleware",
+        "single sign on",
+        "SSO",
+        "sinkronisasi data"
+      ],
+      "positive_keywords": [
+        "integrasi sistem",
+        "integrasi api",
+        "interoperabilitas",
+        "api gateway",
+        "pertukaran data",
+        "web service",
+        "middleware",
+        "single sign on",
+        "sso"
+      ],
+      "strong_phrases": [
+        "integrasi sistem informasi",
+        "pengembangan integrasi api",
+        "implementasi interoperabilitas",
+        "integrasi data antar aplikasi",
+        "integrasi aplikasi",
+        "implementasi api gateway",
+        "bridging data",
+        "sinkronisasi data"
+      ],
+      "synonyms": {
+        "integrasi api": [
+          "api integration",
+          "integrsi api"
+        ],
+        "interoperabilitas": [
+          "interoperability",
+          "interoperabiltas"
+        ]
+      },
+      "context_keywords": [
+        "pengembangan",
+        "implementasi",
+        "antar aplikasi",
+        "pertukaran data",
+        "sistem informasi",
+        "integrasi"
+      ],
+      "negative_keywords": [
+        "integrasi kegiatan non digital"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "koordinasi antarlembaga tanpa sistem",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "pmo-digital-transformation",
+      "name": "PMO Transformasi Digital",
+      "business_description": "Manajemen program dan pendampingan transformasi digital berbasis sistem informasi.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "project management office",
+        "PMO",
+        "dashboard monitoring",
+        "monitoring evaluasi",
+        "monev digital",
+        "sistem pemantauan program",
+        "pengendalian proyek",
+        "transformasi digital",
+        "manajemen portofolio",
+        "digital transformation"
+      ],
+      "positive_keywords": [
+        "pmo digital",
+        "transformasi digital",
+        "spbe",
+        "dashboard monitoring",
+        "monitoring evaluasi",
+        "monev digital",
+        "sistem pemantauan program",
+        "pengendalian proyek",
+        "manajemen portofolio"
+      ],
+      "strong_phrases": [
+        "pmo transformasi digital",
+        "pendampingan transformasi digital",
+        "manajemen program spbe",
+        "pmo sistem informasi",
+        "monev digital berbasis sistem",
+        "pengembangan sistem pemantauan program"
+      ],
+      "synonyms": {
+        "pmo": [
+          "project management office",
+          "program management office"
+        ],
+        "transformasi digital": [
+          "digital transformation",
+          "tranformasi digital"
+        ]
+      },
+      "context_keywords": [
+        "pmo",
+        "pendampingan",
+        "program",
+        "sistem informasi",
+        "spbe",
+        "pengembangan",
+        "berbasis sistem"
+      ],
+      "negative_keywords": [
+        "transformasi organisasi tanpa teknologi"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "konsultansi organisasi tanpa sistem informasi",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "managed-it-services",
+      "name": "Layanan TI Terkelola",
+      "business_description": "Operasi, pemantauan, dukungan, dan SLA untuk layanan TI.",
+      "priority": "P2",
+      "discovery_keywords": [
+        "managed service",
+        "managed IT",
+        "pemeliharaan sistem",
+        "pemeliharaan server",
+        "dukungan teknis TI",
+        "IT support",
+        "operasional aplikasi",
+        "pemeliharaan database",
+        "monitoring server",
+        "technical support"
+      ],
+      "positive_keywords": [
+        "managed service ti",
+        "operasional ti",
+        "helpdesk aplikasi",
+        "managed it",
+        "pemeliharaan sistem",
+        "it support",
+        "technical support"
+      ],
+      "strong_phrases": [
+        "managed service ti",
+        "operasional layanan ti",
+        "pengelolaan helpdesk aplikasi",
+        "pemantauan infrastruktur ti",
+        "pemeliharaan sistem informasi",
+        "pemeliharaan server",
+        "dukungan teknis ti",
+        "operasional aplikasi",
+        "pemeliharaan database",
+        "monitoring server"
+      ],
+      "synonyms": {
+        "managed service": [
+          "managed services",
+          "layanan terkelola"
+        ],
+        "helpdesk": [
+          "service desk",
+          "help desk"
+        ]
+      },
+      "context_keywords": [
+        "operasional",
+        "pengelolaan",
+        "pemantauan",
+        "sla",
+        "dukungan",
+        "pemeliharaan"
+      ],
+      "negative_keywords": [
+        "operasional gedung",
+        "katering"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "pengelolaan fasilitas non TI",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "enterprise-systems",
+      "name": "Sistem Enterprise",
+      "business_description": "Implementasi dan integrasi ERP, HRIS, CRM, serta sistem enterprise sejenis.",
+      "priority": "P1",
+      "discovery_keywords": [
+        "enterprise resource planning",
+        "ERP",
+        "HRIS",
+        "sistem keuangan",
+        "sistem akuntansi",
+        "financial management system",
+        "CRM",
+        "procurement management system",
+        "e-office",
+        "e-document",
+        "manajemen aset",
+        "e-arsip"
+      ],
+      "positive_keywords": [
+        "erp",
+        "hris",
+        "crm",
+        "sistem enterprise",
+        "sistem keuangan",
+        "sistem akuntansi",
+        "financial management system",
+        "procurement management system",
+        "e-office",
+        "e-document",
+        "manajemen aset",
+        "e-arsip"
+      ],
+      "strong_phrases": [
+        "implementasi erp",
+        "pengembangan hris",
+        "integrasi crm",
+        "implementasi sistem enterprise",
+        "pelatihan aplikasi erp",
+        "implementasi sistem keuangan",
+        "pengembangan sistem akuntansi",
+        "pengembangan e-office",
+        "implementasi e-arsip"
+      ],
+      "synonyms": {
+        "erp": [
+          "enterprise resource planning",
+          "e r p"
+        ],
+        "hris": [
+          "human resource information system",
+          "h r i s"
+        ]
+      },
+      "context_keywords": [
+        "implementasi",
+        "pengembangan",
+        "integrasi",
+        "migrasi",
+        "sistem"
+      ],
+      "negative_keywords": [
+        "pelatihan umum tanpa aplikasi khusus"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "lisensi umum tanpa implementasi",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "network-infrastructure",
+      "name": "Infrastruktur Jaringan",
+      "business_description": "Desain, implementasi, konfigurasi, integrasi, dan keamanan jaringan TI.",
+      "priority": "P2",
+      "discovery_keywords": [
+        "konfigurasi firewall",
+        "implementasi firewall",
+        "network security",
+        "implementasi jaringan",
+        "instalasi LAN",
+        "konfigurasi VPN",
+        "network monitoring",
+        "network assessment",
+        "pengembangan infrastruktur jaringan"
+      ],
+      "positive_keywords": [
+        "jaringan",
+        "network",
+        "sd wan",
+        "network security"
+      ],
+      "strong_phrases": [
+        "implementasi jaringan",
+        "konfigurasi jaringan",
+        "integrasi jaringan",
+        "keamanan jaringan",
+        "konfigurasi firewall",
+        "implementasi firewall",
+        "instalasi lan",
+        "konfigurasi vpn",
+        "network monitoring",
+        "network assessment",
+        "pengembangan infrastruktur jaringan"
+      ],
+      "synonyms": {
+        "sd wan": [
+          "sdwan",
+          "software defined wan"
+        ],
+        "jaringan": [
+          "networking",
+          "jarngan"
+        ]
+      },
+      "context_keywords": [
+        "implementasi",
+        "konfigurasi",
+        "integrasi",
+        "keamanan",
+        "arsitektur",
+        "instalasi"
+      ],
+      "negative_keywords": [
+        "jaringan listrik"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "pengadaan kabel listrik tanpa jaringan TI",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "it-consulting",
+      "name": "Konsultansi TI",
+      "business_description": "Perencanaan, arsitektur, asesmen, dan strategi teknologi informasi.",
+      "priority": "P2",
+      "discovery_keywords": [
+        "IT master plan",
+        "rencana induk TI",
+        "blueprint TI",
+        "enterprise architecture",
+        "audit sistem informasi",
+        "kajian teknologi informasi",
+        "IT assessment",
+        "feasibility study TI",
+        "konsultansi transformasi digital"
+      ],
+      "positive_keywords": [
+        "konsultansi ti",
+        "arsitektur ti",
+        "strategi teknologi informasi"
+      ],
+      "strong_phrases": [
+        "konsultansi arsitektur ti",
+        "penyusunan strategi ti",
+        "asesmen teknologi informasi",
+        "perencanaan sistem informasi",
+        "it master plan",
+        "rencana induk ti",
+        "blueprint ti",
+        "audit sistem informasi",
+        "kajian teknologi informasi",
+        "it assessment",
+        "feasibility study ti",
+        "konsultansi transformasi digital"
+      ],
+      "synonyms": {
+        "teknologi informasi": [
+          "ti",
+          "it"
+        ],
+        "arsitektur ti": [
+          "enterprise architecture",
+          "arsitektur teknologi informasi"
+        ]
+      },
+      "context_keywords": [
+        "konsultansi",
+        "perencanaan",
+        "asesmen",
+        "strategi",
+        "arsitektur"
+      ],
+      "negative_keywords": [
+        "konsultansi manajemen umum"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "nasihat organisasi tanpa teknologi",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    },
+    {
+      "category_id": "specialized-digital-solutions",
+      "name": "Solusi Digital Khusus",
+      "business_description": "Solusi digital spesifik sektor seperti GIS, IoT, identitas digital, dan otomasi.",
+      "priority": "P2",
+      "discovery_keywords": [
+        "e-government",
+        "e-learning",
+        "LMS",
+        "sistem monitoring",
+        "logbook elektronik",
+        "sistem perizinan",
+        "sistem pelayanan publik",
+        "sistem informasi kesehatan",
+        "IoT monitoring",
+        "dashboard operasional"
+      ],
+      "positive_keywords": [
+        "gis",
+        "iot",
+        "identitas digital",
+        "otomasi digital",
+        "e-government",
+        "e-learning",
+        "lms",
+        "sistem monitoring",
+        "logbook elektronik",
+        "sistem perizinan",
+        "sistem pelayanan publik",
+        "sistem informasi kesehatan",
+        "iot monitoring",
+        "dashboard operasional"
+      ],
+      "strong_phrases": [
+        "pengembangan gis",
+        "implementasi iot",
+        "pengembangan identitas digital",
+        "implementasi otomasi digital",
+        "pengembangan e-government",
+        "implementasi e-learning",
+        "pengembangan logbook elektronik",
+        "implementasi sistem perizinan",
+        "pengembangan sistem informasi kesehatan"
+      ],
+      "synonyms": {
+        "gis": [
+          "sistem informasi geografis",
+          "geographic information system"
+        ],
+        "iot": [
+          "internet of things",
+          "i o t"
+        ]
+      },
+      "context_keywords": [
+        "pengembangan",
+        "implementasi",
+        "integrasi",
+        "platform"
+      ],
+      "negative_keywords": [
+        "survei geografis manual tanpa sistem"
+      ],
+      "exclusion_rules": [
+        {
+          "phrase": "pengadaan sensor tanpa integrasi digital",
+          "reason": "Lingkup hanya di luar layanan digital kategori ini."
+        }
+      ]
+    }
+  ],
+  "global_exclusion_phrases": [
+    "alat tulis kantor",
+    "seragam",
+    "katering",
+    "toner printer",
+    "kertas printer",
+    "tinta printer",
+    "kendaraan dinas",
+    "bahan makanan",
+    "meja kantor",
+    "kursi kantor",
+    "konsumsi rapat",
+    "jasa kebersihan",
+    "pemeliharaan gedung",
+    "renovasi gedung",
+    "alat kesehatan",
+    "obat obatan",
+    "bahan bangunan",
+    "bibit tanaman",
+    "pupuk pertanian",
+    "keamanan fisik gedung",
+    "perjalanan dinas",
+    "jasa parkir",
+    "fotokopi dokumen",
+    "baju dinas",
+    "jasa laundry",
+    "peralatan dapur",
+    "sewa tenda",
+    "pencetakan brosur",
+    "pengadaan air minum",
+    "perbaikan jalan",
+    "pembangunan jembatan",
+    "cat tembok",
+    "perabot ruang rapat",
+    "alat olahraga",
+    "jasa taman",
+    "pengadaan beras",
+    "sewa kendaraan",
+    "jasa kebersihan toilet",
+    "pembangunan drainase",
+    "pengadaan vaksin",
+    "kabel listrik"
+  ],
+  "ambiguous_phrases": [
+    "transformasi organisasi",
+    "perangkat jaringan",
+    "literasi digital",
+    "lisensi aplikasi umum"
+  ]
+}

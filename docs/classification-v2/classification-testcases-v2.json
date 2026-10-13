@@ -1,0 +1,1316 @@
+{
+  "version": "classification-testcases-v2",
+  "taxonomy_version": "cankonix-business-v2-candidate",
+  "review_status": "candidate",
+  "provenance": "synthetic, authored for regression; not independently labeled procurement samples",
+  "cases": [
+    {
+      "id": "rel-software-engineering-1",
+      "title": "Pengembangan Aplikasi Web Pelayanan Publik",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "software-engineering",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-software-engineering-2",
+      "title": "Pembangunan Sistem Informasi Kepegawaian",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "software-engineering",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-software-engineering-3",
+      "title": "Pengembangan apliksi perizinan daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "software-engineering",
+      "tags": [
+        "category_positive",
+        "mixed_procurement",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-software-engineering-4",
+      "title": "Pemeliharaan aplikasi khusus retribusi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "software-engineering",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-software-engineering",
+      "title": "Pengadaan aplikasi untuk kantor",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "software-engineering",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-cybersecurity-1",
+      "title": "Jasa Penetration Test Aplikasi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cybersecurity",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-cybersecurity-2",
+      "title": "Audit cyber security pusat data",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cybersecurity",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-cybersecurity-3",
+      "title": "Implementasi keamanan siber instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cybersecurity",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-cybersecurity-4",
+      "title": "Pelatihan keamanan informasi bagi operator aplikasi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cybersecurity",
+      "tags": [
+        "category_positive",
+        "specialist_training"
+      ]
+    },
+    {
+      "id": "review-cybersecurity",
+      "title": "Pengadaan perangkat keamanan",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "cybersecurity",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-it-grc-1",
+      "title": "Audit tata kelola TI pemerintah daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-grc",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-it-grc-2",
+      "title": "Penyusunan tatakelola TI kementerian",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-grc",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-it-grc-3",
+      "title": "Asesmen SPBE instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-grc",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-it-grc-4",
+      "title": "Pelatihan tata kelola TI instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-grc",
+      "tags": [
+        "category_positive",
+        "specialist_training"
+      ]
+    },
+    {
+      "id": "review-it-grc",
+      "title": "Kajian tata kelola organisasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "it-grc",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-data-ai-1",
+      "title": "Pengadaan Layanan Integrasi Data",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "data-ai",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-data-ai-2",
+      "title": "Pembangunan Analitik Data Sektoral",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "data-ai",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-data-ai-3",
+      "title": "Implementasi machne learning untuk prediksi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "data-ai",
+      "tags": [
+        "category_positive",
+        "mixed_procurement",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-data-ai-4",
+      "title": "Pengembangan kecerdasan buatan layanan publik",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "data-ai",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-data-ai",
+      "title": "Pengadaan data untuk kajian",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "data-ai",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-cloud-infrastructure-1",
+      "title": "Layanan Cloud untuk Platform Pemerintah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cloud-infrastructure",
+      "tags": [
+        "category_positive",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "rel-cloud-infrastructure-2",
+      "title": "Implementasi clod privat instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cloud-infrastructure",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-cloud-infrastructure-3",
+      "title": "Pembangunan platform cloud daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cloud-infrastructure",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-cloud-infrastructure-4",
+      "title": "Implementasi container platform layanan digital",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "cloud-infrastructure",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-cloud-infrastructure",
+      "title": "Pengadaan kapasitas cloud",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "cloud-infrastructure",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-system-integration-1",
+      "title": "Integrasi sistem informasi kesehatan",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "system-integration",
+      "tags": [
+        "category_positive",
+        "multi_category"
+      ],
+      "expected_secondary_categories": [
+        "specialized-digital-solutions"
+      ]
+    },
+    {
+      "id": "rel-system-integration-2",
+      "title": "Pengembangan integrsi API layanan kependudukan",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "system-integration",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-system-integration-3",
+      "title": "Implementasi interoperabilitas antar instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "system-integration",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-system-integration-4",
+      "title": "Integrasi data antar aplikasi daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "system-integration",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-system-integration",
+      "title": "Kajian integrasi organisasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "system-integration",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-pmo-digital-transformation-1",
+      "title": "PMO transformasi digital provinsi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "pmo-digital-transformation",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-pmo-digital-transformation-2",
+      "title": "Pendampingan tranformasi digital rumah sakit",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "pmo-digital-transformation",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-pmo-digital-transformation-3",
+      "title": "Manajemen program SPBE kementerian",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "pmo-digital-transformation",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-pmo-digital-transformation-4",
+      "title": "PMO sistem informasi lintas dinas",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "pmo-digital-transformation",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-pmo-digital-transformation",
+      "title": "Transformasi organisasi perangkat daerah",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "pmo-digital-transformation",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-managed-it-services-1",
+      "title": "Managed service TI kantor pusat",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "managed-it-services",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-managed-it-services-2",
+      "title": "Operasional layanan TI 24 jam",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "managed-it-services",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-managed-it-services-3",
+      "title": "Pengelolaan helpdesk aplikasi publik",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "managed-it-services",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-managed-it-services-4",
+      "title": "Pemantauan infrastruktur TI pemerintah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "managed-it-services",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-managed-it-services",
+      "title": "Layanan bantuan kantor",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "managed-it-services",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-enterprise-systems-1",
+      "title": "Implementasi ERP badan usaha daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "enterprise-systems",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-enterprise-systems-2",
+      "title": "Pengembangan HRIS instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "enterprise-systems",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-enterprise-systems-3",
+      "title": "Integrasi CRM layanan warga",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "enterprise-systems",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-enterprise-systems-4",
+      "title": "Pelatihan aplikasi ERP khusus",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "enterprise-systems",
+      "tags": [
+        "category_positive",
+        "specialist_training"
+      ]
+    },
+    {
+      "id": "review-enterprise-systems",
+      "title": "Pengadaan lisensi ERP",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "category_under_test": "enterprise-systems",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-network-infrastructure-1",
+      "title": "Implementasi jaringan kantor cabang",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "network-infrastructure",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-network-infrastructure-2",
+      "title": "Konfigurasi jarngan pusat data",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "network-infrastructure",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-network-infrastructure-3",
+      "title": "Pengadaan perangkat jaringan antar gedung",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "network-infrastructure",
+      "tags": [
+        "category_positive",
+        "mixed_procurement",
+        "tor_context"
+      ],
+      "tor": "Implementasi jaringan dan integrasi jaringan antar gedung"
+    },
+    {
+      "id": "rel-network-infrastructure-4",
+      "title": "Keamanan jaringan instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "network-infrastructure",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-network-infrastructure",
+      "title": "Belanja perangkat jaringan kantor",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "category_under_test": "network-infrastructure",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-it-consulting-1",
+      "title": "Konsultansi arsitektur TI instansi",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-consulting",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-it-consulting-2",
+      "title": "Penyusunan strategi TI daerah",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-consulting",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-it-consulting-3",
+      "title": "Asesmen teknologi informasi kementerian",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-consulting",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-it-consulting-4",
+      "title": "Perencanaan sistem informasi pelayanan",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-consulting",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-it-consulting",
+      "title": "Konsultansi transformasi organisasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "it-consulting",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-specialized-digital-solutions-1",
+      "title": "Pengembangan GIS tata ruang",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "specialized-digital-solutions",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "rel-specialized-digital-solutions-2",
+      "title": "Implementasi internet of things pemantauan air",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "specialized-digital-solutions",
+      "tags": [
+        "category_positive",
+        "abbreviation_typo"
+      ]
+    },
+    {
+      "id": "rel-specialized-digital-solutions-3",
+      "title": "Pengembangan identitas digital warga",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "specialized-digital-solutions",
+      "tags": [
+        "category_positive",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "rel-specialized-digital-solutions-4",
+      "title": "Implementasi otomasi digital perizinan",
+      "description": "Pekerjaan mencakup implementasi dan serah terima sistem digital.",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "specialized-digital-solutions",
+      "tags": [
+        "category_positive"
+      ]
+    },
+    {
+      "id": "review-specialized-digital-solutions",
+      "title": "Pengadaan sensor IoT",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "category_under_test": "specialized-digital-solutions",
+      "tags": [
+        "category_ambiguous"
+      ]
+    },
+    {
+      "id": "rel-multi-security-grc",
+      "title": "Audit tata kelola TI dan keamanan siber",
+      "description": "Asesmen SPBE dan pengujian keamanan aplikasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "it-grc",
+      "expected_secondary_categories": [
+        "cybersecurity"
+      ],
+      "tags": [
+        "multi_category"
+      ]
+    },
+    {
+      "id": "rel-multi-software-integration",
+      "title": "Pengembangan aplikasi dan integrasi sistem informasi",
+      "description": "Implementasi API antar aplikasi",
+      "procurement_type": "Barang",
+      "expected_disposition": "relevant",
+      "expected_primary_category": "software-engineering",
+      "expected_secondary_categories": [
+        "system-integration"
+      ],
+      "tags": [
+        "multi_category",
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "excluded-01",
+      "title": "Pengadaan Alat Tulis Kantor Tahun 2026",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "excluded-02",
+      "title": "Belanja Seragam Pegawai Lapangan",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "excluded-03",
+      "title": "Pengadaan Katering Rapat Koordinasi",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "excluded-04",
+      "title": "Pengadaan Toner Printer",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "excluded-05",
+      "title": "Belanja Kertas Printer Tahunan",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "excluded-06",
+      "title": "Pengadaan meja kantor untuk tim pengembang aplikasi",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "software-engineering"
+    },
+    {
+      "id": "excluded-07",
+      "title": "Pengadaan seragam petugas keamanan siber",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "cybersecurity"
+    },
+    {
+      "id": "excluded-08",
+      "title": "Pengadaan katering rapat tata kelola TI",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "it-grc"
+    },
+    {
+      "id": "excluded-09",
+      "title": "Pengadaan kertas printer untuk pusat data AI",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "data-ai"
+    },
+    {
+      "id": "excluded-10",
+      "title": "Pengadaan kursi kantor untuk unit cloud",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "cloud-infrastructure"
+    },
+    {
+      "id": "excluded-11",
+      "title": "Pengadaan alat tulis kantor tim integrasi sistem",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "system-integration"
+    },
+    {
+      "id": "excluded-12",
+      "title": "Pengadaan seragam tim PMO digital",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "pmo-digital-transformation"
+    },
+    {
+      "id": "excluded-13",
+      "title": "Pengadaan katering operator managed service TI",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "managed-it-services"
+    },
+    {
+      "id": "excluded-14",
+      "title": "Pengadaan meja kantor tim ERP",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "enterprise-systems"
+    },
+    {
+      "id": "excluded-15",
+      "title": "Pengadaan kabel listrik jaringan gedung",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "network-infrastructure"
+    },
+    {
+      "id": "excluded-16",
+      "title": "Pengadaan alat tulis kantor konsultan TI",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "it-consulting"
+    },
+    {
+      "id": "excluded-17",
+      "title": "Pengadaan bibit tanaman untuk proyek GIS",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context",
+        "category_negative"
+      ],
+      "category_under_test": "specialized-digital-solutions"
+    },
+    {
+      "id": "excluded-18",
+      "title": "Pengadaan bibit tanaman untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-19",
+      "title": "Pengadaan pupuk pertanian untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-20",
+      "title": "Pengadaan keamanan fisik gedung untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-21",
+      "title": "Pengadaan perjalanan dinas untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-22",
+      "title": "Pengadaan jasa parkir untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-23",
+      "title": "Pengadaan fotokopi dokumen untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-24",
+      "title": "Pengadaan baju dinas untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-25",
+      "title": "Pengadaan jasa laundry untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-26",
+      "title": "Pengadaan peralatan dapur untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-27",
+      "title": "Pengadaan sewa tenda untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-28",
+      "title": "Pengadaan pencetakan brosur untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-29",
+      "title": "Pengadaan pengadaan air minum untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-30",
+      "title": "Pengadaan perbaikan jalan untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-31",
+      "title": "Pengadaan pembangunan jembatan untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-32",
+      "title": "Pengadaan cat tembok untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-33",
+      "title": "Pengadaan perabot ruang rapat untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-34",
+      "title": "Pengadaan alat olahraga untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-35",
+      "title": "Pengadaan jasa taman untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-36",
+      "title": "Pengadaan pengadaan beras untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-37",
+      "title": "Pengadaan sewa kendaraan untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-38",
+      "title": "Pengadaan jasa kebersihan toilet untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-39",
+      "title": "Pengadaan pembangunan drainase untuk kantor daerah",
+      "procurement_type": "Barang",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "excluded-40",
+      "title": "Pengadaan pengadaan vaksin untuk kantor daerah",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "excluded",
+      "tags": [
+        "category_negative",
+        "negative_context"
+      ]
+    },
+    {
+      "id": "review-organization",
+      "title": "Jasa Konsultansi Transformasi Organisasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "category_ambiguous",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "review-network",
+      "title": "Belanja Perangkat Jaringan Kantor",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "category_ambiguous",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "review-training",
+      "title": "Pelatihan Literasi Digital Pegawai",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "category_ambiguous",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "review-conflict",
+      "title": "Pengembangan Aplikasi dan Pengadaan Alat Tulis Kantor",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "keyword_collision",
+        "v1_baseline"
+      ]
+    },
+    {
+      "id": "review-mixed-network",
+      "title": "Implementasi jaringan dan pengadaan seragam teknisi",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "review-mixed-cloud",
+      "title": "Migrasi cloud dan pengadaan kursi kantor",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "mixed_procurement"
+      ]
+    },
+    {
+      "id": "review-mixed-security",
+      "title": "Penetration test aplikasi dan pengadaan katering",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "keyword_collision"
+      ]
+    },
+    {
+      "id": "review-mixed-data",
+      "title": "Pengembangan analitik data dan pengadaan toner printer",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "keyword_collision"
+      ]
+    },
+    {
+      "id": "review-generic-digital",
+      "title": "Pengadaan solusi digital",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "insufficient_context"
+      ]
+    },
+    {
+      "id": "review-generic-platform",
+      "title": "Penyediaan platform teknologi",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "insufficient_context"
+      ]
+    },
+    {
+      "id": "review-license-only",
+      "title": "Pengadaan lisensi aplikasi umum",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "license_scope"
+      ]
+    },
+    {
+      "id": "review-hardware-only",
+      "title": "Pengadaan server dan perangkat jaringan",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "hardware_scope"
+      ]
+    },
+    {
+      "id": "review-consulting-general",
+      "title": "Jasa konsultansi manajemen organisasi",
+      "procurement_type": "Jasa Konsultansi",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "insufficient_context"
+      ]
+    },
+    {
+      "id": "review-training-general",
+      "title": "Bimbingan teknis literasi digital",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "training_scope"
+      ]
+    },
+    {
+      "id": "review-security-device",
+      "title": "Pengadaan perangkat keamanan",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "hardware_scope"
+      ]
+    },
+    {
+      "id": "review-data-entry",
+      "title": "Jasa entri data dokumen",
+      "procurement_type": "Jasa Lainnya",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "scope_unclear"
+      ]
+    },
+    {
+      "id": "review-cloud-capacity",
+      "title": "Pengadaan kapasitas cloud",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "scope_unclear"
+      ]
+    },
+    {
+      "id": "review-iot-device",
+      "title": "Pengadaan sensor IoT",
+      "procurement_type": "Barang",
+      "expected_disposition": "needs_review",
+      "tags": [
+        "hardware_scope"
+      ]
+    }
+  ]
+}
